@@ -57,24 +57,38 @@ void Label::render(SDL_Renderer* renderer) {
 
 // --- Button ---
 void Button::render(SDL_Renderer* renderer) {
+    // Get theme colors for button.
     ThemeableElementColors tc = g_currentTheme->buttonColors();
     SDL_Rect rect = { x, y, width, height };
+    // Draw the button background.
     drawFilledRect(renderer, rect, tc.buttonBackground);
+    
+    // Render the button text centered.
     initFont();
     if (!globalFont) return;
     SDL_Color sdlColor = { tc.buttonText.r, tc.buttonText.g, tc.buttonText.b, tc.buttonText.a };
     SDL_Surface* surface = TTF_RenderText_Solid(globalFont, text.c_str(), sdlColor);
-    if (!surface) return;
-    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
-    SDL_Rect dst;
-    dst.w = surface->w;
-    dst.h = surface->h;
-    dst.x = x + (width - dst.w) / 2;
-    dst.y = y + (height - dst.h) / 2;
-    SDL_FreeSurface(surface);
-    SDL_RenderCopy(renderer, texture, nullptr, &dst);
-    SDL_DestroyTexture(texture);
+    if (surface) {
+        SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+        SDL_Rect dst;
+        dst.w = surface->w;
+        dst.h = surface->h;
+        dst.x = x + (width - dst.w) / 2;
+        dst.y = y + (height - dst.h) / 2;
+        SDL_FreeSurface(surface);
+        SDL_RenderCopy(renderer, texture, nullptr, &dst);
+        SDL_DestroyTexture(texture);
+    }
+    
+    // Draw 3D border.
+    SDL_SetRenderDrawColor(renderer, tc.buttonBorderLight.r, tc.buttonBorderLight.g, tc.buttonBorderLight.b, tc.buttonBorderLight.a);
+    SDL_RenderDrawLine(renderer, x, y, x + width, y);        // Top edge.
+    SDL_RenderDrawLine(renderer, x, y, x, y + height);       // Left edge.
+    SDL_SetRenderDrawColor(renderer, tc.buttonBorderDark.r, tc.buttonBorderDark.g, tc.buttonBorderDark.b, tc.buttonBorderDark.a);
+    SDL_RenderDrawLine(renderer, x, y + height, x + width, y + height); // Bottom edge.
+    SDL_RenderDrawLine(renderer, x + width, y, x + width, y + height);  // Right edge.
 }
+
 
 void Button::handleEvent(const SDL_Event &e) {
     if (hasFocus && e.type == SDL_KEYDOWN) {
@@ -91,10 +105,20 @@ void TextBox::render(SDL_Renderer* renderer) {
     const int padding = 5;
     int boxHeight = TTF_FontLineSkip(globalFont) + 2 * padding;
     SDL_Rect rect = { x, y, width, boxHeight };
+    
+    // Retrieve text input colors from theme.
     ThemeableElementColors tc = g_currentTheme->textInputColors();
     drawFilledRect(renderer, rect, tc.textInputBackground);
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-    SDL_RenderDrawRect(renderer, &rect);
+    
+    // Draw 3D border using theme border colors.
+    SDL_SetRenderDrawColor(renderer, tc.textInputBorderLight.r, tc.textInputBorderLight.g, tc.textInputBorderLight.b, tc.textInputBorderLight.a);
+    SDL_RenderDrawLine(renderer, x, y, x + width, y);          // Top edge.
+    SDL_RenderDrawLine(renderer, x, y, x, y + boxHeight);        // Left edge.
+    SDL_SetRenderDrawColor(renderer, tc.textInputBorderDark.r, tc.textInputBorderDark.g, tc.textInputBorderDark.b, tc.textInputBorderDark.a);
+    SDL_RenderDrawLine(renderer, x, y + boxHeight, x + width, y + boxHeight); // Bottom edge.
+    SDL_RenderDrawLine(renderer, x + width, y, x + width, y + boxHeight);     // Right edge.
+    
+    // Render the text.
     SDL_Color sdlColor = { tc.textInputText.r, tc.textInputText.g, tc.textInputText.b, tc.textInputText.a };
     SDL_Surface* surface = TTF_RenderText_Solid(globalFont, content.c_str(), sdlColor);
     if (!surface) return;
@@ -110,6 +134,7 @@ void TextBox::render(SDL_Renderer* renderer) {
     SDL_RenderSetClipRect(renderer, nullptr);
     SDL_DestroyTexture(texture);
 }
+
 
 void TextBox::handleEvent(const SDL_Event &e) {
     if (hasFocus) {
@@ -132,13 +157,22 @@ void CheckBox::render(SDL_Renderer* renderer) {
     SDL_Rect rect = { x, y, width, height };
     ThemeableElementColors tc = g_currentTheme->checkboxColors();
     drawFilledRect(renderer, rect, tc.checkboxEnabled);
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-    SDL_RenderDrawRect(renderer, &rect);
+    
+    // Draw 3D border for the checkbox.
+    SDL_SetRenderDrawColor(renderer, tc.checkboxBorderLight.r, tc.checkboxBorderLight.g, tc.checkboxBorderLight.b, tc.checkboxBorderLight.a);
+    SDL_RenderDrawLine(renderer, rect.x, rect.y, rect.x + rect.w, rect.y);         // Top edge.
+    SDL_RenderDrawLine(renderer, rect.x, rect.y, rect.x, rect.y + rect.h);         // Left edge.
+    SDL_SetRenderDrawColor(renderer, tc.checkboxBorderDark.r, tc.checkboxBorderDark.g, tc.checkboxBorderDark.b, tc.checkboxBorderDark.a);
+    SDL_RenderDrawLine(renderer, rect.x, rect.y + rect.h, rect.x + rect.w, rect.y + rect.h); // Bottom edge.
+    SDL_RenderDrawLine(renderer, rect.x + rect.w, rect.y, rect.x + rect.w, rect.y + rect.h); // Right edge.
+    
+    // If checked, draw a check mark using the checkbox checked color.
     if (checked) {
         drawLine(renderer, x, y, x + width, y + height, tc.checkboxChecked);
         drawLine(renderer, x + width, y, x, y + height, tc.checkboxChecked);
     }
 }
+
 
 void CheckBox::handleEvent(const SDL_Event &e) {
     if (hasFocus && e.type == SDL_KEYDOWN) {

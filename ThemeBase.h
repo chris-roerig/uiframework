@@ -12,16 +12,22 @@ struct ThemeableElementColors {
     Color buttonText;
     Color buttonBackground;
     Color buttonForeground;
+    Color buttonBorderLight;
+    Color buttonBorderDark;
     Color checkboxEnabled;
     Color checkboxDisabled;
     Color checkboxChecked;
     Color checkboxUnchecked;
+    Color checkboxBorderLight;
+    Color checkboxBorderDark;
+    Color textInputBackground;
+    Color textInputText;
+    Color textInputBorderLight;
+    Color textInputBorderDark;
     Color selectOptionUnselected;
     Color selectOptionSelected;
     Color selectOptionBorderLight;
     Color selectOptionBorderDark;
-    Color textInputBackground;
-    Color textInputText;
     Color labelText;
     Color labelBackground;
 };
@@ -49,6 +55,10 @@ protected:
     Color defaultButtonText;
     Color defaultButtonBackground;
     Color defaultButtonForeground;
+    Color defaultButtonBorderLight;
+    Color defaultButtonBorderDark;
+    Color defaultCheckboxBorderLight;
+    Color defaultCheckboxBorderDark;
     Color defaultCheckboxEnabled;
     Color defaultCheckboxDisabled;
     Color defaultCheckboxChecked;
@@ -59,6 +69,8 @@ protected:
     Color defaultSelectOptionBorderDark;
     Color defaultTextInputBackground;
     Color defaultTextInputText;
+    Color defaultTextInputBorderLight;
+    Color defaultTextInputBorderDark;
     Color defaultLabelText;
     Color defaultLabelBackground;
 public:
@@ -89,21 +101,26 @@ public:
         c.labelBackground = defaultLabelBackground;
         return c;
     }
-    ThemeableElementColors buttonColors() const override {
-        ThemeableElementColors c;
-        c.buttonText = defaultButtonText;
-        c.buttonBackground = defaultButtonBackground;
-        c.buttonForeground = defaultButtonForeground;
-        return c;
-    }
-    ThemeableElementColors checkboxColors() const override {
-        ThemeableElementColors c;
-        c.checkboxEnabled = defaultCheckboxEnabled;
-        c.checkboxDisabled = defaultCheckboxDisabled;
-        c.checkboxChecked = defaultCheckboxChecked;
-        c.checkboxUnchecked = defaultCheckboxUnchecked;
-        return c;
-    }
+ThemeableElementColors buttonColors() const override {
+    ThemeableElementColors c;
+    c.buttonText = defaultButtonText;
+    c.buttonBackground = defaultButtonBackground;
+    c.buttonForeground = defaultButtonForeground;
+    c.buttonBorderLight = defaultButtonBorderLight;
+    c.buttonBorderDark  = defaultButtonBorderDark;
+    return c;
+}
+ThemeableElementColors checkboxColors() const override {
+    ThemeableElementColors c;
+    c.checkboxEnabled = defaultCheckboxEnabled;
+    c.checkboxDisabled = defaultCheckboxDisabled;
+    c.checkboxChecked = defaultCheckboxChecked;
+    c.checkboxUnchecked = defaultCheckboxUnchecked;
+    c.checkboxBorderLight = defaultCheckboxBorderLight;
+    c.checkboxBorderDark  = defaultCheckboxBorderDark;
+    return c;
+}
+
     ThemeableElementColors optionSelectColors() const override {
         ThemeableElementColors c;
         c.selectOptionSelected = defaultSelectOptionSelected;
@@ -112,12 +129,14 @@ public:
         c.selectOptionBorderDark = defaultSelectOptionBorderDark;
         return c;
     }
-    ThemeableElementColors textInputColors() const override {
-        ThemeableElementColors c;
-        c.textInputBackground = defaultTextInputBackground;
-        c.textInputText = defaultTextInputText;
-        return c;
-    }
+ThemeableElementColors textInputColors() const override {
+    ThemeableElementColors c;
+    c.textInputBackground = defaultTextInputBackground;
+    c.textInputText = defaultTextInputText;
+    c.textInputBorderLight = defaultTextInputBorderLight;
+    c.textInputBorderDark  = defaultTextInputBorderDark;
+    return c;
+}
     Color highlightColor() const override { return defaultHighlight; }
     Color backgroundColor() const override { return defaultBackground; }
     Color foregroundColor() const override { return defaultForeground; }

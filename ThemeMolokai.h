@@ -16,11 +16,15 @@ public:
         defaultButtonText   = Color(248, 248, 242);
         defaultButtonBackground = Color(80, 80, 80);
         defaultButtonForeground = Color(248, 248, 242);
+        defaultButtonBorderLight = Color(180, 180, 180);
+        defaultButtonBorderDark  = Color(90, 90, 90);
 
         defaultCheckboxEnabled  = Color(255, 255, 255);
         defaultCheckboxDisabled = Color(180, 180, 180);
         defaultCheckboxChecked  = Color(248, 248, 242);
         defaultCheckboxUnchecked= Color(0, 0, 0);
+        defaultCheckboxBorderLight = Color(180, 180, 180);
+        defaultCheckboxBorderDark  = Color(90, 90, 90);
 
         defaultSelectOptionUnselected = Color(220, 220, 220);
         defaultSelectOptionSelected   = Color(150, 150, 150);
@@ -29,6 +33,8 @@ public:
 
         defaultTextInputBackground = Color(255, 255, 255);
         defaultTextInputText       = Color(248, 248, 242);
+        defaultTextInputBorderLight = Color(180, 180, 180);
+        defaultTextInputBorderDark  = Color(90, 90, 90);
 
         defaultLabelText      = Color(248, 248, 242);
         defaultLabelBackground= Color(39, 40, 34);
