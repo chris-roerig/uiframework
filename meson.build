@@ -7,7 +7,7 @@ sdl2_dep = dependency('sdl2')
 ttf_dep = dependency('SDL2_ttf')
 
 executable('sdl_ui_demo',
-  sources : ['main.cpp', 'UI.cpp'],
+  sources : ['main.cpp', 'UI.cpp', 'UIAbstraction.cpp'],
   dependencies : [sdl2_dep, ttf_dep],
   install : true
 )
