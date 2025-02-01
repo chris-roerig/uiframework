@@ -18,10 +18,13 @@ public:
     // Predefined theme colors.
     static Color SolarizedDarkBackground() { return Color(0, 43, 54); }
     static Color SolarizedDarkForeground() { return Color(131, 148, 150); }
+    static Color SolarizedDarkHighlight() { return Color(181, 137, 0); }
     static Color SolarizedLightBackground() { return Color(253, 246, 227); }
     static Color SolarizedLightForeground() { return Color(101, 123, 131); }
+    static Color SolarizedLightHighlight() { return Color(203, 75, 22); }
     static Color MolokaiBackground() { return Color(39, 40, 34); }
     static Color MolokaiForeground() { return Color(248, 248, 242); }
+    static Color MolokaiHighlight() { return Color(189, 147, 249); }
 };
 
 // Base class for all UI elements.
@@ -138,6 +141,7 @@ public:
     SDL_Renderer* renderer = nullptr;
     Color backgroundColor;
     Color fontColor;
+    Color highlightColor;
     std::vector<std::shared_ptr<UIElement>> elements;
     // For simplicity, we manage focus by index.
     int focusedIndex = -1;
@@ -153,6 +157,7 @@ public:
     // Set colors.
     void setBackgroundColor(const Color& color);
     void setFontColor(const Color& color);
+    void setHighlightColor(const Color& color);
 
     // Main loop.
     void run();

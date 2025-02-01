@@ -44,14 +44,17 @@ int main(int argc, char* argv[]) {
                 case 0:
                     uiManager.setBackgroundColor(ui::Color::SolarizedDarkBackground());
                     uiManager.setFontColor(ui::Color::SolarizedDarkForeground());
+                    uiManager.setHighlightColor(ui::Color::SolarizedDarkHighlight());
                     break;
                 case 1:
                     uiManager.setBackgroundColor(ui::Color::SolarizedLightBackground());
                     uiManager.setFontColor(ui::Color::SolarizedLightForeground());
+                    uiManager.setHighlightColor(ui::Color::SolarizedLightHighlight());
                     break;
                 case 2:
                     uiManager.setBackgroundColor(ui::Color::MolokaiBackground());
                     uiManager.setFontColor(ui::Color::MolokaiForeground());
+                    uiManager.setHighlightColor(ui::Color::MolokaiHighlight());
                     break;
                 default:
                     break;
@@ -62,14 +65,11 @@ int main(int argc, char* argv[]) {
 
     // Create a Canvas and draw some shapes.
     auto canvas = std::make_shared<ui::Canvas>(300, 50, 400, 300);
-    // Draw a rectangle.
     SDL_Rect rect = { 50, 50, 100, 100 };
     canvas->rect(rect, ui::Color(255, 0, 0));
-    // Draw a line.
     canvas->line(50, 50, 150, 150, ui::Color(0, 0, 255));
     uiManager.addElement(canvas);
 
-    // Run the UI loop.
     uiManager.run();
     return 0;
 }

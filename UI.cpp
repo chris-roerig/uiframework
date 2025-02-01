@@ -252,7 +252,9 @@ void Canvas::line(int x1, int y1, int x2, int y2, const Color& color) {
 // UIManager implementation.
 UIManager::UIManager(const char* title, int width, int height,
                      const Color& bg, const Color& fg)
-    : backgroundColor(bg), fontColor(fg) {
+    : backgroundColor(bg), fontColor(fg),
+      highlightColor(Color(181, 137, 0)) // Default highlight (Solarized yellow)
+{
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
         std::cerr << "SDL could not initialize! SDL_Error:" << SDL_GetError() << std::endl;
     }
@@ -289,6 +291,10 @@ void UIManager::setFontColor(const Color& color) {
     fontColor = color;
 }
 
+void UIManager::setHighlightColor(const Color& color) {
+    highlightColor = color;
+}
+
 // Main loop.
 void UIManager::run() {
     bool quit = false;
@@ -317,13 +323,11 @@ void UIManager::run() {
         // Render loop.
         SDL_SetRenderDrawColor(renderer, backgroundColor.r, backgroundColor.g, backgroundColor.b, backgroundColor.a);
         SDL_RenderClear(renderer);
-        // In UIManager::run() render loop:
         for (auto& el : elements) {
             el->render(renderer);
-            // Only draw a focus ring if the element is interactive.
             if (el->hasFocus && el->isInteractive()) {
                 SDL_Rect focusRect = el->getFocusRect();
-                SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255); // Yellow ring.
+                SDL_SetRenderDrawColor(renderer, highlightColor.r, highlightColor.g, highlightColor.b, highlightColor.a);
                 SDL_RenderDrawRect(renderer, &focusRect);
             }
         }
