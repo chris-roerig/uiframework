@@ -32,10 +32,7 @@ int main() {
     
     // --- Middle: New TODO Input ---
     ui->label("New TODO:", 50, 175);
-    // Instead of using the convenience textBox, we create one manually so we can keep a pointer.
-    auto inputBox = std::make_shared<ui::TextBox>(50, 175, 300, 40);
-    inputBox->content = "Enter new task...";
-    ui->addElement(inputBox);
+    ui::TextBox* inputBox = ui->textBox("Enter todo here...", 150, 115, false);
     
     ui->button("Add TODO", 470, 175, [uiPtr = ui.get(), inputBox]() {
          std::string task = inputBox->content;

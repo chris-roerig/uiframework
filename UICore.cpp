@@ -105,20 +105,20 @@ void TextBox::render(SDL_Renderer* renderer) {
     const int padding = 5;
     int boxHeight = TTF_FontLineSkip(globalFont) + 2 * padding;
     SDL_Rect rect = { x, y, width, boxHeight };
-    
-    // Retrieve text input colors from theme.
+
     ThemeableElementColors tc = g_currentTheme->textInputColors();
     drawFilledRect(renderer, rect, tc.textInputBackground);
     
-    // Draw 3D border using theme border colors.
-    SDL_SetRenderDrawColor(renderer, tc.textInputBorderLight.r, tc.textInputBorderLight.g, tc.textInputBorderLight.b, tc.textInputBorderLight.a);
-    SDL_RenderDrawLine(renderer, x, y, x + width, y);          // Top edge.
-    SDL_RenderDrawLine(renderer, x, y, x, y + boxHeight);        // Left edge.
-    SDL_SetRenderDrawColor(renderer, tc.textInputBorderDark.r, tc.textInputBorderDark.g, tc.textInputBorderDark.b, tc.textInputBorderDark.a);
-    SDL_RenderDrawLine(renderer, x, y + boxHeight, x + width, y + boxHeight); // Bottom edge.
-    SDL_RenderDrawLine(renderer, x + width, y, x + width, y + boxHeight);     // Right edge.
+    // If the text is selected, draw a selection overlay.
+    if (textSelected) {
+        // Use a semi-transparent overlay (for example, a blue tint).
+        SDL_SetRenderDrawColor(renderer, 100, 149, 237, 100);
+        SDL_RenderFillRect(renderer, &rect);
+    }
     
-    // Render the text.
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+    SDL_RenderDrawRect(renderer, &rect);
+    
     SDL_Color sdlColor = { tc.textInputText.r, tc.textInputText.g, tc.textInputText.b, tc.textInputText.a };
     SDL_Surface* surface = TTF_RenderText_Solid(globalFont, content.c_str(), sdlColor);
     if (!surface) return;
@@ -136,14 +136,63 @@ void TextBox::render(SDL_Renderer* renderer) {
 }
 
 
-void TextBox::handleEvent(const SDL_Event &e) {
-    if (hasFocus) {
-        if (e.type == SDL_TEXTINPUT)
-            content += e.text.text;
-        if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_BACKSPACE && !content.empty())
-            content.pop_back();
+void TextBox::onFocusGained() {
+    // Only auto-select if autoHighlight is true and there is text.
+    if (autoHighlight && !content.empty()) {
+        textSelected = true;
+    } else {
+        textSelected = false;
     }
 }
+
+void TextBox::onFocusLost() {
+    textSelected = false;
+}
+
+void TextBox::handleEvent(const SDL_Event &e) {
+    if (hasFocus) {
+        if (e.type == SDL_KEYDOWN) {
+            // If Enter is pressed, cancel selection (if any) and push a TAB event.
+            if (e.key.keysym.sym == SDLK_RETURN) {
+                if (textSelected)
+                    textSelected = false;
+                // Push a synthetic TAB key event.
+                SDL_Event tabEvent;
+                tabEvent.type = SDL_KEYDOWN;
+                tabEvent.key.keysym.sym = SDLK_TAB;
+                SDL_PushEvent(&tabEvent);
+                return;
+            }
+            // If text is currently selected:
+            if (textSelected) {
+                // If right arrow is pressed, cancel selection.
+                if (e.key.keysym.sym == SDLK_RIGHT) {
+                    textSelected = false;
+                    return;
+                } else {
+                    // For any other key, clear content and cancel selection.
+                    content = "";
+                    textSelected = false;
+                    // Continue processing key event if necessary.
+                }
+            }
+            // Process backspace normally if no selection.
+            if (e.key.keysym.sym == SDLK_BACKSPACE && !content.empty()) {
+                content.pop_back();
+                return;
+            }
+        }
+        if (e.type == SDL_TEXTINPUT) {
+            if (textSelected) {
+                // If text was selected, clear it before appending.
+                content = "";
+                textSelected = false;
+            }
+            content += e.text.text;
+        }
+    }
+}
+
 
 SDL_Rect TextBox::getFocusRect() const {
     const int padding = 5;
@@ -151,6 +200,7 @@ SDL_Rect TextBox::getFocusRect() const {
     int boxHeight = TTF_FontLineSkip(globalFont) + 2 * padding;
     return SDL_Rect{ x - 2, y - 2, width + 4, boxHeight + 4 };
 }
+
 
 // --- CheckBox ---
 void CheckBox::render(SDL_Renderer* renderer) {
@@ -363,13 +413,22 @@ void UICore::run() {
             if (e.type == SDL_QUIT)
                 quit = true;
             if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_TAB) {
-                if (focusedIndex >= 0 && focusedIndex < (int)elements.size())
+                // If the current focused element is a TextBox, notify it of focus loss.
+                if (focusedIndex >= 0 && focusedIndex < (int)elements.size()) {
+                    TextBox* tb = dynamic_cast<TextBox*>(elements[focusedIndex].get());
+                    if (tb)
+                        tb->onFocusLost();
                     elements[focusedIndex]->hasFocus = false;
+                }
                 int start = focusedIndex;
                 do {
                     focusedIndex = (focusedIndex + 1) % elements.size();
                 } while (!elements[focusedIndex]->isInteractive() && focusedIndex != start);
                 elements[focusedIndex]->hasFocus = true;
+                // If the new element is a TextBox, notify it of focus gain.
+                TextBox* tbNew = dynamic_cast<TextBox*>(elements[focusedIndex].get());
+                if (tbNew)
+                    tbNew->onFocusGained();
             }
             if (focusedIndex >= 0 && focusedIndex < (int)elements.size())
                 elements[focusedIndex]->handleEvent(e);

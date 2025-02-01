@@ -23,10 +23,12 @@ void UI::button(const std::string &text, int x, int y, std::function<void()> cal
     core->addElement(btn);
 }
 
-void UI::textBox(const std::string &defaultText, int x, int y) {
-    auto tb = std::make_shared<ui::TextBox>(x, y, 200, 50);
+ui::TextBox* UI::textBox(const std::string &defaultText, int x, int y, bool autoHighlight) {
+    // Create a TextBox with a default size of 200x50.
+    auto tb = std::make_shared<ui::TextBox>(x, y, 200, 50, autoHighlight);
     tb->content = defaultText;
     core->addElement(tb);
+    return tb.get();
 }
 
 void UI::checkBox(bool state, int x, int y, std::function<void(bool)> callback) {

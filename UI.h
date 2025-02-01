@@ -15,7 +15,7 @@ public:
     // Convenience widget methods:
     void label(const std::string &text, int x, int y);
     void button(const std::string &text, int x, int y, std::function<void()> callback);
-    void textBox(const std::string &defaultText, int x, int y);
+    ui::TextBox* textBox(const std::string &defaultText, int x, int y, bool autoHighlight = true);
     void checkBox(bool state, int x, int y, std::function<void(bool)> callback);
     void optionSelect(int current, const std::vector<std::string> &options, int x, int y, std::function<void(int)> callback);
     ui::Canvas* canvas(int x, int y, int width, int height);
