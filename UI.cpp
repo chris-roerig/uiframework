@@ -18,26 +18,23 @@ void UI::label(const std::string &text, int x, int y) {
 }
 
 void UI::button(const std::string &text, int x, int y, std::function<void()> callback) {
-    // Using a default size of 200x50.
+    // Default size: 200x50.
     auto btn = std::make_shared<ui::Button>(x, y, 200, 50, text, callback);
     core->addElement(btn);
 }
 
 void UI::textBox(const std::string &defaultText, int x, int y) {
-    // Using a default size of 200x50.
     auto tb = std::make_shared<ui::TextBox>(x, y, 200, 50);
     tb->content = defaultText;
     core->addElement(tb);
 }
 
 void UI::checkBox(bool state, int x, int y, std::function<void(bool)> callback) {
-    // Using a default size of 30.
     auto cb = std::make_shared<ui::CheckBox>(x, y, 30, state, callback);
     core->addElement(cb);
 }
 
 void UI::optionSelect(int current, const std::vector<std::string> &options, int x, int y, std::function<void(int)> callback) {
-    // Height is based on the number of options (each assumed 50 pixels tall).
     int height = static_cast<int>(options.size()) * 50;
     auto os = std::make_shared<ui::OptionSelect>(x, y, 200, height, options, current, current, callback);
     core->addElement(os);
@@ -47,6 +44,11 @@ ui::Canvas* UI::canvas(int x, int y, int width, int height) {
     auto cnv = std::make_shared<ui::Canvas>(x, y, width, height);
     core->addElement(cnv);
     return cnv.get();
+}
+
+// New method to add UI elements dynamically.
+void UI::addElement(std::shared_ptr<ui::UIElement> element) {
+    core->addElement(element);
 }
 
 void UI::run() {

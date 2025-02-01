@@ -76,17 +76,29 @@ public:
 class OptionSelect : public UIElement {
 public:
     std::vector<std::string> options;
-    int selectedIndex;
-    int activeIndex;
+    int selectedIndex; // Used when expanded to indicate the highlighted option.
+    int activeIndex;   // The currently chosen value.
+    bool expanded;     // True when the drop-down is open.
     std::function<void(int)> onSelect;
-    OptionSelect(int x_, int y_, int w_, int h_, const std::vector<std::string>& opts,
-                 int initial = 0, int active = -1, std::function<void(int)> callback = nullptr)
+    
+    OptionSelect(int x_, int y_, int w_, int h_,
+                 const std::vector<std::string>& opts,
+                 int initial = 0,
+                 int active = -1,
+                 std::function<void(int)> callback = nullptr)
       : UIElement(x_, y_, w_, h_), options(opts), selectedIndex(initial),
-        activeIndex(active == -1 ? initial : active), onSelect(callback) {}
+        activeIndex(active == -1 ? initial : active), expanded(false), onSelect(callback) {}
+    
     void render(SDL_Renderer* renderer) override;
     void handleEvent(const SDL_Event &e) override;
+    
+    // Override getFocusRect to use collapsed height when not expanded.
+    SDL_Rect getFocusRect() const override;
+    
     bool isInteractive() const override { return true; }
 };
+
+
 
 // Canvas element for custom drawing.
 class Canvas : public UIElement {

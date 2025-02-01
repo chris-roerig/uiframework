@@ -18,6 +18,8 @@ struct ThemeableElementColors {
     Color checkboxUnchecked;
     Color selectOptionUnselected;
     Color selectOptionSelected;
+    Color selectOptionBorderLight;
+    Color selectOptionBorderDark;
     Color textInputBackground;
     Color textInputText;
     Color labelText;
@@ -53,6 +55,8 @@ protected:
     Color defaultCheckboxUnchecked;
     Color defaultSelectOptionUnselected;
     Color defaultSelectOptionSelected;
+    Color defaultSelectOptionBorderLight;
+    Color defaultSelectOptionBorderDark;
     Color defaultTextInputBackground;
     Color defaultTextInputText;
     Color defaultLabelText;
@@ -104,6 +108,8 @@ public:
         ThemeableElementColors c;
         c.selectOptionSelected = defaultSelectOptionSelected;
         c.selectOptionUnselected = defaultSelectOptionUnselected;
+        c.selectOptionBorderLight = defaultSelectOptionBorderLight;
+        c.selectOptionBorderDark = defaultSelectOptionBorderDark;
         return c;
     }
     ThemeableElementColors textInputColors() const override {

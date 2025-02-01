@@ -23,6 +23,8 @@ public:
 
         defaultSelectOptionUnselected = Color(70, 70, 70);
         defaultSelectOptionSelected   = Color(255, 165, 0);
+        defaultSelectOptionBorderLight = Color(200, 200, 200);
+        defaultSelectOptionBorderDark  = Color(80, 80, 80);
 
         defaultTextInputBackground = Color(50, 50, 50);
         defaultTextInputText       = Color(220, 220, 220);

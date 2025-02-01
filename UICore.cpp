@@ -149,43 +149,119 @@ void CheckBox::handleEvent(const SDL_Event &e) {
     }
 }
 
-// --- OptionSelect ---
+// --- OptionSelect: render and event handling ---
 void OptionSelect::render(SDL_Renderer* renderer) {
-    int numOptions = options.size();
-    if (numOptions == 0) return;
-    int cellHeight = height / numOptions;
-    ThemeableElementColors tc = g_currentTheme->optionSelectColors();
-    for (int i = 0; i < numOptions; i++) {
-        SDL_Rect cellRect = { x, y + i * cellHeight, width, cellHeight };
-        if (i == activeIndex)
-            drawFilledRect(renderer, cellRect, tc.selectOptionSelected);
-        else
-            drawFilledRect(renderer, cellRect, tc.selectOptionUnselected);
+    const int padding = 5;
+    initFont();
+    // Collapsed state uses dynamic height (like TextBox)
+    int collapsedHeight = TTF_FontLineSkip(globalFont) + 2 * padding;
+    
+    if (!expanded) {
+        // Collapsed: Draw a single cell using the collapsed height.
+        SDL_Rect cellRect = { x, y, width, collapsedHeight };
+        ThemeableElementColors tc = g_currentTheme->optionSelectColors();
+        drawFilledRect(renderer, cellRect, tc.selectOptionUnselected);
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
         SDL_RenderDrawRect(renderer, &cellRect);
-        initFont();
-        if (!globalFont) continue;
-        SDL_Surface* surface = TTF_RenderText_Solid(globalFont, options[i].c_str(), SDL_Color{0,0,0,255});
-        if (!surface) continue;
-        SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
-        int textW = surface->w, textH = surface->h;
-        SDL_FreeSurface(surface);
-        SDL_Rect dst = { cellRect.x + (cellRect.w - textW) / 2, cellRect.y + (cellRect.h - textH) / 2, textW, textH };
-        SDL_RenderCopy(renderer, texture, nullptr, &dst);
-        SDL_DestroyTexture(texture);
+        
+        // Render the active option text (left aligned with padding).
+        if (globalFont) {
+            SDL_Color textColor = { 0, 0, 0, 255 };
+            SDL_Surface* surface = TTF_RenderText_Solid(globalFont, options[activeIndex].c_str(), textColor);
+            if (surface) {
+                SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+                int textW = surface->w, textH = surface->h;
+                SDL_FreeSurface(surface);
+                SDL_Rect dst = { x + padding, y + (collapsedHeight - textH) / 2, textW, textH };
+                SDL_RenderCopy(renderer, texture, nullptr, &dst);
+                SDL_DestroyTexture(texture);
+            }
+        }
+        
+        // Draw a downward arrow on the right.
+        int arrowPadding = 5;
+        // For a downward arrow, define three points:
+        SDL_Point arrow[3];
+        // Top-left of arrow
+        arrow[0] = { x + width - arrowPadding - 10, y + collapsedHeight / 2 - 3 };
+        // Top-right of arrow
+        arrow[1] = { x + width - arrowPadding, y + collapsedHeight / 2 - 3 };
+        // Bottom point (centered)
+        arrow[2] = { x + width - arrowPadding - 5, y + collapsedHeight / 2 + 3 };
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+        SDL_RenderDrawLines(renderer, arrow, 3);
+        // Connect last to first to complete the triangle.
+        SDL_RenderDrawLine(renderer, arrow[2].x, arrow[2].y, arrow[0].x, arrow[0].y);
+    } else {
+        // Expanded state: Draw each option in a fixed, smaller cell height.
+        int cellHeight = 25;
+        ThemeableElementColors tc = g_currentTheme->optionSelectColors();
+        for (size_t i = 0; i < options.size(); i++) {
+            SDL_Rect cellRect = { x, y + static_cast<int>(i) * cellHeight, width, cellHeight };
+            if (static_cast<int>(i) == selectedIndex)
+                drawFilledRect(renderer, cellRect, tc.selectOptionSelected);
+            else
+                drawFilledRect(renderer, cellRect, tc.selectOptionUnselected);
+            
+            // Draw a 3D border: top & left light; bottom & right dark.
+            SDL_SetRenderDrawColor(renderer, tc.selectOptionBorderLight.r, tc.selectOptionBorderLight.g, tc.selectOptionBorderLight.b, tc.selectOptionBorderLight.a);
+            SDL_RenderDrawLine(renderer, cellRect.x, cellRect.y, cellRect.x + cellRect.w, cellRect.y);
+            SDL_RenderDrawLine(renderer, cellRect.x, cellRect.y, cellRect.x, cellRect.y + cellRect.h);
+            SDL_SetRenderDrawColor(renderer, tc.selectOptionBorderDark.r, tc.selectOptionBorderDark.g, tc.selectOptionBorderDark.b, tc.selectOptionBorderDark.a);
+            SDL_RenderDrawLine(renderer, cellRect.x, cellRect.y + cellRect.h, cellRect.x + cellRect.w, cellRect.y + cellRect.h);
+            SDL_RenderDrawLine(renderer, cellRect.x + cellRect.w, cellRect.y, cellRect.x + cellRect.w, cellRect.y + cellRect.h);
+            
+            // Center the option text.
+            if (globalFont) {
+                SDL_Color textColor = { 0, 0, 0, 255 };
+                SDL_Surface* surface = TTF_RenderText_Solid(globalFont, options[i].c_str(), textColor);
+                if (surface) {
+                    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+                    int textW = surface->w, textH = surface->h;
+                    SDL_FreeSurface(surface);
+                    SDL_Rect dst = { cellRect.x + (cellRect.w - textW) / 2,
+                                     cellRect.y + (cellRect.h - textH) / 2,
+                                     textW, textH };
+                    SDL_RenderCopy(renderer, texture, nullptr, &dst);
+                    SDL_DestroyTexture(texture);
+                }
+            }
+        }
     }
 }
 
 void OptionSelect::handleEvent(const SDL_Event &e) {
-    if (hasFocus && e.type == SDL_KEYDOWN) {
-        if (e.key.keysym.sym == SDLK_UP) {
-            selectedIndex = (selectedIndex - 1 + options.size()) % options.size();
-            if (onSelect) onSelect(selectedIndex);
-        } else if (e.key.keysym.sym == SDLK_DOWN) {
-            selectedIndex = (selectedIndex + 1) % options.size();
-            if (onSelect) onSelect(selectedIndex);
+    if (expanded) {
+        if (e.type == SDL_KEYDOWN) {
+            if (e.key.keysym.sym == SDLK_UP) {
+                selectedIndex = (selectedIndex - 1 + options.size()) % options.size();
+            } else if (e.key.keysym.sym == SDLK_DOWN) {
+                selectedIndex = (selectedIndex + 1) % options.size();
+            } else if (e.key.keysym.sym == SDLK_RETURN) {
+                activeIndex = selectedIndex;
+                expanded = false;
+                if (onSelect) onSelect(activeIndex);
+            }
         }
-        activeIndex = selectedIndex;
+    } else {
+        if (hasFocus && e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_RETURN) {
+            expanded = true;
+            selectedIndex = activeIndex;
+        }
+    }
+}
+
+// Override getFocusRect so the focus outline uses the collapsed height when not expanded.
+SDL_Rect OptionSelect::getFocusRect() const {
+    const int padding = 5;
+    initFont();
+    if (!expanded) {
+        int collapsedHeight = TTF_FontLineSkip(globalFont) + 2 * padding;
+        return SDL_Rect{ x - 2, y - 2, width + 4, collapsedHeight + 4 };
+    } else {
+        // When expanded, outline the entire drop-down list.
+        int cellHeight = 25;
+        return SDL_Rect{ x - 2, y - 2, width + 4, static_cast<int>(options.size()) * cellHeight + 4 };
     }
 }
 
