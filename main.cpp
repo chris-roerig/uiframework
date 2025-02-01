@@ -4,10 +4,10 @@
 #include <vector>
 
 int main(int argc, char* argv[]) {
-    // Create UIManager with a window.
+    // Create UIManager with an initial theme.
     ui::UIManager uiManager("Reusable SDL UI", 800, 600,
-                            ui::Color::SolarizedLightBackground(),
-                            ui::Color::SolarizedLightForeground());
+                            ui::Color::SolarizedDarkBackground(),
+                            ui::Color::SolarizedDarkForeground());
 
     // Create a Label.
     auto label = std::make_shared<ui::Label>(50, 50, "Press TAB to change focus");
@@ -29,29 +29,36 @@ int main(int argc, char* argv[]) {
     });
     uiManager.addElement(checkBox);
 
-
-    // Create an OptionSelect with vertical options.
-    // The parameters are: x, y, width, height, options, initial interactive index, active index, callback.
-    // Height is set to 150 to accommodate 3 options (each approximately 50 pixels tall).
-    std::vector<std::string> options = { "Option 1", "Option 2", "Option 3" };
-    auto optionSelect = std::make_shared<ui::OptionSelect>(
-        50, 290, 200, 150, options, 0, 1, [](int idx) {
-            std::cout << "Option selected index: " << idx << std::endl;
+    // Create an OptionSelect for theme switching.
+    // The control displays the three theme options vertically.
+    std::vector<std::string> themeOptions = { "Solarized Dark", "Solarized Light", "Molokai" };
+    // Set the height to accommodate all options (e.g. 3 options * 50 pixels = 150).
+    auto themeSelect = std::make_shared<ui::OptionSelect>(
+        50, 310, 200, 150, themeOptions,
+        0, // initial interactive index
+        0, // active theme index defaults to 0 (Solarized Dark)
+        // Callback: update the UIManager theme based on selection.
+        [&uiManager](int idx) {
+            std::cout << "Theme selected index: " << idx << std::endl;
+            switch (idx) {
+                case 0:
+                    uiManager.setBackgroundColor(ui::Color::SolarizedDarkBackground());
+                    uiManager.setFontColor(ui::Color::SolarizedDarkForeground());
+                    break;
+                case 1:
+                    uiManager.setBackgroundColor(ui::Color::SolarizedLightBackground());
+                    uiManager.setFontColor(ui::Color::SolarizedLightForeground());
+                    break;
+                case 2:
+                    uiManager.setBackgroundColor(ui::Color::MolokaiBackground());
+                    uiManager.setFontColor(ui::Color::MolokaiForeground());
+                    break;
+                default:
+                    break;
+            }
         }
     );
-    uiManager.addElement(optionSelect);
-
-    // Create an OptionSelect with vertical options.
-    // The parameters are: x, y, width, height, options, initial interactive index, active index, callback.
-    // Height is set to 150 to accommodate 3 options (each approximately 50 pixels tall).
-    std::vector<std::string> options2 = { "Option 1", "Option 2", "Option 3" };
-    auto option2Select = std::make_shared<ui::OptionSelect>(
-        50, 490, 200, 150, options, 0, 1, [](int idx) {
-            std::cout << "Option selected index: " << idx << std::endl;
-        }
-    );
-    uiManager.addElement(option2Select);
-
+    uiManager.addElement(themeSelect);
 
     // Create a Canvas and draw some shapes.
     auto canvas = std::make_shared<ui::Canvas>(300, 50, 400, 300);
