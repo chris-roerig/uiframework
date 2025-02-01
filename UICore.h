@@ -42,12 +42,16 @@ class Button : public UIElement {
 public:
     std::string text;
     std::function<void()> onClick;
+    bool pressed; // New: tracks whether the button is pressed.
+    
     Button(int x_, int y_, int w_, int h_, const std::string &text_, std::function<void()> callback)
-      : UIElement(x_, y_, w_, h_), text(text_), onClick(callback) {}
+      : UIElement(x_, y_, w_, h_), text(text_), onClick(callback), pressed(false) {}
+    
     void render(SDL_Renderer* renderer) override;
     void handleEvent(const SDL_Event &e) override;
     bool isInteractive() const override { return true; }
 };
+
 
 // TextBox element.
 // TextBox element.

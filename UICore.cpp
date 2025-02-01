@@ -57,13 +57,21 @@ void Label::render(SDL_Renderer* renderer) {
 
 // --- Button ---
 void Button::render(SDL_Renderer* renderer) {
-    // Get theme colors for button.
+    // Retrieve button colors from the current theme.
     ThemeableElementColors tc = g_currentTheme->buttonColors();
     SDL_Rect rect = { x, y, width, height };
-    // Draw the button background.
-    drawFilledRect(renderer, rect, tc.buttonBackground);
+
+    // Determine background color; darken if pressed.
+    Color bg = tc.buttonBackground;
+    if (pressed) {
+        bg = Color(static_cast<uint8_t>(bg.r * 0.8),
+                   static_cast<uint8_t>(bg.g * 0.8),
+                   static_cast<uint8_t>(bg.b * 0.8),
+                   bg.a);
+    }
+    drawFilledRect(renderer, rect, bg);
     
-    // Render the button text centered.
+    // Draw the button text using the theme's button text color.
     initFont();
     if (!globalFont) return;
     SDL_Color sdlColor = { tc.buttonText.r, tc.buttonText.g, tc.buttonText.b, tc.buttonText.a };
@@ -80,23 +88,34 @@ void Button::render(SDL_Renderer* renderer) {
         SDL_DestroyTexture(texture);
     }
     
-    // Draw 3D border.
-    SDL_SetRenderDrawColor(renderer, tc.buttonBorderLight.r, tc.buttonBorderLight.g, tc.buttonBorderLight.b, tc.buttonBorderLight.a);
-    SDL_RenderDrawLine(renderer, x, y, x + width, y);        // Top edge.
-    SDL_RenderDrawLine(renderer, x, y, x, y + height);       // Left edge.
-    SDL_SetRenderDrawColor(renderer, tc.buttonBorderDark.r, tc.buttonBorderDark.g, tc.buttonBorderDark.b, tc.buttonBorderDark.a);
-    SDL_RenderDrawLine(renderer, x, y + height, x + width, y + height); // Bottom edge.
-    SDL_RenderDrawLine(renderer, x + width, y, x + width, y + height);  // Right edge.
+    // Draw 3D border using theme's button border colors.
+    // These should be provided by your theme (defaultButtonBorderLight and defaultButtonBorderDark).
+    SDL_SetRenderDrawColor(renderer, tc.buttonBorderLight.r, tc.buttonBorderLight.g,
+                            tc.buttonBorderLight.b, tc.buttonBorderLight.a);
+    SDL_RenderDrawLine(renderer, x, y, x + width, y);           // Top edge
+    SDL_RenderDrawLine(renderer, x, y, x, y + height);          // Left edge
+
+    SDL_SetRenderDrawColor(renderer, tc.buttonBorderDark.r, tc.buttonBorderDark.g,
+                            tc.buttonBorderDark.b, tc.buttonBorderDark.a);
+    SDL_RenderDrawLine(renderer, x, y + height, x + width, y + height); // Bottom edge
+    SDL_RenderDrawLine(renderer, x + width, y, x + width, y + height);  // Right edge
 }
 
 
 void Button::handleEvent(const SDL_Event &e) {
-    if (hasFocus && e.type == SDL_KEYDOWN) {
-        if (e.key.keysym.sym == SDLK_RETURN || e.key.keysym.sym == SDLK_SPACE) {
+    if (hasFocus) {
+        // On key down, if Enter or Space is pressed, mark as pressed.
+        if (e.type == SDL_KEYDOWN && (e.key.keysym.sym == SDLK_RETURN || e.key.keysym.sym == SDLK_SPACE)) {
+            pressed = true;
+        }
+        // On key up, if Enter or Space is released, unmark pressed and invoke callback.
+        if (e.type == SDL_KEYUP && (e.key.keysym.sym == SDLK_RETURN || e.key.keysym.sym == SDLK_SPACE)) {
+            pressed = false;
             if (onClick) onClick();
         }
     }
 }
+
 
 // --- TextBox ---
 void TextBox::render(SDL_Renderer* renderer) {
