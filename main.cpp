@@ -3,24 +3,17 @@
 #include <vector>
 #include <iostream>
 #include <SDL2/SDL.h>
-#include "ThemeGlobals.h"  // Provides declaration for ui::g_currentTheme
+#include "ThemeGlobals.h"
 
-// Structure to hold a todo item.
-struct TodoItem {
-    std::string text;
-    bool done;
-};
-
-std::vector<TodoItem> todos; // Global vector for demo purposes.
-
+// (You can reuse your helper functions from previous demos as needed.)
 int main() {
-    // Create our UI façade with a window wide enough for our layout.
+    // Create the UI façade with a window sized to 800x600.
     auto ui = std::make_unique<UI>("TODO App", 800, 600);
     
     // --- Top: Theme Selection ---
-    ui->label("Select Theme:", 50, 20);
     std::vector<std::string> themes = { "FrameworkDefault", "SolarizedDark", "SolarizedLight", "Molokai" };
-    ui->optionSelect(0, themes, 200, 15, [uiPtr = ui.get()](int idx) {
+    ui->label("Select Theme:", 20, 20);
+    ui->optionSelect(0, themes, 150, 15, [uiPtr = ui.get()](int idx) {
          switch(idx) {
              case 0: uiPtr->setTheme("FrameworkDefault"); break;
              case 1: uiPtr->setTheme("SolarizedDark"); break;
@@ -30,44 +23,31 @@ int main() {
          std::cout << "Theme changed to index: " << idx << std::endl;
     });
     
-    // --- Middle: New TODO Input ---
-    ui->label("New TODO:", 50, 175);
-    ui::TextBox* inputBox = ui->textBox("Enter todo here...", 150, 115, false);
-    
-    ui->button("Add TODO", 470, 175, [uiPtr = ui.get(), inputBox]() {
+    // --- Middle: New Todo Input ---
+    ui->label("New Todo:", 20, 100);
+    // Create input box; autoHighlight defaults to true.
+    ui::TextBox* inputBox = ui->textBox("Enter todo here...", 150, 95);
+    // Submit button.
+    ui->button("Add Todo", 320, 95, [uiPtr = ui.get(), inputBox]() {
          std::string task = inputBox->content;
-         if (task.empty() || task == "Enter new task...") {
-             std::cout << "No task entered." << std::endl;
-             return;
-         }
-         // Add the new task to our vector.
-         todos.push_back({ task, false });
-         std::cout << "Added TODO: " << task << std::endl;
-         // Clear the input.
-         inputBox->content = "";
-         
-         // Calculate the y-coordinate for the new todo item based on count.
-         int newY = 150 + static_cast<int>(todos.size()) * 50;
-         
-         // Create a checkbox for the new todo.
-         auto todoCheck = std::make_shared<ui::CheckBox>(50, newY, 30, false, [task](bool done) {
-             std::cout << "Task \"" << task << "\" marked as " << (done ? "done" : "not done") << std::endl;
-         });
-         // Create a label to show the todo text.
-         auto todoLabel = std::make_shared<ui::Label>(90, newY, task);
-         
-         // Add these new elements to the UI.
-         uiPtr->addElement(todoCheck);
-         uiPtr->addElement(todoLabel);
+         std::cout << "New task: " << task << std::endl;
+         inputBox->content = ""; // Clear input after submission.
     });
     
-    // --- Bottom: (Optional) Canvas as a Separator ---
-    auto separator = ui->canvas(40, 300, 700, 2);
-    separator->drawCommands.push_back([](SDL_Renderer* renderer) {
-         SDL_Rect rect = { 0, 0, 700, 2 };
-         SDL_SetRenderDrawColor(renderer, 150, 150, 150, 255);
-         SDL_RenderFillRect(renderer, &rect);
+    // --- Lower: Todo List ---
+    ui->label("Todo List:", 20, 170);
+    // Example todo item 1.
+    ui->checkBox(false, 20, 210, [](bool state) {
+         std::cout << "Todo 'Buy milk' done: " << (state ? "Yes" : "No") << std::endl;
     });
+    ui->label("Buy milk", 50, 210);
+    // Example todo item 2.
+    ui->checkBox(true, 20, 250, [](bool state) {
+         std::cout << "Todo 'Call Mom' done: " << (state ? "Yes" : "No") << std::endl;
+    });
+    ui->label("Call Mom", 50, 250);
+    
+    // (Optionally, you could add a canvas here for a progress preview.)
     
     ui->run();
     return 0;

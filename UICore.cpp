@@ -11,7 +11,7 @@ std::shared_ptr<Theme> g_currentTheme = std::make_shared<ThemeFrameworkDefault>(
 
 // Global font pointer and constant.
 static TTF_Font* globalFont = nullptr;
-static const int FONT_SIZE = 16;
+static const int FONT_SIZE = 12;
 
 static void initFont() {
     if (!globalFont) {
@@ -105,35 +105,53 @@ void TextBox::render(SDL_Renderer* renderer) {
     const int padding = 5;
     int boxHeight = TTF_FontLineSkip(globalFont) + 2 * padding;
     SDL_Rect rect = { x, y, width, boxHeight };
-
     ThemeableElementColors tc = g_currentTheme->textInputColors();
     drawFilledRect(renderer, rect, tc.textInputBackground);
     
-    // If the text is selected, draw a selection overlay.
-    if (textSelected) {
-        // Use a semi-transparent overlay (for example, a blue tint).
-        SDL_SetRenderDrawColor(renderer, 100, 149, 237, 100);
-        SDL_RenderFillRect(renderer, &rect);
+    // Draw the border using theme-provided border colors.
+    SDL_SetRenderDrawColor(renderer, tc.textInputBorderLight.r, tc.textInputBorderLight.g,
+                           tc.textInputBorderLight.b, tc.textInputBorderLight.a);
+    SDL_RenderDrawLine(renderer, x, y, x + width, y);
+    SDL_RenderDrawLine(renderer, x, y, x, y + boxHeight);
+    SDL_SetRenderDrawColor(renderer, tc.textInputBorderDark.r, tc.textInputBorderDark.g,
+                           tc.textInputBorderDark.b, tc.textInputBorderDark.a);
+    SDL_RenderDrawLine(renderer, x, y + boxHeight, x + width, y + boxHeight);
+    SDL_RenderDrawLine(renderer, x + width, y, x + width, y + boxHeight);
+    
+    // Compute available width for text.
+    int availableWidth = width - 2 * padding;
+    std::string displayText = content;
+    
+    int textW = 0, textH = 0;
+    TTF_SizeText(globalFont, displayText.c_str(), &textW, &textH);
+    if (textW > availableWidth) {
+        std::string ellipsis = "...";
+        int ellipsisW = 0;
+        TTF_SizeText(globalFont, ellipsis.c_str(), &ellipsisW, &textH);
+        while (!displayText.empty()) {
+            std::string candidate = displayText + ellipsis;
+            TTF_SizeText(globalFont, candidate.c_str(), &textW, &textH);
+            if (textW <= availableWidth)
+                break;
+            displayText.pop_back();
+        }
+        displayText += ellipsis;
     }
     
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-    SDL_RenderDrawRect(renderer, &rect);
-    
     SDL_Color sdlColor = { tc.textInputText.r, tc.textInputText.g, tc.textInputText.b, tc.textInputText.a };
-    SDL_Surface* surface = TTF_RenderText_Solid(globalFont, content.c_str(), sdlColor);
+    SDL_Surface* surface = TTF_RenderText_Solid(globalFont, displayText.c_str(), sdlColor);
     if (!surface) return;
     SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
-    int textW = surface->w, textH = surface->h;
+    int finalTextW = surface->w, finalTextH = surface->h;
     SDL_FreeSurface(surface);
-    int availableWidth = width - 2 * padding;
-    int offsetX = (textW > availableWidth) ? (textW - availableWidth) : 0;
-    SDL_Rect dst = { x + padding - offsetX, y + padding, textW, textH };
+    SDL_Rect dst = { x + padding, y + padding, finalTextW, finalTextH };
     SDL_Rect clipRect = { x + padding, y + padding, availableWidth, boxHeight - 2 * padding };
     SDL_RenderSetClipRect(renderer, &clipRect);
     SDL_RenderCopy(renderer, texture, nullptr, &dst);
     SDL_RenderSetClipRect(renderer, nullptr);
     SDL_DestroyTexture(texture);
 }
+
 
 
 void TextBox::onFocusGained() {
@@ -241,22 +259,46 @@ void OptionSelect::render(SDL_Renderer* renderer) {
     int collapsedHeight = TTF_FontLineSkip(globalFont) + 2 * padding;
     
     if (!expanded) {
-        // Collapsed: Draw a single cell using the collapsed height.
+        // Collapsed: Draw one cell using the collapsed height.
         SDL_Rect cellRect = { x, y, width, collapsedHeight };
         ThemeableElementColors tc = g_currentTheme->optionSelectColors();
         drawFilledRect(renderer, cellRect, tc.selectOptionUnselected);
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
         SDL_RenderDrawRect(renderer, &cellRect);
         
+        // Compute available width for text, leaving room for the arrow.
+        int arrowWidth = 10;
+        int availWidth = width - padding - arrowWidth;
+        std::string displayText = options[activeIndex];
+        
+        // Measure text width.
+        int textW = 0, textH = 0;
+        TTF_SizeText(globalFont, displayText.c_str(), &textW, &textH);
+        // If text is too wide, truncate and append ellipsis.
+        if (textW > availWidth) {
+            std::string ellipsis = "...";
+            int ellipsisW = 0;
+            TTF_SizeText(globalFont, ellipsis.c_str(), &ellipsisW, &textH);
+            // Remove characters until it fits.
+            while (!displayText.empty()) {
+                std::string candidate = displayText + ellipsis;
+                TTF_SizeText(globalFont, candidate.c_str(), &textW, &textH);
+                if (textW <= availWidth)
+                    break;
+                displayText.pop_back();
+            }
+            displayText += ellipsis;
+        }
+        
         // Render the active option text (left aligned with padding).
         if (globalFont) {
             SDL_Color textColor = { 0, 0, 0, 255 };
-            SDL_Surface* surface = TTF_RenderText_Solid(globalFont, options[activeIndex].c_str(), textColor);
+            SDL_Surface* surface = TTF_RenderText_Solid(globalFont, displayText.c_str(), textColor);
             if (surface) {
                 SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
-                int textW = surface->w, textH = surface->h;
+                int finalTextW = surface->w, finalTextH = surface->h;
                 SDL_FreeSurface(surface);
-                SDL_Rect dst = { x + padding, y + (collapsedHeight - textH) / 2, textW, textH };
+                SDL_Rect dst = { x + padding, y + (collapsedHeight - finalTextH) / 2, finalTextW, finalTextH };
                 SDL_RenderCopy(renderer, texture, nullptr, &dst);
                 SDL_DestroyTexture(texture);
             }
@@ -264,21 +306,16 @@ void OptionSelect::render(SDL_Renderer* renderer) {
         
         // Draw a downward arrow on the right.
         int arrowPadding = 5;
-        // For a downward arrow, define three points:
         SDL_Point arrow[3];
-        // Top-left of arrow
         arrow[0] = { x + width - arrowPadding - 10, y + collapsedHeight / 2 - 3 };
-        // Top-right of arrow
         arrow[1] = { x + width - arrowPadding, y + collapsedHeight / 2 - 3 };
-        // Bottom point (centered)
         arrow[2] = { x + width - arrowPadding - 5, y + collapsedHeight / 2 + 3 };
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
         SDL_RenderDrawLines(renderer, arrow, 3);
-        // Connect last to first to complete the triangle.
         SDL_RenderDrawLine(renderer, arrow[2].x, arrow[2].y, arrow[0].x, arrow[0].y);
     } else {
-        // Expanded state: Draw each option in a fixed, smaller cell height.
-        int cellHeight = 25;
+        // Expanded state: For each option, use a fixed cell height (e.g., 30 pixels).
+        int cellHeight = 30;
         ThemeableElementColors tc = g_currentTheme->optionSelectColors();
         for (size_t i = 0; i < options.size(); i++) {
             SDL_Rect cellRect = { x, y + static_cast<int>(i) * cellHeight, width, cellHeight };
@@ -287,25 +324,46 @@ void OptionSelect::render(SDL_Renderer* renderer) {
             else
                 drawFilledRect(renderer, cellRect, tc.selectOptionUnselected);
             
-            // Draw a 3D border: top & left light; bottom & right dark.
-            SDL_SetRenderDrawColor(renderer, tc.selectOptionBorderLight.r, tc.selectOptionBorderLight.g, tc.selectOptionBorderLight.b, tc.selectOptionBorderLight.a);
+            // Draw 3D border using theme border colors.
+            SDL_SetRenderDrawColor(renderer, tc.selectOptionBorderLight.r, tc.selectOptionBorderLight.g,
+                                    tc.selectOptionBorderLight.b, tc.selectOptionBorderLight.a);
             SDL_RenderDrawLine(renderer, cellRect.x, cellRect.y, cellRect.x + cellRect.w, cellRect.y);
             SDL_RenderDrawLine(renderer, cellRect.x, cellRect.y, cellRect.x, cellRect.y + cellRect.h);
-            SDL_SetRenderDrawColor(renderer, tc.selectOptionBorderDark.r, tc.selectOptionBorderDark.g, tc.selectOptionBorderDark.b, tc.selectOptionBorderDark.a);
+            SDL_SetRenderDrawColor(renderer, tc.selectOptionBorderDark.r, tc.selectOptionBorderDark.g,
+                                    tc.selectOptionBorderDark.b, tc.selectOptionBorderDark.a);
             SDL_RenderDrawLine(renderer, cellRect.x, cellRect.y + cellRect.h, cellRect.x + cellRect.w, cellRect.y + cellRect.h);
             SDL_RenderDrawLine(renderer, cellRect.x + cellRect.w, cellRect.y, cellRect.x + cellRect.w, cellRect.y + cellRect.h);
             
-            // Center the option text.
+            // Truncate text if necessary.
+            int availableWidth = cellRect.w - 2 * padding;
+            std::string optionText = options[i];
+            int textW = 0, textH = 0;
+            TTF_SizeText(globalFont, optionText.c_str(), &textW, &textH);
+            if (textW > availableWidth) {
+                std::string ellipsis = "...";
+                int ellipsisW = 0;
+                TTF_SizeText(globalFont, ellipsis.c_str(), &ellipsisW, &textH);
+                while (!optionText.empty()) {
+                    std::string candidate = optionText + ellipsis;
+                    TTF_SizeText(globalFont, candidate.c_str(), &textW, &textH);
+                    if (textW <= availableWidth)
+                        break;
+                    optionText.pop_back();
+                }
+                optionText += ellipsis;
+            }
+            
+            // Render the option text centered.
             if (globalFont) {
                 SDL_Color textColor = { 0, 0, 0, 255 };
-                SDL_Surface* surface = TTF_RenderText_Solid(globalFont, options[i].c_str(), textColor);
+                SDL_Surface* surface = TTF_RenderText_Solid(globalFont, optionText.c_str(), textColor);
                 if (surface) {
                     SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
-                    int textW = surface->w, textH = surface->h;
+                    int finalTextW = surface->w, finalTextH = surface->h;
                     SDL_FreeSurface(surface);
-                    SDL_Rect dst = { cellRect.x + (cellRect.w - textW) / 2,
-                                     cellRect.y + (cellRect.h - textH) / 2,
-                                     textW, textH };
+                    SDL_Rect dst = { cellRect.x + (cellRect.w - finalTextW) / 2,
+                                     cellRect.y + (cellRect.h - finalTextH) / 2,
+                                     finalTextW, finalTextH };
                     SDL_RenderCopy(renderer, texture, nullptr, &dst);
                     SDL_DestroyTexture(texture);
                 }
@@ -335,16 +393,18 @@ void OptionSelect::handleEvent(const SDL_Event &e) {
     }
 }
 
+
 // Override getFocusRect so the focus outline uses the collapsed height when not expanded.
 SDL_Rect OptionSelect::getFocusRect() const {
-    const int padding = 5;
-    initFont();
     if (!expanded) {
+        // Collapsed state: use dynamic height as before.
+        const int padding = 5;
+        initFont();
         int collapsedHeight = TTF_FontLineSkip(globalFont) + 2 * padding;
         return SDL_Rect{ x - 2, y - 2, width + 4, collapsedHeight + 4 };
     } else {
-        // When expanded, outline the entire drop-down list.
-        int cellHeight = 25;
+        // Expanded state: use the fixed cell height (30 pixels) for each option.
+        int cellHeight = 30;
         return SDL_Rect{ x - 2, y - 2, width + 4, static_cast<int>(options.size()) * cellHeight + 4 };
     }
 }
@@ -413,20 +473,15 @@ void UICore::run() {
             if (e.type == SDL_QUIT)
                 quit = true;
             if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_TAB) {
-                // If the current focused element is a TextBox, notify it of focus loss.
-                if (focusedIndex >= 0 && focusedIndex < (int)elements.size()) {
-                    TextBox* tb = dynamic_cast<TextBox*>(elements[focusedIndex].get());
-                    if (tb)
-                        tb->onFocusLost();
+                if (focusedIndex >= 0 && focusedIndex < (int)elements.size())
                     elements[focusedIndex]->hasFocus = false;
-                }
                 int start = focusedIndex;
                 do {
                     focusedIndex = (focusedIndex + 1) % elements.size();
                 } while (!elements[focusedIndex]->isInteractive() && focusedIndex != start);
                 elements[focusedIndex]->hasFocus = true;
-                // If the new element is a TextBox, notify it of focus gain.
-                TextBox* tbNew = dynamic_cast<TextBox*>(elements[focusedIndex].get());
+                // If the new element is a TextBox, call its onFocusGained() method if available.
+                ui::TextBox* tbNew = dynamic_cast<ui::TextBox*>(elements[focusedIndex].get());
                 if (tbNew)
                     tbNew->onFocusGained();
             }
@@ -438,10 +493,27 @@ void UICore::run() {
                                currentTheme->backgroundColor().b,
                                currentTheme->backgroundColor().a);
         SDL_RenderClear(renderer);
-        for (auto& el : elements) {
+
+        // First pass: render all elements that are NOT expanded OptionSelects.
+        for (auto &el : elements) {
+            ui::OptionSelect* os = dynamic_cast<ui::OptionSelect*>(el.get());
+            if (os && os->expanded) continue;
             el->render(renderer);
             if (el->hasFocus && el->isInteractive()) {
                 SDL_Rect focusRect = el->getFocusRect();
+                SDL_SetRenderDrawColor(renderer, currentTheme->highlightColor().r,
+                                       currentTheme->highlightColor().g,
+                                       currentTheme->highlightColor().b,
+                                       currentTheme->highlightColor().a);
+                SDL_RenderDrawRect(renderer, &focusRect);
+            }
+        }
+        // Second pass: render all expanded OptionSelects on top.
+        for (auto &el : elements) {
+            ui::OptionSelect* os = dynamic_cast<ui::OptionSelect*>(el.get());
+            if (os && os->expanded) {
+                os->render(renderer);
+                SDL_Rect focusRect = os->getFocusRect();
                 SDL_SetRenderDrawColor(renderer, currentTheme->highlightColor().r,
                                        currentTheme->highlightColor().g,
                                        currentTheme->highlightColor().b,
@@ -453,5 +525,6 @@ void UICore::run() {
         SDL_Delay(16);
     }
 }
+
 
 } // namespace ui
