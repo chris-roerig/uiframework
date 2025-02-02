@@ -11,7 +11,9 @@ executable('sdl_ui_demo',
     'main.cpp',
     'UICore.cpp',
     'UI.cpp',
-    'ContextMenu.cpp'
+    'ContextMenu.cpp',
+    'Modal.cpp',
+    'ListView.cpp'
     # Theme files are header-only, so they don't require separate compilation.
   ],
   dependencies : [sdl2_dep, ttf_dep],

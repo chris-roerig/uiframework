@@ -1,5 +1,6 @@
 #include "UICore.h"
 #include "ThemeFrameworkDefault.h"  // For default theme fallback.
+#include "Modal.h"
 #include "ContextMenu.h"
 #include "ThemeGlobals.h"
 #include <SDL2/SDL_ttf.h>
@@ -490,36 +491,59 @@ void UICore::run() {
     bool quit = false;
     SDL_Event e;
     while (!quit) {
+        // Remove dismissed modals from the element list.
+        for (auto it = elements.begin(); it != elements.end(); ) {
+            if (auto m = dynamic_cast<ui::Modal*>(it->get())) {
+                if (m->dismissed)
+                    it = elements.erase(it);
+                else
+                    ++it;
+            } else {
+                ++it;
+            }
+        }
         while (SDL_PollEvent(&e)) {
-            // Global ESC quits the app.
-            if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE) {
+            // If no modal is active, global ESC quits the app.
+            if (!modalActive && e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE) {
                 quit = true;
-                break; // Exit event loop immediately.
+                break;
             }
             if (e.type == SDL_QUIT)
                 quit = true;
-            if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_TAB) {
-                if (focusedIndex >= 0 && focusedIndex < static_cast<int>(elements.size()))
-                    elements[focusedIndex]->hasFocus = false;
-                int start = focusedIndex;
-                do {
-                    focusedIndex = (focusedIndex + 1) % elements.size();
-                } while (!elements[focusedIndex]->isInteractive() && focusedIndex != start);
-                elements[focusedIndex]->hasFocus = true;
+            // If a modal is active, route events only to modal elements.
+            if (modalActive) {
+                std::cout << "modalActive is true" << std::endl;
+                for (auto &el : elements) {
+                    if (auto m = dynamic_cast<ui::Modal*>(el.get())) {
+                        if (!m->dismissed)
+                            m->handleEvent(e);
+                    }
+                }
+            } else {
+                // Normal event handling.
+                if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_TAB) {
+                    if (focusedIndex >= 0 && focusedIndex < (int)elements.size())
+                        elements[focusedIndex]->hasFocus = false;
+                    int start = focusedIndex;
+                    do {
+                        focusedIndex = (focusedIndex + 1) % elements.size();
+                    } while (!elements[focusedIndex]->isInteractive() && focusedIndex != start);
+                    elements[focusedIndex]->hasFocus = true;
+                }
+                if (focusedIndex >= 0 && focusedIndex < (int)elements.size())
+                    elements[focusedIndex]->handleEvent(e);
             }
-            if (focusedIndex >= 0 && focusedIndex < static_cast<int>(elements.size()))
-                elements[focusedIndex]->handleEvent(e);
         }
         
-        // Collapse any expanded drop-downs (OptionSelect or ContextMenu) that lost focus.
-        for (auto &el : elements) {
-            if (auto os = dynamic_cast<OptionSelect*>(el.get())) {
-                if (!os->hasFocus)
-                    os->expanded = false;
-            }
-            if (auto cm = dynamic_cast<ContextMenu*>(el.get())) {
-                if (!cm->hasFocus)
-                    cm->expanded = false;
+        // (Optional) Remove dismissed modals from elements list if desired.
+        for (auto it = elements.begin(); it != elements.end();) {
+            if (auto m = dynamic_cast<ui::Modal*>(it->get())) {
+                if (m->dismissed)
+                    it = elements.erase(it);
+                else
+                    ++it;
+            } else {
+                ++it;
             }
         }
         
@@ -529,29 +553,20 @@ void UICore::run() {
                                currentTheme->backgroundColor().a);
         SDL_RenderClear(renderer);
         
-        // First pass: render all elements except expanded ContextMenu.
-        for (auto &el : elements) {
-            if (auto cm = dynamic_cast<ContextMenu*>(el.get())) {
-                if (cm->expanded)
-                    continue;
-            }
+        // Render all elements.
+        for (auto &el : elements)
             el->render(renderer);
-            if (el->hasFocus && el->isInteractive()) {
-                SDL_Rect focusRect = el->getFocusRect();
-                SDL_SetRenderDrawColor(renderer, currentTheme->highlightColor().r,
-                                       currentTheme->highlightColor().g,
-                                       currentTheme->highlightColor().b,
-                                       currentTheme->highlightColor().a);
-                SDL_RenderDrawRect(renderer, &focusRect);
-            }
-        }
         
-        // Second pass: render expanded ContextMenu elements on top.
-        for (auto &el : elements) {
-            if (auto cm = dynamic_cast<ContextMenu*>(el.get())) {
-                if (cm->expanded) {
-                    cm->render(renderer);
-                    // Optionally, you could draw a focus outline for the context menu.
+        // Only draw focus outlines if no modal is active.
+        if (!modalActive) {
+            for (auto &el : elements) {
+                if (el->hasFocus && el->isInteractive()) {
+                    SDL_Rect focusRect = el->getFocusRect();
+                    SDL_SetRenderDrawColor(renderer, currentTheme->highlightColor().r,
+                                           currentTheme->highlightColor().g,
+                                           currentTheme->highlightColor().b,
+                                           currentTheme->highlightColor().a);
+                    SDL_RenderDrawRect(renderer, &focusRect);
                 }
             }
         }
@@ -560,6 +575,5 @@ void UICore::run() {
         SDL_Delay(16);
     }
 }
-
 
 } // namespace ui

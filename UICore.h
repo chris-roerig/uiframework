@@ -125,11 +125,13 @@ public:
     int focusedIndex = -1;
     std::shared_ptr<Theme> currentTheme;
     
+    // NEW: Flag indicating that a modal is active.
+    bool modalActive = false;
+    
     UICore(const char* title, int width, int height, std::shared_ptr<Theme> theme);
     ~UICore();
     void addElement(std::shared_ptr<UIElement> element);
     void setTheme(std::shared_ptr<Theme> theme);
     void run();
 };
-
 } // namespace ui

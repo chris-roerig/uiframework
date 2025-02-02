@@ -1,50 +1,29 @@
 #include "UI.h"
-#include "ContextMenu.h"
-#include "ThemeGlobals.h"
 #include "ThemeFrameworkDefault.h"
 #include "ThemeSolarizedDark.h"
 #include "ThemeSolarizedLight.h"
 #include "ThemeMolokai.h"
+#include "ContextMenu.h"
+#include "ListView.h"
+#include "Modal.h"
 #include <iostream>
 
 UI::UI(const char* title, int width, int height) {
-    // Use our custom default theme.
     core = std::make_unique<ui::UICore>(title, width, height, std::make_shared<ui::ThemeFrameworkDefault>());
 }
 
 UI::~UI() {}
-
-void UI::contextMenu(const std::vector<TopMenuItem>& menus) {
-    std::vector<ui::MenuItem> items;
-    for (const auto &top : menus) {
-        ui::MenuItem m;
-        m.label = top.label;
-        for (const auto &sub : top.subItems) {
-            m.subItemLabels.push_back(sub.label);
-            m.subCallbacks.push_back(sub.callback);
-        }
-        items.push_back(m);
-    }
-    // Create a context menu that spans the full width of the application.
-    // Here we assume the application width is provided (or fixed to, e.g., 800).
-    int appWidth = 800; // Adjust as needed or derive from window dimensions.
-    auto ctxMenu = std::make_shared<ui::ContextMenu>(0, 0, appWidth, 30);
-    ctxMenu->setItems(items);
-    core->addElement(ctxMenu);
-}
 
 void UI::label(const std::string &text, int x, int y) {
     auto lbl = std::make_shared<ui::Label>(x, y, text);
     core->addElement(lbl);
 }
 
-// Updated to fixed size: 150x40
 void UI::button(const std::string &text, int x, int y, std::function<void()> callback) {
     auto btn = std::make_shared<ui::Button>(x, y, 150, 40, text, callback);
     core->addElement(btn);
 }
 
-// Updated to fixed size: 250x40
 ui::TextBox* UI::textBox(const std::string &defaultText, int x, int y, bool autoHighlight) {
     auto tb = std::make_shared<ui::TextBox>(x, y, 250, 40, autoHighlight);
     tb->content = defaultText;
@@ -52,16 +31,12 @@ ui::TextBox* UI::textBox(const std::string &defaultText, int x, int y, bool auto
     return tb.get();
 }
 
-// Updated checkbox size: 14x14
 void UI::checkBox(bool state, int x, int y, std::function<void(bool)> callback) {
     auto cb = std::make_shared<ui::CheckBox>(x, y, 14, state, callback);
     core->addElement(cb);
 }
 
-// Updated optionSelect: fixed width of 150; collapsed height computed by TextBox logic (or you can force a fixed value),
-// and expanded list cells fixed to 30 px tall.
 void UI::optionSelect(int current, const std::vector<std::string> &options, int x, int y, std::function<void(int)> callback) {
-    // For collapsed state, we want the height similar to a TextBox (assume 40 px here).
     int collapsedHeight = 40;
     auto os = std::make_shared<ui::OptionSelect>(x, y, 150, collapsedHeight, options, current, current, callback);
     core->addElement(os);
@@ -72,6 +47,122 @@ ui::Canvas* UI::canvas(int x, int y, int width, int height) {
     core->addElement(cnv);
     return cnv.get();
 }
+
+void UI::contextMenu(const std::vector<ui::TopMenuItem>& menus) {
+    std::vector<ui::MenuItem> items;
+    for (const auto &top : menus) {
+        ui::MenuItem m;
+        m.label = top.label;
+        for (const auto &sub : top.subItems) {
+            m.subItemLabels.push_back(sub.label);
+            m.subCallbacks.push_back(sub.callback);
+        }
+        items.push_back(m);
+    }
+    int appWidth = 800; // You can adjust or derive this dynamically.
+    auto ctxMenu = std::make_shared<ui::ContextMenu>(0, 0, appWidth, 30);
+    ctxMenu->setItems(items);
+    core->addElement(ctxMenu);
+}
+
+ui::ListView* UI::listView(const std::vector<std::string>& items, int x, int y, int w, int h, int itemHeight) {
+    auto lv = std::make_shared<ui::ListView>(x, y, w, h, itemHeight);
+    lv->items = items;
+    core->addElement(lv);
+    return lv.get();
+}
+
+// General modal with a single button.
+ui::Modal* UI::modal(const std::string &message, const std::string &buttonText, bool hasCancel, std::function<void()> onCloseCallback) {
+    // If a modal is already active, do not create another.
+    if(core->modalActive)
+         return nullptr;
+
+    int winW = 800, winH = 600;  // Ideally, derive these from your window.
+    int modalW = 400, modalH = 150;
+    int modalX = (winW - modalW) / 2;
+    int modalY = (winH - modalH) / 2;
+    auto m = std::make_shared<ui::Modal>(modalX, modalY, modalW, modalH, message);
+    
+    // Clear focus from underlying elements.
+    for (auto &el : core->elements)
+         el->hasFocus = false;
+    core->focusedIndex = -1;
+    
+    // Mark that a modal is active.
+    core->modalActive = true;
+    
+    // Set up the modal's button(s).
+    // For a general modal, we create one button with the provided buttonText.
+    m->buttonLabels.clear();
+    m->buttonCallbacks.clear();
+    m->buttonLabels.push_back(buttonText);
+    m->buttonCallbacks.push_back([this, m]() {
+         m->dismissed = true;
+    });
+    
+    // Set the onDismiss callback to reset the modalActive flag and call any onClose callback.
+    m->onDismiss = [this, onCloseCallback]() {
+         core->modalActive = false;
+         if (onCloseCallback)
+             onCloseCallback();
+    };
+    
+    core->addElement(m);
+    return m.get();
+}
+
+ui::Modal* UI::infoModal(const std::string &message, std::function<void()> onCloseCallback) {
+    // For an info modal, we simply use our general modal with "OK" as the button text.
+    return modal(message, "OK", false, onCloseCallback);
+}
+
+ui::Modal* UI::confirmModal(const std::string &message, std::function<void()> onConfirmCallback, std::function<void()> onCancelCallback) {
+    if(core->modalActive)
+         return nullptr;
+
+    int winW = 800, winH = 600;
+    int modalW = 400, modalH = 150;
+    int modalX = (winW - modalW) / 2;
+    int modalY = (winH - modalH) / 2;
+    auto m = std::make_shared<ui::Modal>(modalX, modalY, modalW, modalH, message);
+    
+    // Clear underlying focus.
+    for (auto &el : core->elements)
+         el->hasFocus = false;
+    core->focusedIndex = -1;
+    
+    core->modalActive = true;
+    
+    // Set up two buttons: "Confirm" and "Cancel".
+    m->buttonLabels.clear();
+    m->buttonCallbacks.clear();
+    
+    // "Confirm" button.
+    m->buttonLabels.push_back("Confirm");
+    m->buttonCallbacks.push_back([this, m, onConfirmCallback]() {
+         if (onConfirmCallback)
+             onConfirmCallback();
+         m->dismissed = true;
+    });
+    
+    // "Cancel" button.
+    m->buttonLabels.push_back("Cancel");
+    m->buttonCallbacks.push_back([this, m, onCancelCallback]() {
+         if (onCancelCallback)
+             onCancelCallback();
+         m->dismissed = true;
+    });
+    
+    // When dismissed, reset modalActive.
+    m->onDismiss = [this]() {
+         core->modalActive = false;
+    };
+    
+    core->addElement(m);
+    return m.get();
+}
+
 
 void UI::run() {
     core->run();
@@ -92,4 +183,8 @@ void UI::setTheme(const std::string &themeName) {
         theme = std::make_shared<ui::ThemeFrameworkDefault>();
     }
     core->setTheme(theme);
+}
+
+void UI::addElement(std::shared_ptr<ui::UIElement> element) {
+    core->addElement(element);
 }
