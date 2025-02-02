@@ -148,6 +148,7 @@ public:
     ~UICore();
     void addElement(std::shared_ptr<UIElement> element);
     void setTheme(std::shared_ptr<Theme> theme);
+    void setFocus(UIElement* element);
     void showQuitConfirmation(bool &quit);
     void run();
 };

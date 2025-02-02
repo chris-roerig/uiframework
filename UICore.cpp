@@ -121,7 +121,6 @@ void Button::activate() {
         onClick();
 }
 
-
 // --- TextBox ---
 void TextBox::render(SDL_Renderer* renderer) {
     initFont();
@@ -489,6 +488,24 @@ void UICore::addElement(std::shared_ptr<UIElement> element) {
 void UICore::setTheme(std::shared_ptr<Theme> theme) {
     currentTheme = theme;
     g_currentTheme = currentTheme;
+}
+
+
+void UICore::setFocus(UIElement* element) {
+    // Clear current focus on all elements.
+    for (auto &el : elements) {
+        el->hasFocus = false;
+    }
+    focusedIndex = -1;
+    
+    // Find the element in the elements vector and set its focus.
+    for (size_t i = 0; i < elements.size(); i++) {
+        if (elements[i].get() == element) {
+            elements[i]->hasFocus = true;
+            focusedIndex = static_cast<int>(i);
+            break;
+        }
+    }
 }
 
 void UICore::showQuitConfirmation(bool &quit) {

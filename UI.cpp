@@ -15,6 +15,10 @@ UI::UI(const char* title, int width, int height) {
 
 UI::~UI() {}
 
+void UI::setFocus(ui::UIElement* element) {
+    core->setFocus(element);
+}
+
 void UI::assignHotKey(ui::UIElement* element, const std::string &hotKeyStr) {
     if (hotKeyStr.empty()) return;
     char ch = hotKeyStr[0];
@@ -33,6 +37,23 @@ void UI::assignHotKey(ui::UIElement* element, const std::string &hotKeyStr) {
          });
     }
 }
+
+// overloaded
+void UI::assignHotKey(ui::UIElement* element, const std::string &hotKeyStr, std::function<void()> customCallback) {
+    if (hotKeyStr.empty())
+        return;
+    char ch = hotKeyStr[0];
+    ch = static_cast<char>(std::tolower(ch));
+    SDL_Keycode key = SDLK_UNKNOWN;
+    if (std::isdigit(ch))
+        key = SDLK_0 + (ch - '0');
+    else
+        key = ch;
+    if (key != SDLK_UNKNOWN) {
+         core->registerHotKey(key, customCallback);
+    }
+}
+
 
 ui::Label* UI::label(const std::string &text, int x, int y) {
     auto lbl = std::make_shared<ui::Label>(x, y, text);

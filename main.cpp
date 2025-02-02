@@ -93,16 +93,20 @@ int main() {
     ui::ListView* lv = ui->listView(recentTasks, 400, 260, 350, 120, 30);
 
     // --- Hotkey Registration ---
-    // Assign hotkey Ctrl+f to the context menu: set active top-level item to "File" (index 0) and expand.
-    ui->assignHotKey(ctxMenu, "f"); // In your implementation, this lambda should set: ctxMenu->activeItemIndex = 0; ctxMenu->expanded = true;
-    
-    // Register hotkey Ctrl+q to trigger the Quit action.
-    // We assume that you can access the core's hot key registry via a getter or public member.
-    // For this demo, we'll assume ui->core is accessible (or create a UI::registerHotKey helper).
-    ui->assignHotKey(ctxMenu, "q"); 
-    // In your assignHotKey implementation for context menu with "q", the lambda should:
-    //   set ctxMenu->activeItemIndex = 0; ctxMenu->expanded = true; and then call
-    //   ctxMenu->items[0].subCallbacks[2]() (for "Quit") if available.
+    // For the File menu hot key (Ctrl+f): set active item to File and expand.
+    ui->assignHotKey(ctxMenu, "f", [ctxMenu, uiPtr = ui.get()](){
+        ctxMenu->activeItemIndex = 0; // "File" is at index 0.
+        ctxMenu->expanded = true;
+        uiPtr->setFocus(ctxMenu);
+    });
+
+    // For the Quit action hot key (Ctrl+q): set active to File and then fire the Quit callback.
+    ui->assignHotKey(ctxMenu, "q", [ctxMenu]() {
+        ctxMenu->activeItemIndex = 0; // Assume File is at index 0.
+        ctxMenu->expanded = true;
+        if (!ctxMenu->items.empty() && ctxMenu->items[0].subCallbacks.size() >= 3)
+            ctxMenu->items[0].subCallbacks[2](); // Call the "Quit" callback.
+    });
     
     // Assign hotkey Ctrl+b to the Add Todo button.
     ui->assignHotKey(addTodoButton, "b");

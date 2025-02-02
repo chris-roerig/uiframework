@@ -25,6 +25,8 @@ public:
     ui::ContextMenu* contextMenu(const std::vector<ui::TopMenuItem>& menus);
     ui::ListView* listView(const std::vector<std::string>& items, int x, int y, int w, int h, int itemHeight = 30);
     void assignHotKey(ui::UIElement* element, const std::string &hotKey);
+    void assignHotKey(ui::UIElement* element, const std::string &hotKey, std::function<void()> customCallback);
+    void setFocus(ui::UIElement* element);
 
     // New Modal APIs:
     // General modal with a single button.
