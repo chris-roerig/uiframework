@@ -34,6 +34,14 @@ struct ThemeableElementColors {
     Color contextMenuHighlight;
     Color contextMenuText;
     Color contextMenuBorder;
+    Color modalOverlay;          // The semi-transparent overlay color.
+    Color modalBackground;       // Background color for modal dialog.
+    Color modalText;             // Color for the modal’s main text.
+    Color modalBorder;           // Border color for the modal dialog.
+    Color modalButtonBackground; // Background for modal buttons.
+    Color modalButtonText;       // Text color for modal buttons.
+    Color modalButtonHighlight;  // Highlight color for modal buttons when focused.
+    Color modalButtonBorder; 
 };
 
 class Theme {
@@ -45,6 +53,7 @@ public:
     virtual ThemeableElementColors optionSelectColors() const = 0;
     virtual ThemeableElementColors textInputColors() const = 0;
     virtual ThemeableElementColors contextMenuColors() const = 0;
+    virtual ThemeableElementColors modalColors() const = 0;
     virtual Color highlightColor() const = 0;
     virtual Color backgroundColor() const = 0;
     virtual Color foregroundColor() const = 0;
@@ -82,6 +91,14 @@ protected:
     Color defaultContextMenuHighlight;
     Color defaultContextMenuText;
     Color defaultContextMenuBorder;
+    Color defaultModalOverlay;
+    Color defaultModalBackground;
+    Color defaultModalText;
+    Color defaultModalBorder;
+    Color defaultModalButtonBackground;
+    Color defaultModalButtonText;
+    Color defaultModalButtonHighlight;
+    Color defaultModalButtonBorder;
 public:
     ThemeBase()
       : defaultBackground(0,0,0),
@@ -152,6 +169,19 @@ public:
         c.contextMenuHighlight = defaultContextMenuHighlight;
         return c;
     }
+    ThemeableElementColors modalColors() const override {
+        ThemeableElementColors c;
+        c.modalOverlay = defaultModalOverlay;
+        c.modalBackground = defaultModalBackground;
+        c.modalText = defaultModalText;
+        c.modalBorder = defaultModalBorder;
+        c.modalButtonBackground = defaultModalButtonBackground;
+        c.modalButtonText = defaultModalButtonText;
+        c.modalButtonHighlight = defaultModalButtonHighlight;
+        c.modalButtonBorder = defaultModalButtonBorder;
+        return c;
+    }
+    
     Color highlightColor() const override { return defaultHighlight; }
     Color backgroundColor() const override { return defaultBackground; }
     Color foregroundColor() const override { return defaultForeground; }

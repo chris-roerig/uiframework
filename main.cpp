@@ -7,7 +7,7 @@
 
 int main() {
     // Create the UI façade with an 800x600 window.
-    auto ui = std::make_unique<UI>("TODO App", 800, 600);
+    auto ui = std::make_unique<UI>("TODO App", 1024, 896);
 
     // --- Context Menu ---
     // Create a context menu for global commands.
@@ -82,7 +82,7 @@ int main() {
     // --- ListView for Recent Tasks ---
     ui->label("Recent Tasks:", 400, 240);
     std::vector<std::string> recentTasks = { "Finish report", "Clean kitchen", "Email boss", "Plan weekend" };
-    ui::ListView* lv = ui->listView(recentTasks, 400, 260, 350, 120, 30);
+    ui->listView(recentTasks, 400, 260, 350, 120, 30);
 
     ui->run();
     return 0;

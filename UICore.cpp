@@ -452,15 +452,15 @@ void Canvas::line(int x1, int y1, int x2, int y2, const Color &color) {
 }
 
 // --- UICore::UICore ---
-UICore::UICore(const char* title, int width, int height, std::shared_ptr<Theme> theme)
-    : currentTheme(theme)
+UICore::UICore(const char* title, int w, int h, std::shared_ptr<Theme> theme)
+    : width(w), height(h), currentTheme(theme) 
 {
     g_currentTheme = currentTheme;
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
         std::cerr << "SDL_Init error: " << SDL_GetError() << std::endl;
     }
     window = SDL_CreateWindow(title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-                                width, height, SDL_WINDOW_SHOWN);
+                                w, h, SDL_WINDOW_SHOWN);
     if (!window)
         std::cerr << "SDL_CreateWindow error: " << SDL_GetError() << std::endl;
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
@@ -487,12 +487,46 @@ void UICore::setTheme(std::shared_ptr<Theme> theme) {
     g_currentTheme = currentTheme;
 }
 
+void UICore::showQuitConfirmation(bool &quit) {
+    int modalW = 400, modalH = 150;
+    int modalX = (width - modalW) / 2;
+    int modalY = (height - modalH) / 2;
+    auto confirmModal = std::make_shared<ui::Modal>(modalX, modalY, modalW, modalH, "Are you sure you want to quit?");
+    
+    // Clear any existing button labels and callbacks.
+    confirmModal->buttonLabels.clear();
+    confirmModal->buttonCallbacks.clear();
+    
+    // Set up the "Confirm" button.
+    confirmModal->buttonLabels.push_back("Confirm");
+    confirmModal->buttonCallbacks.push_back([&quit, confirmModal]() {
+         quit = true;
+         confirmModal->dismissed = true;
+    });
+    
+    // Set up the "Cancel" button.
+    confirmModal->buttonLabels.push_back("Cancel");
+    confirmModal->buttonCallbacks.push_back([confirmModal]() {
+         confirmModal->dismissed = true;
+    });
+    
+    // When dismissed, reset modalActive.
+    confirmModal->onDismiss = [this]() {
+         modalActive = false;
+    };
+    
+    // Mark that a modal is active and add it.
+    modalActive = true;
+    addElement(confirmModal);
+}
+
+
 void UICore::run() {
     bool quit = false;
     SDL_Event e;
     while (!quit) {
         // Remove dismissed modals from the element list.
-        for (auto it = elements.begin(); it != elements.end(); ) {
+        for (auto it = elements.begin(); it != elements.end();) {
             if (auto m = dynamic_cast<ui::Modal*>(it->get())) {
                 if (m->dismissed)
                     it = elements.erase(it);
@@ -502,17 +536,18 @@ void UICore::run() {
                 ++it;
             }
         }
+        
         while (SDL_PollEvent(&e)) {
-            // If no modal is active, global ESC quits the app.
+            // Global ESC quits only if no modal is active.
             if (!modalActive && e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE) {
-                quit = true;
-                break;
+                showQuitConfirmation(quit);
+                continue; // Skip further event processing this iteration.
             }
             if (e.type == SDL_QUIT)
                 quit = true;
+            
             // If a modal is active, route events only to modal elements.
             if (modalActive) {
-                std::cout << "modalActive is true" << std::endl;
                 for (auto &el : elements) {
                     if (auto m = dynamic_cast<ui::Modal*>(el.get())) {
                         if (!m->dismissed)
@@ -535,7 +570,7 @@ void UICore::run() {
             }
         }
         
-        // (Optional) Remove dismissed modals from elements list if desired.
+        // Remove dismissed modals again.
         for (auto it = elements.begin(); it != elements.end();) {
             if (auto m = dynamic_cast<ui::Modal*>(it->get())) {
                 if (m->dismissed)
@@ -553,20 +588,29 @@ void UICore::run() {
                                currentTheme->backgroundColor().a);
         SDL_RenderClear(renderer);
         
-        // Render all elements.
-        for (auto &el : elements)
+        // First pass: render all elements except expanded ContextMenu.
+        for (auto &el : elements) {
+            if (auto cm = dynamic_cast<ui::ContextMenu*>(el.get())) {
+                if (cm->expanded)
+                    continue;
+            }
             el->render(renderer);
+            if (!modalActive && el->hasFocus && el->isInteractive()) {
+                SDL_Rect focusRect = el->getFocusRect();
+                SDL_SetRenderDrawColor(renderer, currentTheme->highlightColor().r,
+                                       currentTheme->highlightColor().g,
+                                       currentTheme->highlightColor().b,
+                                       currentTheme->highlightColor().a);
+                SDL_RenderDrawRect(renderer, &focusRect);
+            }
+        }
         
-        // Only draw focus outlines if no modal is active.
-        if (!modalActive) {
-            for (auto &el : elements) {
-                if (el->hasFocus && el->isInteractive()) {
-                    SDL_Rect focusRect = el->getFocusRect();
-                    SDL_SetRenderDrawColor(renderer, currentTheme->highlightColor().r,
-                                           currentTheme->highlightColor().g,
-                                           currentTheme->highlightColor().b,
-                                           currentTheme->highlightColor().a);
-                    SDL_RenderDrawRect(renderer, &focusRect);
+        // Second pass: render expanded ContextMenu elements on top.
+        for (auto &el : elements) {
+            if (auto cm = dynamic_cast<ui::ContextMenu*>(el.get())) {
+                if (cm->expanded) {
+                    cm->render(renderer);
+                    // Optionally, draw a focus outline for the context menu if desired.
                 }
             }
         }

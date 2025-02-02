@@ -59,8 +59,7 @@ void UI::contextMenu(const std::vector<ui::TopMenuItem>& menus) {
         }
         items.push_back(m);
     }
-    int appWidth = 800; // You can adjust or derive this dynamically.
-    auto ctxMenu = std::make_shared<ui::ContextMenu>(0, 0, appWidth, 30);
+    auto ctxMenu = std::make_shared<ui::ContextMenu>(0, 0, core->width, 30);
     ctxMenu->setItems(items);
     core->addElement(ctxMenu);
 }
@@ -78,12 +77,12 @@ ui::Modal* UI::modal(const std::string &message, const std::string &buttonText, 
     if(core->modalActive)
          return nullptr;
 
-    int winW = 800, winH = 600;  // Ideally, derive these from your window.
+    int winW = core->width, winH = core->height; // Use UICore dimensions
     int modalW = 400, modalH = 150;
     int modalX = (winW - modalW) / 2;
     int modalY = (winH - modalH) / 2;
     auto m = std::make_shared<ui::Modal>(modalX, modalY, modalW, modalH, message);
-    
+
     // Clear focus from underlying elements.
     for (auto &el : core->elements)
          el->hasFocus = false;
@@ -97,7 +96,7 @@ ui::Modal* UI::modal(const std::string &message, const std::string &buttonText, 
     m->buttonLabels.clear();
     m->buttonCallbacks.clear();
     m->buttonLabels.push_back(buttonText);
-    m->buttonCallbacks.push_back([this, m]() {
+    m->buttonCallbacks.push_back([m]() {
          m->dismissed = true;
     });
     
@@ -121,7 +120,7 @@ ui::Modal* UI::confirmModal(const std::string &message, std::function<void()> on
     if(core->modalActive)
          return nullptr;
 
-    int winW = 800, winH = 600;
+    int winW = core->width, winH = core->height; // Use UICore dimensions
     int modalW = 400, modalH = 150;
     int modalX = (winW - modalW) / 2;
     int modalY = (winH - modalH) / 2;
@@ -140,7 +139,7 @@ ui::Modal* UI::confirmModal(const std::string &message, std::function<void()> on
     
     // "Confirm" button.
     m->buttonLabels.push_back("Confirm");
-    m->buttonCallbacks.push_back([this, m, onConfirmCallback]() {
+    m->buttonCallbacks.push_back([m, onConfirmCallback]() {
          if (onConfirmCallback)
              onConfirmCallback();
          m->dismissed = true;
@@ -148,7 +147,7 @@ ui::Modal* UI::confirmModal(const std::string &message, std::function<void()> on
     
     // "Cancel" button.
     m->buttonLabels.push_back("Cancel");
-    m->buttonCallbacks.push_back([this, m, onCancelCallback]() {
+    m->buttonCallbacks.push_back([m, onCancelCallback]() {
          if (onCancelCallback)
              onCancelCallback();
          m->dismissed = true;

@@ -13,8 +13,6 @@ extern void drawFilledRect(SDL_Renderer* renderer, const SDL_Rect &rect, const C
 extern TTF_Font* globalFont;
 
 static const int subItemHeight = 30; // Fixed height for each sub-menu item.
-static const int hPadding = 10;      // Horizontal padding for top-level items.
-static const int subHPadding = 10;   // Horizontal padding for sub-menu items.
 
 ContextMenu::ContextMenu(int x_, int y_, int totalWidth_, int itemHeight_)
     : UIElement(x_, y_, totalWidth_, itemHeight_), activeItemIndex(0),

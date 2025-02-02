@@ -26,30 +26,33 @@ void Modal::render(SDL_Renderer* renderer) {
         return;
     
     initFont();
-    // Draw a semi-transparent overlay over the whole window.
-    SDL_Rect overlay = {0, 0, 800, 600};  // Ideally, derive from actual window dimensions.
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 128);
+
+    // --- Draw the modal overlay ---
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+    int winW, winH;
+    SDL_GetRendererOutputSize(renderer, &winW, &winH);
+    SDL_Rect overlay = { 0, 0, winW, winH };
+    Color overlayColor = g_currentTheme->modalColors().modalOverlay;
+    SDL_SetRenderDrawColor(renderer, overlayColor.r, overlayColor.g, overlayColor.b, overlayColor.a);
     SDL_RenderFillRect(renderer, &overlay);
     
-    // Draw the modal box.
+    // --- Draw the modal box ---
     SDL_Rect box = { x, y, width, height };
-    drawFilledRect(renderer, box, g_currentTheme->buttonColors().buttonBackground);
+    Color modalBg = g_currentTheme->modalColors().modalBackground;
+    drawFilledRect(renderer, box, modalBg);
     
-    // Draw a border around the modal box.
-    SDL_SetRenderDrawColor(renderer,
-                           g_currentTheme->buttonColors().buttonBorderDark.r,
-                           g_currentTheme->buttonColors().buttonBorderDark.g,
-                           g_currentTheme->buttonColors().buttonBorderDark.b,
-                           g_currentTheme->buttonColors().buttonBorderDark.a);
+    // --- Draw the modal box border ---
+    Color modalBorder = g_currentTheme->modalColors().modalBorder;
+    SDL_SetRenderDrawColor(renderer, modalBorder.r, modalBorder.g, modalBorder.b, modalBorder.a);
     SDL_RenderDrawRect(renderer, &box);
     
-    // Render the message text centered (adjust vertical offset if needed).
+    // --- Render the modal message text ---
     if (globalFont) {
         SDL_Color textColor = { 
-            g_currentTheme->buttonColors().buttonText.r,
-            g_currentTheme->buttonColors().buttonText.g,
-            g_currentTheme->buttonColors().buttonText.b,
-            g_currentTheme->buttonColors().buttonText.a 
+            g_currentTheme->modalColors().modalText.r,
+            g_currentTheme->modalColors().modalText.g,
+            g_currentTheme->modalColors().modalText.b,
+            g_currentTheme->modalColors().modalText.a
         };
         SDL_Surface* surface = TTF_RenderText_Solid(globalFont, message.c_str(), textColor);
         if (surface) {
@@ -62,59 +65,58 @@ void Modal::render(SDL_Renderer* renderer) {
         }
     }
     
-    // --- Draw the Buttons ---
-    // For this example, we lay out the buttons in a row at the bottom of the modal.
-    // Calculate total button area width.
+    // --- Draw the modal buttons ---
     int numButtons = buttonLabels.size();
-    int btnW = 80;   // Fixed button width (could also be computed from text).
-    int btnH = 30;   // Fixed button height.
-    int spacing = 20; // Space between buttons.
-    int totalBtnAreaWidth = numButtons * btnW + (numButtons - 1) * spacing;
+    int btnW = 80;    // Fixed button width
+    int btnH = 30;    // Fixed button height
+    int spacing = 20; // Space between buttons
+    int totalButtonsWidth = numButtons * btnW + (numButtons - 1) * spacing;
     
-    // Start X such that buttons are centered horizontally in the modal.
-    int startX = x + (width - totalBtnAreaWidth) / 2;
-    int btnY = y + height - btnH - 10; // 10 pixels above modal bottom.
+    // Center the buttons horizontally within the modal box.
+    int startX = x + (width - totalButtonsWidth) / 2;
+    int btnY = y + height - btnH - 10; // 10 pixels above the bottom edge.
     
-    // Render each button.
     for (int i = 0; i < numButtons; i++) {
         int btnX = startX + i * (btnW + spacing);
         SDL_Rect btnRect = { btnX, btnY, btnW, btnH };
         
-        // Highlight the button if it has focus.
-        if (i == buttonFocusIndex)
-            drawFilledRect(renderer, btnRect, g_currentTheme->buttonColors().buttonBackground);
-        else
-            drawFilledRect(renderer, btnRect, g_currentTheme->buttonColors().buttonForeground);
+        // Fill button with the same color regardless of focus.
+        Color btnBg = g_currentTheme->modalColors().modalButtonBackground;
+        drawFilledRect(renderer, btnRect, btnBg);
         
-        // Draw a border around the button.
-        SDL_SetRenderDrawColor(renderer,
-                               g_currentTheme->buttonColors().buttonBorderDark.r,
-                               g_currentTheme->buttonColors().buttonBorderDark.g,
-                               g_currentTheme->buttonColors().buttonBorderDark.b,
-                               g_currentTheme->buttonColors().buttonBorderDark.a);
+        // Draw default button border.
+        Color btnBorder = g_currentTheme->modalColors().modalButtonBorder;
+        SDL_SetRenderDrawColor(renderer, btnBorder.r, btnBorder.g, btnBorder.b, btnBorder.a);
         SDL_RenderDrawRect(renderer, &btnRect);
         
-        // Render the button label (centered).
+        // If the button is focused, draw an additional highlighted border.
+        if (i == buttonFocusIndex) {
+            Color highlightColor = g_currentTheme->modalColors().modalButtonHighlight; // or use a dedicated modalButtonHighlight if defined
+            SDL_SetRenderDrawColor(renderer, highlightColor.r, highlightColor.g, highlightColor.b, highlightColor.a);
+            SDL_Rect hlRect = { btnRect.x - 1, btnRect.y - 1, btnRect.w + 2, btnRect.h + 2 };
+            SDL_RenderDrawRect(renderer, &hlRect);
+        }
+        
+        // Render the button label centered.
         if (globalFont) {
             SDL_Color btnTextColor = { 
-                g_currentTheme->buttonColors().buttonText.r,
-                g_currentTheme->buttonColors().buttonText.g,
-                g_currentTheme->buttonColors().buttonText.b,
-                g_currentTheme->buttonColors().buttonText.a 
+                g_currentTheme->modalColors().modalButtonText.r,
+                g_currentTheme->modalColors().modalButtonText.g,
+                g_currentTheme->modalColors().modalButtonText.b,
+                g_currentTheme->modalColors().modalButtonText.a
             };
             SDL_Surface* btnSurface = TTF_RenderText_Solid(globalFont, buttonLabels[i].c_str(), btnTextColor);
             if (btnSurface) {
                 SDL_Texture* btnTexture = SDL_CreateTextureFromSurface(renderer, btnSurface);
                 int textW = btnSurface->w, textH = btnSurface->h;
                 SDL_FreeSurface(btnSurface);
-                SDL_Rect btnDst = { btnX + (btnW - textW) / 2, btnY + (btnH - textH) / 2, textW, textH };
-                SDL_RenderCopy(renderer, btnTexture, nullptr, &btnDst);
+                SDL_Rect dst = { btnX + (btnW - textW) / 2, btnY + (btnH - textH) / 2, textW, textH };
+                SDL_RenderCopy(renderer, btnTexture, nullptr, &dst);
                 SDL_DestroyTexture(btnTexture);
             }
         }
     }
 }
-
 void Modal::handleEvent(const SDL_Event &e) {
     if (dismissed)
         return; // Skip processing if already dismissed.
@@ -155,7 +157,6 @@ void Modal::handleEvent(const SDL_Event &e) {
         }
     }
 }
-
 
 SDL_Rect Modal::getFocusRect() const {
     return SDL_Rect{ x, y, width, height };

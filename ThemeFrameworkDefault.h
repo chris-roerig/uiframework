@@ -50,6 +50,18 @@ public:
         defaultContextMenuText = Color(255, 255, 255);         // White text
         defaultContextMenuBorder = Color(50, 50, 60);          // Dark border for subtle 3D effect
         defaultContextMenuHighlight = Color(115, 163, 211);
+
+        // Overlay: a semi-transparent black.
+        defaultModalOverlay = Color(0, 0, 0, 140);
+        // Modal background: a slightly lighter color than the main background.
+        defaultModalBackground = Color(240, 240, 240);
+        defaultModalText = Color(55, 64, 74);
+        defaultModalBorder = Color(180, 180, 180);
+        defaultModalButtonBackground = defaultButtonBackground;  // or your chosen value
+        defaultModalButtonText = defaultButtonText;
+        defaultModalButtonHighlight = defaultHighlight;
+        defaultModalButtonBorder = defaultButtonBorderDark;  // or another value you prefer
+
     }
 };
 

@@ -123,6 +123,8 @@ public:
     SDL_Renderer* renderer = nullptr;
     std::vector<std::shared_ptr<UIElement>> elements;
     int focusedIndex = -1;
+    int width;
+    int height;
     std::shared_ptr<Theme> currentTheme;
     
     // NEW: Flag indicating that a modal is active.
@@ -132,6 +134,7 @@ public:
     ~UICore();
     void addElement(std::shared_ptr<UIElement> element);
     void setTheme(std::shared_ptr<Theme> theme);
+    void showQuitConfirmation(bool &quit);
     void run();
 };
 } // namespace ui
