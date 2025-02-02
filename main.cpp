@@ -55,6 +55,54 @@ int main() {
     // Make contextMenu return a pointer.
     ui::ContextMenu* ctxMenu = ui->contextMenu(menus);
     
+    // --- Recent Tasks ListView Demonstration ---
+    ui->label("Recent Tasks:", 50, 50);
+    std::vector<std::string> tasks = {
+        "Write report", "Clean room", "Email boss", "Buy groceries", "Schedule meeting",
+        "Call mom", "Prepare presentation", "Pay bills", "Review code", "Fix bugs",
+        "Plan trip", "Update resume", "Read book", "Watch tutorial", "Practice coding"
+    };
+    // Create the ListView at (50,80) with width 400, height 300, and each item 30 pixels tall.
+    ui::ListView* lv = ui->listView(tasks, 50, 80, 400, 300, 30);
+    
+    lv->onItemActivated = [](int index) {
+        std::cout << "Item activated at index: " << index << std::endl;
+        // You can also retrieve the text of the activated item if needed.
+        // (Assuming you have a method getSelectedItem())
+    };
+
+    std::string selected = lv->getSelectedItem();
+    std::cout << "Currently selected: " << selected << std::endl;
+
+    lv->setSelectedIndex(3);  // This sets the selection to the first item.
+
+    selected = lv->getSelectedItem();
+    std::cout << "Currently selected: " << selected << std::endl;
+
+
+    // --- Filtering and Sorting Controls ---
+    ui->label("Filter:", 50, 400);
+    // Create a text box for filtering (positioned at 110,395, size 200x30 assumed).
+    ui::TextBox* filterBox = ui->textBox("", 110, 395);
+    
+    // "Apply Filter" button: when pressed, applies the filter to the list.
+    ui->button("Apply Filter", 330, 395, [lv, filterBox]() {
+         lv->applyFilter(filterBox->content);
+    });
+    
+    // "Clear Filter" button: clears the filter and resets the list.
+    ui->button("Clear Filter", 470, 395, [lv, filterBox]() {
+         filterBox->content = "";
+         lv->applyFilter("");
+    });
+    
+    // "Sort Tasks" button: sorts the tasks alphabetically.
+    ui->button("Sort Tasks", 50, 440, [lv]() {
+         lv->sortItems([](const std::string &a, const std::string &b) {
+             return a < b;
+         });
+    });
+
     // --- New Todo Input Area ---
     ui->label("New Todo:", 20, 100);
     ui::TextBox* inputBox = ui->textBox("Enter todo here...", 150, 100);
@@ -90,7 +138,6 @@ int main() {
     // --- ListView for Recent Tasks ---
     ui->label("Recent Tasks:", 400, 240);
     std::vector<std::string> recentTasks = { "Finish report", "Clean kitchen", "Email boss", "Plan weekend" };
-    ui::ListView* lv = ui->listView(recentTasks, 400, 260, 350, 120, 30);
 
     // --- Hotkey Registration ---
     // For the File menu hot key (Ctrl+f): set active item to File and expand.

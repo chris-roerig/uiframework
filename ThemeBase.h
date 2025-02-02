@@ -42,6 +42,9 @@ struct ThemeableElementColors {
     Color modalButtonText;       // Text color for modal buttons.
     Color modalButtonHighlight;  // Highlight color for modal buttons when focused.
     Color modalButtonBorder; 
+    Color listViewScrollbarBackground;
+    Color listViewScrollbarThumb;
+
 };
 
 class Theme {
@@ -54,6 +57,7 @@ public:
     virtual ThemeableElementColors textInputColors() const = 0;
     virtual ThemeableElementColors contextMenuColors() const = 0;
     virtual ThemeableElementColors modalColors() const = 0;
+    virtual ThemeableElementColors listViewColors() const = 0;
     virtual Color highlightColor() const = 0;
     virtual Color backgroundColor() const = 0;
     virtual Color foregroundColor() const = 0;
@@ -99,6 +103,9 @@ protected:
     Color defaultModalButtonText;
     Color defaultModalButtonHighlight;
     Color defaultModalButtonBorder;
+    Color defaultListViewScrollbarBackground;
+    Color defaultListViewScrollbarThumb;
+
 public:
     ThemeBase()
       : defaultBackground(0,0,0),
@@ -179,6 +186,12 @@ public:
         c.modalButtonText = defaultModalButtonText;
         c.modalButtonHighlight = defaultModalButtonHighlight;
         c.modalButtonBorder = defaultModalButtonBorder;
+        return c;
+    }
+    ThemeableElementColors listViewColors() const override {
+        ThemeableElementColors c;
+        c.listViewScrollbarBackground = defaultListViewScrollbarBackground;
+        c.listViewScrollbarThumb = defaultListViewScrollbarThumb;
         return c;
     }
     
