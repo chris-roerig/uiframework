@@ -55,11 +55,10 @@ void ContextMenu::render(SDL_Renderer* renderer) {
         SDL_Rect itemRect = itemRects[i];
         // When the context menu is active (has focus), highlight the active item.
         if (this->hasFocus && i == activeItemIndex)
-            drawFilledRect(renderer, itemRect, g_currentTheme->buttonColors().buttonBackground);
+            drawFilledRect(renderer, itemRect, g_currentTheme->contextMenuColors().contextMenuHighlight);
         else
-            // Otherwise, use the context menu background.
             drawFilledRect(renderer, itemRect, g_currentTheme->contextMenuColors().contextMenuBackground);
-        
+                    
         // Render the top-level label centered.
         if (globalFont) {
             SDL_Color textColor = { g_currentTheme->contextMenuColors().contextMenuText.r,
@@ -85,7 +84,7 @@ void ContextMenu::render(SDL_Renderer* renderer) {
     SDL_SetRenderDrawColor(renderer, cmBorder.r, cmBorder.g, cmBorder.b, cmBorder.a);
     SDL_RenderDrawLine(renderer, 0, y + itemHeight - 1, totalWidth, y + itemHeight - 1);
  
-  
+
     // (Submenu rendering remains unchanged.)
     if (expanded && activeItemIndex < numItems) {
         const MenuItem &activeItem = items[activeItemIndex];

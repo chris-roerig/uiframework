@@ -6,38 +6,50 @@ namespace ui {
 class ThemeSolarizedLight : public ThemeBase {
 public:
     ThemeSolarizedLight() {
-        // Assign the Solarized Light colors directly.
-        defaultBackground = Color(253, 246, 227);
-        defaultForeground = Color(101, 123, 131);
-        defaultHighlight  = Color(203, 75, 22);
+        // Solarized Light palette (adapted)
+        defaultBackground = Color(253, 246, 227);         // Light background (Base3)
+        defaultForeground = Color(101, 123, 131);           // Dark text (Base00)
+        defaultHighlight  = Color(203, 75, 22);             // Orange accent
         defaultActiveText = Color(101, 123, 131);
         defaultInactiveText = Color(150, 150, 150);
 
-        defaultButtonText   = Color(101, 123, 131);
+        // Button Colors:
+        defaultButtonText = Color(101, 123, 131);
         defaultButtonBackground = Color(180, 180, 180);
         defaultButtonForeground = Color(101, 123, 131);
-        defaultButtonBorderLight = Color(230, 230, 230);
+        defaultButtonBorderLight = Color(220, 220, 220);
         defaultButtonBorderDark  = Color(150, 150, 150);
 
-        defaultCheckboxEnabled  = Color(255, 255, 255);
-        defaultCheckboxDisabled = Color(220, 220, 220);
+        // Checkbox Colors:
+        defaultCheckboxEnabled  = Color(101, 123, 131);
+        defaultCheckboxDisabled = Color(150, 150, 150);
         defaultCheckboxChecked  = Color(101, 123, 131);
         defaultCheckboxUnchecked= Color(0, 0, 0);
-        defaultCheckboxBorderLight = Color(230, 230, 230);
+        defaultCheckboxBorderLight = Color(220, 220, 220);
         defaultCheckboxBorderDark  = Color(150, 150, 150);
 
-        defaultSelectOptionUnselected = Color(220, 220, 220);
-        defaultSelectOptionSelected   = Color(80, 200, 120);
-        defaultSelectOptionBorderLight = Color(230, 230, 230);
+        // OptionSelect Colors:
+        defaultSelectOptionUnselected = Color(150, 150, 150);
+        defaultSelectOptionSelected   = Color(203, 75, 22);
+        defaultSelectOptionBorderLight = Color(220, 220, 220);
         defaultSelectOptionBorderDark  = Color(150, 150, 150);
 
-        defaultTextInputBackground = Color(255, 255, 255);
-        defaultTextInputText       = Color(101, 123, 131);
-        defaultTextInputBorderLight = Color(230, 230, 230);
+        // TextInput Colors:
+        defaultTextInputBackground = Color(255, 255, 255);  // White input background
+        defaultTextInputText       = Color(101, 123, 131);    // Dark text
+        defaultTextInputBorderLight = Color(220, 220, 220);
         defaultTextInputBorderDark  = Color(150, 150, 150);
 
-        defaultLabelText      = Color(101, 123, 131);
-        defaultLabelBackground= Color(253, 246, 227);
+        // Label Colors:
+        defaultLabelText      = Color(101, 123, 131);    // Dark text
+        defaultLabelBackground= Color(253, 246, 227);        // Same as the main background
+
+        // ContextMenu Colors:
+        // The context menu bar background should be distinct from the main background.
+        defaultContextMenuBackground = Color(240, 230, 200);  // A soft beige tone
+        defaultContextMenuText = Color(55, 64, 74);           // Dark text for contrast
+        defaultContextMenuBorder = Color(150, 150, 150);       // Border to separate the menu visually
+        defaultContextMenuHighlight = Color(203, 75, 22);      // Use the same accent as highlight
     }
 };
 

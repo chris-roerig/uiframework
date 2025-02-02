@@ -31,6 +31,7 @@ struct ThemeableElementColors {
     Color labelText;
     Color labelBackground;
     Color contextMenuBackground;
+    Color contextMenuHighlight;
     Color contextMenuText;
     Color contextMenuBorder;
 };
@@ -78,6 +79,7 @@ protected:
     Color defaultLabelText;
     Color defaultLabelBackground;
     Color defaultContextMenuBackground;
+    Color defaultContextMenuHighlight;
     Color defaultContextMenuText;
     Color defaultContextMenuBorder;
 public:
@@ -147,6 +149,7 @@ public:
         ThemeableElementColors c;
         c.contextMenuBackground = defaultContextMenuBackground;
         c.contextMenuText = defaultContextMenuText;
+        c.contextMenuHighlight = defaultContextMenuHighlight;
         return c;
     }
     Color highlightColor() const override { return defaultHighlight; }

@@ -6,38 +6,50 @@ namespace ui {
 class ThemeSolarizedDark : public ThemeBase {
 public:
     ThemeSolarizedDark() {
-        // Assign the Solarized Dark colors directly.
-        defaultBackground = Color(0, 43, 54);
-        defaultForeground = Color(131, 148, 150);
-        defaultHighlight  = Color(181, 137, 0);
+        // Solarized Dark palette (adapted)
+        defaultBackground = Color(0, 43, 54);            // Base03: dark cyan-blue
+        defaultForeground = Color(131, 148, 150);          // Base0
+        defaultHighlight  = Color(181, 137, 0);            // Accent (yellowish)
         defaultActiveText = Color(131, 148, 150);
-        defaultInactiveText = Color(100, 100, 100);
+        defaultInactiveText = Color(88, 110, 117);         // Base1
 
-        defaultButtonText   = Color(131, 148, 150);
-        defaultButtonBackground = Color(150, 150, 150);
+        // Button Colors:
+        defaultButtonText = Color(131, 148, 150);
+        defaultButtonBackground = Color(38, 139, 210);       // Blue accent
         defaultButtonForeground = Color(131, 148, 150);
-        defaultButtonBorderLight = Color(210, 210, 210);
-        defaultButtonBorderDark  = Color(120, 120, 120);
+        defaultButtonBorderLight = Color(101, 123, 131);
+        defaultButtonBorderDark  = Color(88, 110, 117);
 
-        defaultCheckboxEnabled  = Color(255, 255, 255);
-        defaultCheckboxDisabled = Color(200, 200, 200);
-        defaultCheckboxChecked  = Color(131, 148, 150);
-        defaultCheckboxUnchecked= Color(0, 0, 0);
-        defaultCheckboxBorderLight = Color(210, 210, 210);
-        defaultCheckboxBorderDark  = Color(120, 120, 120);
+        // Checkbox Colors:
+        defaultCheckboxEnabled = Color(131, 148, 150);
+        defaultCheckboxDisabled = Color(88, 110, 117);
+        defaultCheckboxChecked = Color(131, 148, 150);
+        defaultCheckboxUnchecked = Color(0, 43, 54);
+        defaultCheckboxBorderLight = Color(101, 123, 131);
+        defaultCheckboxBorderDark  = Color(88, 110, 117);
 
-        defaultSelectOptionUnselected = Color(200, 200, 200);
-        defaultSelectOptionSelected   = Color(100, 149, 237);
-        defaultSelectOptionBorderLight = Color(210, 210, 210);
-        defaultSelectOptionBorderDark  = Color(120, 120, 120);
+        // OptionSelect Colors:
+        defaultSelectOptionUnselected = Color(88, 110, 117);
+        defaultSelectOptionSelected = Color(181, 137, 0);
+        defaultSelectOptionBorderLight = Color(101, 123, 131);
+        defaultSelectOptionBorderDark  = Color(88, 110, 117);
 
-        defaultTextInputBackground = Color(255, 255, 255);
-        defaultTextInputText       = Color(131, 148, 150);
-        defaultTextInputBorderLight = Color(210, 210, 210);
-        defaultTextInputBorderDark  = Color(120, 120, 120);
+        // TextInput Colors:
+        defaultTextInputBackground = Color(0, 43, 54);
+        defaultTextInputText = Color(131, 148, 150);
+        defaultTextInputBorderLight = Color(101, 123, 131);
+        defaultTextInputBorderDark  = Color(88, 110, 117);
 
-        defaultLabelText      = Color(131, 148, 150);
-        defaultLabelBackground= Color(0, 43, 54);
+        // Label Colors:
+        defaultLabelText = Color(255, 255, 255);           // White labels
+        defaultLabelBackground = Color(0, 43, 54);
+
+        // ContextMenu Colors:
+        // Use a distinct background that’s lighter than the main app background.
+        defaultContextMenuBackground = Color(7, 54, 66);     // Slightly lighter than base03
+        defaultContextMenuText = Color(131, 148, 150);         // Same as foreground
+        defaultContextMenuBorder = Color(88, 110, 117);        // Darker for a subtle border
+        defaultContextMenuHighlight = Color(181, 137, 0);      // Same as highlight
     }
 };
 

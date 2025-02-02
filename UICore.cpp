@@ -491,6 +491,11 @@ void UICore::run() {
     SDL_Event e;
     while (!quit) {
         while (SDL_PollEvent(&e)) {
+            // Global ESC quits the app.
+            if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE) {
+                quit = true;
+                break; // Exit event loop immediately.
+            }
             if (e.type == SDL_QUIT)
                 quit = true;
             if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_TAB) {
