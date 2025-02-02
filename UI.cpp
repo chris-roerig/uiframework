@@ -20,16 +20,10 @@ void UI::setFocus(ui::UIElement* element) {
 }
 
 void UI::assignHotKey(ui::UIElement* element, const std::string &hotKeyStr) {
-    if (hotKeyStr.empty()) return;
-    char ch = hotKeyStr[0];
-    // Convert to lowercase regardless of input.
-    ch = static_cast<char>(std::tolower(ch));
-    SDL_Keycode key = SDLK_UNKNOWN;
-    if (std::isdigit(ch)) {
-        key = SDLK_0 + (ch - '0');
-    } else {
-        key = ch; // For letters, now lowercase.
-    }
+    if (hotKeyStr.empty())
+        return;
+    // Use the UICore static helper:
+    SDL_Keycode key = ui::UICore::keycodeFromString(hotKeyStr);
     if (key != SDLK_UNKNOWN) {
          core->registerHotKey(key, [element]() {
              element->hasFocus = true;
@@ -38,17 +32,11 @@ void UI::assignHotKey(ui::UIElement* element, const std::string &hotKeyStr) {
     }
 }
 
-// overloaded
+// overload with a custom callback:
 void UI::assignHotKey(ui::UIElement* element, const std::string &hotKeyStr, std::function<void()> customCallback) {
     if (hotKeyStr.empty())
         return;
-    char ch = hotKeyStr[0];
-    ch = static_cast<char>(std::tolower(ch));
-    SDL_Keycode key = SDLK_UNKNOWN;
-    if (std::isdigit(ch))
-        key = SDLK_0 + (ch - '0');
-    else
-        key = ch;
+    SDL_Keycode key = ui::UICore::keycodeFromString(hotKeyStr);
     if (key != SDLK_UNKNOWN) {
          core->registerHotKey(key, customCallback);
     }

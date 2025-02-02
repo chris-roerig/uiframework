@@ -6,17 +6,6 @@
 #include "ThemeGlobals.h"
 #include <cctype>
 
-// Helper: Convert a single-character string to SDL_Keycode (always lowercase)
-SDL_Keycode keycodeFromString(const std::string &s) {
-    if (s.empty())
-        return SDLK_UNKNOWN;
-    char ch = s[0];
-    ch = static_cast<char>(std::tolower(ch));
-    if (std::isdigit(ch))
-        return SDLK_0 + (ch - '0');
-    return ch; // letters etc.
-}
-
 int main() {
     // Create the UI façade with a 1024x896 window.
     auto ui = std::make_unique<UI>("TODO App", 1024, 896);
@@ -140,26 +129,27 @@ int main() {
     std::vector<std::string> recentTasks = { "Finish report", "Clean kitchen", "Email boss", "Plan weekend" };
 
     // --- Hotkey Registration ---
-    // For the File menu hot key (Ctrl+f): set active item to File and expand.
+    // Assign hotkey Ctrl+f to bring focus to the File menu.
     ui->assignHotKey(ctxMenu, "f", [ctxMenu, uiPtr = ui.get()](){
-        ctxMenu->activeItemIndex = 0; // "File" is at index 0.
+        ctxMenu->activeItemIndex = 0; // "File"
         ctxMenu->expanded = true;
         uiPtr->setFocus(ctxMenu);
     });
-
-    // For the Quit action hot key (Ctrl+q): set active to File and then fire the Quit callback.
+    
+    // Assign hotkey Ctrl+q to fire the Quit action.
     ui->assignHotKey(ctxMenu, "q", [ctxMenu]() {
-        ctxMenu->activeItemIndex = 0; // Assume File is at index 0.
+        ctxMenu->activeItemIndex = 0; // "File"
         ctxMenu->expanded = true;
         if (!ctxMenu->items.empty() && ctxMenu->items[0].subCallbacks.size() >= 3)
-            ctxMenu->items[0].subCallbacks[2](); // Call the "Quit" callback.
+            ctxMenu->items[0].subCallbacks[2]();
     });
     
-    // Assign hotkey Ctrl+b to the Add Todo button.
+    // Assign hotkey Ctrl+b to activate the Add Todo button.
     ui->assignHotKey(addTodoButton, "b");
     
     // Assign hotkey Ctrl+1 to toggle the first checkbox.
     ui->assignHotKey(firstCheckbox, "1");
+    
     
     ui->run();
     return 0;

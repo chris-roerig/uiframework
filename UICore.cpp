@@ -479,6 +479,16 @@ UICore::~UICore() {
     SDL_Quit();
 }
 
+SDL_Keycode UICore::keycodeFromString(const std::string &s) {
+    if (s.empty())
+        return SDLK_UNKNOWN;
+    char ch = s[0];
+    ch = static_cast<char>(std::tolower(ch));
+    if (std::isdigit(ch))
+        return SDLK_0 + (ch - '0');
+    return ch; // For letters and other characters.
+}
+
 void UICore::addElement(std::shared_ptr<UIElement> element) {
     elements.push_back(element);
     if (focusedIndex == -1 && element->isInteractive())

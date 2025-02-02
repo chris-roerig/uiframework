@@ -143,6 +143,9 @@ public:
          hotKeys[key] = callback;
          return true;
     }
+    // Static helper to convert a single-character string to SDL_Keycode (always lowercase)
+    static SDL_Keycode keycodeFromString(const std::string &s);
+    
     
     UICore(const char* title, int width, int height, std::shared_ptr<Theme> theme);
     ~UICore();
