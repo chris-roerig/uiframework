@@ -102,7 +102,6 @@ void Button::render(SDL_Renderer* renderer) {
     SDL_RenderDrawLine(renderer, x + width, y, x + width, y + height);  // Right edge
 }
 
-
 void Button::handleEvent(const SDL_Event &e) {
     if (hasFocus) {
         // On key down, if Enter or Space is pressed, mark as pressed.
@@ -115,6 +114,11 @@ void Button::handleEvent(const SDL_Event &e) {
             if (onClick) onClick();
         }
     }
+}
+
+void Button::activate() {
+    if (onClick)
+        onClick();
 }
 
 
@@ -538,6 +542,16 @@ void UICore::run() {
         }
         
         while (SDL_PollEvent(&e)) {
+            // If a hot key (with CTRL) is pressed, try to trigger it.
+            if (e.type == SDL_KEYDOWN && (e.key.keysym.mod & KMOD_CTRL)) {
+                 SDL_Keycode key = e.key.keysym.sym;
+                 auto it = hotKeys.find(key);
+                 if (it != hotKeys.end()) {
+                     it->second(); // Trigger the registered hot key callback.
+                     // Optionally, skip further event processing for this iteration.
+                     continue;
+                 }
+            }
             // Global ESC quits only if no modal is active.
             if (!modalActive && e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE) {
                 showQuitConfirmation(quit);

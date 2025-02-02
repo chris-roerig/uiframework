@@ -16,15 +16,16 @@ public:
     ~UI();
 
     // Existing methods.
-    void label(const std::string &text, int x, int y);
-    void button(const std::string &text, int x, int y, std::function<void()> callback);
+    ui::Label* label(const std::string &text, int x, int y);
+    ui::Button* button(const std::string &text, int x, int y, std::function<void()> callback);
     ui::TextBox* textBox(const std::string &defaultText, int x, int y, bool autoHighlight = true);
-    void checkBox(bool state, int x, int y, std::function<void(bool)> callback);
-    void optionSelect(int current, const std::vector<std::string> &options, int x, int y, std::function<void(int)> callback);
+    ui::CheckBox* checkBox(bool state, int x, int y, std::function<void(bool)> callback);
+    ui::OptionSelect* optionSelect(int current, const std::vector<std::string> &options, int x, int y, std::function<void(int)> callback);
     ui::Canvas* canvas(int x, int y, int width, int height);
-    void contextMenu(const std::vector<ui::TopMenuItem>& menus);
+    ui::ContextMenu* contextMenu(const std::vector<ui::TopMenuItem>& menus);
     ui::ListView* listView(const std::vector<std::string>& items, int x, int y, int w, int h, int itemHeight = 30);
-    
+    void assignHotKey(ui::UIElement* element, const std::string &hotKey);
+
     // New Modal APIs:
     // General modal with a single button.
     ui::Modal* modal(const std::string &message, const std::string &buttonText, bool hasCancel, std::function<void()> onCloseCallback = nullptr);

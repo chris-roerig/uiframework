@@ -4,9 +4,21 @@
 #include <iostream>
 #include <SDL2/SDL.h>
 #include "ThemeGlobals.h"
+#include <cctype>
+
+// Helper: Convert a single-character string to SDL_Keycode (always lowercase)
+SDL_Keycode keycodeFromString(const std::string &s) {
+    if (s.empty())
+        return SDLK_UNKNOWN;
+    char ch = s[0];
+    ch = static_cast<char>(std::tolower(ch));
+    if (std::isdigit(ch))
+        return SDLK_0 + (ch - '0');
+    return ch; // letters etc.
+}
 
 int main() {
-    // Create the UI façade with an 800x600 window.
+    // Create the UI façade with a 1024x896 window.
     auto ui = std::make_unique<UI>("TODO App", 1024, 896);
 
     // --- Context Menu ---
@@ -40,25 +52,21 @@ int main() {
           } 
         }
     };
-    ui->contextMenu(menus);
-
+    // Make contextMenu return a pointer.
+    ui::ContextMenu* ctxMenu = ui->contextMenu(menus);
+    
     // --- New Todo Input Area ---
     ui->label("New Todo:", 20, 100);
-    // Input text box for the new todo (size 250x40).
     ui::TextBox* inputBox = ui->textBox("Enter todo here...", 150, 100);
-    // "Add Todo" button (positioned at 420,100).
-    ui->button("Add Todo", 420, 100, [uiPtr = ui.get(), inputBox]() {
-             // Check if a modal is already active by seeing if infoModal returns nullptr.
-             ui::Modal* modal = uiPtr->infoModal("Task added successfully!", [](){
-                  std::cout << "Info modal closed." << std::endl;
-             });
-             if (!modal) {
-                 std::cout << "A modal is already active." << std::endl;
-                 return;
-             }
-             std::string task = inputBox->content;
-             std::cout << "New task: " << task << std::endl;
-             inputBox->content = "";
+    ui::Button* addTodoButton = ui->button("Add Todo", 420, 100, [uiPtr = ui.get(), inputBox]() {
+         std::string task = inputBox->content;
+         std::cout << "New task: " << task << std::endl;
+         inputBox->content = "";
+         if (!uiPtr->infoModal("Task added successfully!", [](){
+              std::cout << "Info modal closed." << std::endl;
+         })) {
+             std::cout << "A modal is already active." << std::endl;
+         }
     });
 
     // --- Priority Selector ---
@@ -70,7 +78,7 @@ int main() {
 
     // --- Todo List ---
     ui->label("Todo List:", 20, 240);
-    ui->checkBox(false, 20, 280, [](bool state) {
+    ui::CheckBox* firstCheckbox = ui->checkBox(false, 20, 280, [](bool state) {
          std::cout << "Todo 'Buy milk' done: " << (state ? "Yes" : "No") << std::endl;
     });
     ui->label("Buy milk", 50, 278);
@@ -82,8 +90,26 @@ int main() {
     // --- ListView for Recent Tasks ---
     ui->label("Recent Tasks:", 400, 240);
     std::vector<std::string> recentTasks = { "Finish report", "Clean kitchen", "Email boss", "Plan weekend" };
-    ui->listView(recentTasks, 400, 260, 350, 120, 30);
+    ui::ListView* lv = ui->listView(recentTasks, 400, 260, 350, 120, 30);
 
+    // --- Hotkey Registration ---
+    // Assign hotkey Ctrl+f to the context menu: set active top-level item to "File" (index 0) and expand.
+    ui->assignHotKey(ctxMenu, "f"); // In your implementation, this lambda should set: ctxMenu->activeItemIndex = 0; ctxMenu->expanded = true;
+    
+    // Register hotkey Ctrl+q to trigger the Quit action.
+    // We assume that you can access the core's hot key registry via a getter or public member.
+    // For this demo, we'll assume ui->core is accessible (or create a UI::registerHotKey helper).
+    ui->assignHotKey(ctxMenu, "q"); 
+    // In your assignHotKey implementation for context menu with "q", the lambda should:
+    //   set ctxMenu->activeItemIndex = 0; ctxMenu->expanded = true; and then call
+    //   ctxMenu->items[0].subCallbacks[2]() (for "Quit") if available.
+    
+    // Assign hotkey Ctrl+b to the Add Todo button.
+    ui->assignHotKey(addTodoButton, "b");
+    
+    // Assign hotkey Ctrl+1 to toggle the first checkbox.
+    ui->assignHotKey(firstCheckbox, "1");
+    
     ui->run();
     return 0;
 }

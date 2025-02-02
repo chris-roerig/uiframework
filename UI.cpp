@@ -6,6 +6,7 @@
 #include "ContextMenu.h"
 #include "ListView.h"
 #include "Modal.h"
+#include <cctype>
 #include <iostream>
 
 UI::UI(const char* title, int width, int height) {
@@ -14,14 +15,35 @@ UI::UI(const char* title, int width, int height) {
 
 UI::~UI() {}
 
-void UI::label(const std::string &text, int x, int y) {
-    auto lbl = std::make_shared<ui::Label>(x, y, text);
-    core->addElement(lbl);
+void UI::assignHotKey(ui::UIElement* element, const std::string &hotKeyStr) {
+    if (hotKeyStr.empty()) return;
+    char ch = hotKeyStr[0];
+    // Convert to lowercase regardless of input.
+    ch = static_cast<char>(std::tolower(ch));
+    SDL_Keycode key = SDLK_UNKNOWN;
+    if (std::isdigit(ch)) {
+        key = SDLK_0 + (ch - '0');
+    } else {
+        key = ch; // For letters, now lowercase.
+    }
+    if (key != SDLK_UNKNOWN) {
+         core->registerHotKey(key, [element]() {
+             element->hasFocus = true;
+             element->activate();
+         });
+    }
 }
 
-void UI::button(const std::string &text, int x, int y, std::function<void()> callback) {
+ui::Label* UI::label(const std::string &text, int x, int y) {
+    auto lbl = std::make_shared<ui::Label>(x, y, text);
+    core->addElement(lbl);
+    return lbl.get();
+}
+
+ui::Button* UI::button(const std::string &text, int x, int y, std::function<void()> callback) {
     auto btn = std::make_shared<ui::Button>(x, y, 150, 40, text, callback);
     core->addElement(btn);
+    return btn.get();
 }
 
 ui::TextBox* UI::textBox(const std::string &defaultText, int x, int y, bool autoHighlight) {
@@ -31,15 +53,17 @@ ui::TextBox* UI::textBox(const std::string &defaultText, int x, int y, bool auto
     return tb.get();
 }
 
-void UI::checkBox(bool state, int x, int y, std::function<void(bool)> callback) {
+ui::CheckBox* UI::checkBox(bool state, int x, int y, std::function<void(bool)> callback) {
     auto cb = std::make_shared<ui::CheckBox>(x, y, 14, state, callback);
     core->addElement(cb);
+    return cb.get();
 }
 
-void UI::optionSelect(int current, const std::vector<std::string> &options, int x, int y, std::function<void(int)> callback) {
+ui::OptionSelect* UI::optionSelect(int current, const std::vector<std::string> &options, int x, int y, std::function<void(int)> callback) {
     int collapsedHeight = 40;
     auto os = std::make_shared<ui::OptionSelect>(x, y, 150, collapsedHeight, options, current, current, callback);
     core->addElement(os);
+    return os.get();
 }
 
 ui::Canvas* UI::canvas(int x, int y, int width, int height) {
@@ -48,7 +72,7 @@ ui::Canvas* UI::canvas(int x, int y, int width, int height) {
     return cnv.get();
 }
 
-void UI::contextMenu(const std::vector<ui::TopMenuItem>& menus) {
+ui::ContextMenu* UI::contextMenu(const std::vector<ui::TopMenuItem>& menus) {
     std::vector<ui::MenuItem> items;
     for (const auto &top : menus) {
         ui::MenuItem m;
@@ -62,6 +86,7 @@ void UI::contextMenu(const std::vector<ui::TopMenuItem>& menus) {
     auto ctxMenu = std::make_shared<ui::ContextMenu>(0, 0, core->width, 30);
     ctxMenu->setItems(items);
     core->addElement(ctxMenu);
+    return ctxMenu.get();
 }
 
 ui::ListView* UI::listView(const std::vector<std::string>& items, int x, int y, int w, int h, int itemHeight) {

@@ -32,6 +32,8 @@ public:
     virtual void handleEvent(const SDL_Event &e) {}
     virtual bool isInteractive() const { return false; }
     virtual SDL_Rect getFocusRect() const { return SDL_Rect{ x - 2, y - 2, width + 4, height + 4 }; }
+    // virtual method for hot key activation.
+    virtual void activate() { /* default does nothing */ }
 };
 
 // Label element.
@@ -55,6 +57,7 @@ public:
     void render(SDL_Renderer* renderer) override;
     void handleEvent(const SDL_Event &e) override;
     bool isInteractive() const override { return true; }
+    virtual void activate() override;
 };
 
 // TextBox element.
@@ -127,8 +130,19 @@ public:
     int height;
     std::shared_ptr<Theme> currentTheme;
     
-    // NEW: Flag indicating that a modal is active.
+    // Flag indicating that a modal is active.
     bool modalActive = false;
+
+    // Hot key registry: maps an SDL_Keycode to a callback function.
+    std::unordered_map<SDL_Keycode, std::function<void()>> hotKeys;
+
+    // Registers a hot key. Returns false if the key is already registered.
+    bool registerHotKey(SDL_Keycode key, std::function<void()> callback) {
+         if (hotKeys.find(key) != hotKeys.end())
+              return false;
+         hotKeys[key] = callback;
+         return true;
+    }
     
     UICore(const char* title, int width, int height, std::shared_ptr<Theme> theme);
     ~UICore();
