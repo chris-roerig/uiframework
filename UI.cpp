@@ -1,4 +1,6 @@
 #include "UI.h"
+#include "ContextMenu.h"
+#include "ThemeGlobals.h"
 #include "ThemeFrameworkDefault.h"
 #include "ThemeSolarizedDark.h"
 #include "ThemeSolarizedLight.h"
@@ -12,6 +14,25 @@ UI::UI(const char* title, int width, int height) {
 
 UI::~UI() {}
 
+void UI::contextMenu(const std::vector<TopMenuItem>& menus) {
+    std::vector<ui::MenuItem> items;
+    for (const auto &top : menus) {
+        ui::MenuItem m;
+        m.label = top.label;
+        for (const auto &sub : top.subItems) {
+            m.subItemLabels.push_back(sub.label);
+            m.subCallbacks.push_back(sub.callback);
+        }
+        items.push_back(m);
+    }
+    // Create a context menu that spans the full width of the application.
+    // Here we assume the application width is provided (or fixed to, e.g., 800).
+    int appWidth = 800; // Adjust as needed or derive from window dimensions.
+    auto ctxMenu = std::make_shared<ui::ContextMenu>(0, 0, appWidth, 30);
+    ctxMenu->setItems(items);
+    core->addElement(ctxMenu);
+}
+
 void UI::label(const std::string &text, int x, int y) {
     auto lbl = std::make_shared<ui::Label>(x, y, text);
     core->addElement(lbl);
@@ -23,17 +44,17 @@ void UI::button(const std::string &text, int x, int y, std::function<void()> cal
     core->addElement(btn);
 }
 
-// Updated to fixed size: 150x40
+// Updated to fixed size: 250x40
 ui::TextBox* UI::textBox(const std::string &defaultText, int x, int y, bool autoHighlight) {
-    auto tb = std::make_shared<ui::TextBox>(x, y, 150, 40, autoHighlight);
+    auto tb = std::make_shared<ui::TextBox>(x, y, 250, 40, autoHighlight);
     tb->content = defaultText;
     core->addElement(tb);
     return tb.get();
 }
 
-// Updated checkbox size: 20x20
+// Updated checkbox size: 14x14
 void UI::checkBox(bool state, int x, int y, std::function<void(bool)> callback) {
-    auto cb = std::make_shared<ui::CheckBox>(x, y, 20, state, callback);
+    auto cb = std::make_shared<ui::CheckBox>(x, y, 14, state, callback);
     core->addElement(cb);
 }
 

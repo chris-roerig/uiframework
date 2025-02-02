@@ -1,9 +1,21 @@
 #pragma once
 #include "UICore.h"
+#include "ContextMenu.h"
 #include <memory>
 #include <functional>
 #include <vector>
 #include <string>
+
+// Helper structures for building context menus.
+struct SubMenuItem {
+    std::string label;
+    std::function<void()> callback;
+};
+
+struct TopMenuItem {
+    std::string label;
+    std::vector<SubMenuItem> subItems;
+};
 
 class UI {
 private:
@@ -19,6 +31,7 @@ public:
     void checkBox(bool state, int x, int y, std::function<void(bool)> callback);
     void optionSelect(int current, const std::vector<std::string> &options, int x, int y, std::function<void(int)> callback);
     ui::Canvas* canvas(int x, int y, int width, int height);
+    void contextMenu(const std::vector<TopMenuItem>& menus);
 
     // Allow dynamic addition of elements (for our TODO items).
     void addElement(std::shared_ptr<ui::UIElement> element);

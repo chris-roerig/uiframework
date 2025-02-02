@@ -30,6 +30,9 @@ struct ThemeableElementColors {
     Color selectOptionBorderDark;
     Color labelText;
     Color labelBackground;
+    Color contextMenuBackground;
+    Color contextMenuText;
+    Color contextMenuBorder;
 };
 
 class Theme {
@@ -40,6 +43,7 @@ public:
     virtual ThemeableElementColors checkboxColors() const = 0;
     virtual ThemeableElementColors optionSelectColors() const = 0;
     virtual ThemeableElementColors textInputColors() const = 0;
+    virtual ThemeableElementColors contextMenuColors() const = 0;
     virtual Color highlightColor() const = 0;
     virtual Color backgroundColor() const = 0;
     virtual Color foregroundColor() const = 0;
@@ -73,6 +77,9 @@ protected:
     Color defaultTextInputBorderDark;
     Color defaultLabelText;
     Color defaultLabelBackground;
+    Color defaultContextMenuBackground;
+    Color defaultContextMenuText;
+    Color defaultContextMenuBorder;
 public:
     ThemeBase()
       : defaultBackground(0,0,0),
@@ -101,26 +108,25 @@ public:
         c.labelBackground = defaultLabelBackground;
         return c;
     }
-ThemeableElementColors buttonColors() const override {
-    ThemeableElementColors c;
-    c.buttonText = defaultButtonText;
-    c.buttonBackground = defaultButtonBackground;
-    c.buttonForeground = defaultButtonForeground;
-    c.buttonBorderLight = defaultButtonBorderLight;
-    c.buttonBorderDark  = defaultButtonBorderDark;
-    return c;
-}
-ThemeableElementColors checkboxColors() const override {
-    ThemeableElementColors c;
-    c.checkboxEnabled = defaultCheckboxEnabled;
-    c.checkboxDisabled = defaultCheckboxDisabled;
-    c.checkboxChecked = defaultCheckboxChecked;
-    c.checkboxUnchecked = defaultCheckboxUnchecked;
-    c.checkboxBorderLight = defaultCheckboxBorderLight;
-    c.checkboxBorderDark  = defaultCheckboxBorderDark;
-    return c;
-}
-
+    ThemeableElementColors buttonColors() const override {
+        ThemeableElementColors c;
+        c.buttonText = defaultButtonText;
+        c.buttonBackground = defaultButtonBackground;
+        c.buttonForeground = defaultButtonForeground;
+        c.buttonBorderLight = defaultButtonBorderLight;
+        c.buttonBorderDark  = defaultButtonBorderDark;
+        return c;
+    }
+    ThemeableElementColors checkboxColors() const override {
+        ThemeableElementColors c;
+        c.checkboxEnabled = defaultCheckboxEnabled;
+        c.checkboxDisabled = defaultCheckboxDisabled;
+        c.checkboxChecked = defaultCheckboxChecked;
+        c.checkboxUnchecked = defaultCheckboxUnchecked;
+        c.checkboxBorderLight = defaultCheckboxBorderLight;
+        c.checkboxBorderDark  = defaultCheckboxBorderDark;
+        return c;
+    }
     ThemeableElementColors optionSelectColors() const override {
         ThemeableElementColors c;
         c.selectOptionSelected = defaultSelectOptionSelected;
@@ -129,14 +135,20 @@ ThemeableElementColors checkboxColors() const override {
         c.selectOptionBorderDark = defaultSelectOptionBorderDark;
         return c;
     }
-ThemeableElementColors textInputColors() const override {
-    ThemeableElementColors c;
-    c.textInputBackground = defaultTextInputBackground;
-    c.textInputText = defaultTextInputText;
-    c.textInputBorderLight = defaultTextInputBorderLight;
-    c.textInputBorderDark  = defaultTextInputBorderDark;
-    return c;
-}
+    ThemeableElementColors textInputColors() const override {
+        ThemeableElementColors c;
+        c.textInputBackground = defaultTextInputBackground;
+        c.textInputText = defaultTextInputText;
+        c.textInputBorderLight = defaultTextInputBorderLight;
+        c.textInputBorderDark  = defaultTextInputBorderDark;
+        return c;
+    }
+    ThemeableElementColors contextMenuColors() const override {
+        ThemeableElementColors c;
+        c.contextMenuBackground = defaultContextMenuBackground;
+        c.contextMenuText = defaultContextMenuText;
+        return c;
+    }
     Color highlightColor() const override { return defaultHighlight; }
     Color backgroundColor() const override { return defaultBackground; }
     Color foregroundColor() const override { return defaultForeground; }

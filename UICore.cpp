@@ -1,5 +1,6 @@
 #include "UICore.h"
 #include "ThemeFrameworkDefault.h"  // For default theme fallback.
+#include "ContextMenu.h"
 #include "ThemeGlobals.h"
 #include <SDL2/SDL_ttf.h>
 #include <iostream>
@@ -10,10 +11,10 @@ namespace ui {
 std::shared_ptr<Theme> g_currentTheme = std::make_shared<ThemeFrameworkDefault>();
 
 // Global font pointer and constant.
-static TTF_Font* globalFont = nullptr;
-static const int FONT_SIZE = 12;
+TTF_Font* globalFont = nullptr;
+static const int FONT_SIZE = 14;
 
-static void initFont() {
+void initFont() {
     if (!globalFont) {
         if (TTF_Init() == -1) {
             std::cerr << "TTF_Init error: " << TTF_GetError() << std::endl;
@@ -23,6 +24,16 @@ static void initFont() {
         if (!globalFont)
             std::cerr << "TTF_OpenFont error: " << TTF_GetError() << std::endl;
     }
+}
+
+void drawFilledRect(SDL_Renderer* renderer, const SDL_Rect &rect, const Color &color) {
+    SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
+    SDL_RenderFillRect(renderer, &rect);
+}
+
+void drawLine(SDL_Renderer* renderer, int x1, int y1, int x2, int y2, const Color &color) {
+    SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
+    SDL_RenderDrawLine(renderer, x1, y1, x2, y2);
 }
 
 void renderText(SDL_Renderer* renderer, const std::string &text, int x, int y, const Color &color) {
@@ -36,17 +47,6 @@ void renderText(SDL_Renderer* renderer, const std::string &text, int x, int y, c
     SDL_FreeSurface(surface);
     SDL_RenderCopy(renderer, texture, nullptr, &dst);
     SDL_DestroyTexture(texture);
-}
-
-// Define helper functions as static (only visible in this file).
-static void drawFilledRect(SDL_Renderer* renderer, const SDL_Rect &rect, const Color &color) {
-    SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
-    SDL_RenderFillRect(renderer, &rect);
-}
-
-static void drawLine(SDL_Renderer* renderer, int x1, int y1, int x2, int y2, const Color &color) {
-    SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
-    SDL_RenderDrawLine(renderer, x1, y1, x2, y2);
 }
 
 // --- Label ---
@@ -450,13 +450,14 @@ void Canvas::line(int x1, int y1, int x2, int y2, const Color &color) {
     });
 }
 
-// --- UICore ---
+// --- UICore::UICore ---
 UICore::UICore(const char* title, int width, int height, std::shared_ptr<Theme> theme)
     : currentTheme(theme)
 {
     g_currentTheme = currentTheme;
-    if (SDL_Init(SDL_INIT_VIDEO) < 0)
+    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
         std::cerr << "SDL_Init error: " << SDL_GetError() << std::endl;
+    }
     window = SDL_CreateWindow(title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
                                 width, height, SDL_WINDOW_SHOWN);
     if (!window)
@@ -465,6 +466,7 @@ UICore::UICore(const char* title, int width, int height, std::shared_ptr<Theme> 
     SDL_StartTextInput();
 }
 
+// --- UICore Destructor ---
 UICore::~UICore() {
     SDL_StopTextInput();
     if (renderer) SDL_DestroyRenderer(renderer);
@@ -492,31 +494,42 @@ void UICore::run() {
             if (e.type == SDL_QUIT)
                 quit = true;
             if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_TAB) {
-                if (focusedIndex >= 0 && focusedIndex < (int)elements.size())
+                if (focusedIndex >= 0 && focusedIndex < static_cast<int>(elements.size()))
                     elements[focusedIndex]->hasFocus = false;
                 int start = focusedIndex;
                 do {
                     focusedIndex = (focusedIndex + 1) % elements.size();
                 } while (!elements[focusedIndex]->isInteractive() && focusedIndex != start);
                 elements[focusedIndex]->hasFocus = true;
-                // If the new element is a TextBox, call its onFocusGained() method if available.
-                ui::TextBox* tbNew = dynamic_cast<ui::TextBox*>(elements[focusedIndex].get());
-                if (tbNew)
-                    tbNew->onFocusGained();
             }
-            if (focusedIndex >= 0 && focusedIndex < (int)elements.size())
+            if (focusedIndex >= 0 && focusedIndex < static_cast<int>(elements.size()))
                 elements[focusedIndex]->handleEvent(e);
         }
+        
+        // Collapse any expanded drop-downs (OptionSelect or ContextMenu) that lost focus.
+        for (auto &el : elements) {
+            if (auto os = dynamic_cast<OptionSelect*>(el.get())) {
+                if (!os->hasFocus)
+                    os->expanded = false;
+            }
+            if (auto cm = dynamic_cast<ContextMenu*>(el.get())) {
+                if (!cm->hasFocus)
+                    cm->expanded = false;
+            }
+        }
+        
         SDL_SetRenderDrawColor(renderer, currentTheme->backgroundColor().r,
                                currentTheme->backgroundColor().g,
                                currentTheme->backgroundColor().b,
                                currentTheme->backgroundColor().a);
         SDL_RenderClear(renderer);
-
-        // First pass: render all elements that are NOT expanded OptionSelects.
+        
+        // First pass: render all elements except expanded ContextMenu.
         for (auto &el : elements) {
-            ui::OptionSelect* os = dynamic_cast<ui::OptionSelect*>(el.get());
-            if (os && os->expanded) continue;
+            if (auto cm = dynamic_cast<ContextMenu*>(el.get())) {
+                if (cm->expanded)
+                    continue;
+            }
             el->render(renderer);
             if (el->hasFocus && el->isInteractive()) {
                 SDL_Rect focusRect = el->getFocusRect();
@@ -527,19 +540,17 @@ void UICore::run() {
                 SDL_RenderDrawRect(renderer, &focusRect);
             }
         }
-        // Second pass: render all expanded OptionSelects on top.
+        
+        // Second pass: render expanded ContextMenu elements on top.
         for (auto &el : elements) {
-            ui::OptionSelect* os = dynamic_cast<ui::OptionSelect*>(el.get());
-            if (os && os->expanded) {
-                os->render(renderer);
-                SDL_Rect focusRect = os->getFocusRect();
-                SDL_SetRenderDrawColor(renderer, currentTheme->highlightColor().r,
-                                       currentTheme->highlightColor().g,
-                                       currentTheme->highlightColor().b,
-                                       currentTheme->highlightColor().a);
-                SDL_RenderDrawRect(renderer, &focusRect);
+            if (auto cm = dynamic_cast<ContextMenu*>(el.get())) {
+                if (cm->expanded) {
+                    cm->render(renderer);
+                    // Optionally, you could draw a focus outline for the context menu.
+                }
             }
         }
+        
         SDL_RenderPresent(renderer);
         SDL_Delay(16);
     }
