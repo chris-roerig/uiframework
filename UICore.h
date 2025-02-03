@@ -36,30 +36,6 @@ public:
     virtual void activate() { /* default does nothing */ }
 };
 
-// Label element.
-class Label : public UIElement {
-public:
-    std::string text;
-    Label(int x_, int y_, const std::string &text_)
-      : UIElement(x_, y_, 0, 0), text(text_) {}
-    void render(SDL_Renderer* renderer) override;
-};
-
-// Button element.
-class Button : public UIElement {
-public:
-    std::string text;
-    std::function<void()> onClick;
-    bool pressed; // tracks pressed state.
-    
-    Button(int x_, int y_, int w_, int h_, const std::string &text_, std::function<void()> callback)
-      : UIElement(x_, y_, w_, h_), text(text_), onClick(callback), pressed(false) {}
-    void render(SDL_Renderer* renderer) override;
-    void handleEvent(const SDL_Event &e) override;
-    bool isInteractive() const override { return true; }
-    virtual void activate() override;
-};
-
 // TextBox element.
 class TextBox : public UIElement {
 public:

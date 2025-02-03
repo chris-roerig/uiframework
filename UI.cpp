@@ -6,6 +6,8 @@
 #include "UIElements/ContextMenu.h"
 #include "UIElements/ListView.h"
 #include "UIElements/Modal.h"
+#include "UIElements/Label.h"
+#include "UIElements/Button.h"
 #include <cctype>
 #include <iostream>
 
