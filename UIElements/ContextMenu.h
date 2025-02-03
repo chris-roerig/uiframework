@@ -1,5 +1,5 @@
 #pragma once
-#include "UICore.h"
+#include "../UICore.h"
 #include <vector>
 #include <string>
 #include <functional>

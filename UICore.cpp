@@ -1,8 +1,8 @@
 #include "UICore.h"
-#include "ThemeFrameworkDefault.h"  // For default theme fallback.
-#include "Modal.h"
-#include "ContextMenu.h"
-#include "ThemeGlobals.h"
+#include "Theme/ThemeFrameworkDefault.h"
+#include "UIElements/Modal.h"
+#include "UIElements/ContextMenu.h"
+#include "Theme/ThemeGlobals.h"
 #include <SDL2/SDL_ttf.h>
 #include <iostream>
 
@@ -21,7 +21,7 @@ void initFont() {
             std::cerr << "TTF_Init error: " << TTF_GetError() << std::endl;
             return;
         }
-        globalFont = TTF_OpenFont("default_font.ttf", FONT_SIZE);
+        globalFont = TTF_OpenFont("Assets/default_font.ttf", FONT_SIZE);
         if (!globalFont)
             std::cerr << "TTF_OpenFont error: " << TTF_GetError() << std::endl;
     }

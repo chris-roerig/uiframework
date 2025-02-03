@@ -1,6 +1,6 @@
 #include "Modal.h"
-#include "ThemeGlobals.h"
-#include "ThemeBase.h"
+#include "../Theme/ThemeGlobals.h"
+#include "../Theme/ThemeBase.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include <iostream>

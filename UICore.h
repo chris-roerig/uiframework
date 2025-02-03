@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Color.h"
-#include "ThemeBase.h"
-#include "ThemeGlobals.h"  // Declares: extern std::shared_ptr<ui::Theme> g_currentTheme;
+#include "Theme/Color.h"
+#include "Theme/ThemeBase.h"
+#include "Theme/ThemeGlobals.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include <string>

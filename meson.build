@@ -8,13 +8,12 @@ ttf_dep = dependency('SDL2_ttf')
 
 executable('sdl_ui_demo',
   sources : [
-    'main.cpp',
+    'demos/main.cpp',
     'UICore.cpp',
     'UI.cpp',
-    'ContextMenu.cpp',
-    'Modal.cpp',
-    'ListView.cpp'
-    # Theme files are header-only, so they don't require separate compilation.
+    'UIElements/ContextMenu.cpp',
+    'UIElements/Modal.cpp',
+    'UIElements/ListView.cpp'
   ],
   dependencies : [sdl2_dep, ttf_dep],
   install : true

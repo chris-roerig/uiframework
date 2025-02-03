@@ -1,11 +1,11 @@
 #include "UI.h"
-#include "ThemeFrameworkDefault.h"
-#include "ThemeSolarizedDark.h"
-#include "ThemeSolarizedLight.h"
-#include "ThemeMolokai.h"
-#include "ContextMenu.h"
-#include "ListView.h"
-#include "Modal.h"
+#include "Theme/ThemeFrameworkDefault.h"
+#include "Theme/ThemeSolarizedDark.h"
+#include "Theme/ThemeSolarizedLight.h"
+#include "Theme/ThemeMolokai.h"
+#include "UIElements/ContextMenu.h"
+#include "UIElements/ListView.h"
+#include "UIElements/Modal.h"
 #include <cctype>
 #include <iostream>
 

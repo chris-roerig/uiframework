@@ -1,8 +1,8 @@
 #pragma once
 #include "UICore.h"
-#include "ContextMenu.h"
-#include "ListView.h"
-#include "Modal.h"
+#include "UIElements/ContextMenu.h"
+#include "UIElements/ListView.h"
+#include "UIElements/Modal.h"
 #include <memory>
 #include <functional>
 #include <vector>

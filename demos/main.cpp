@@ -1,9 +1,9 @@
-#include "UI.h"
+#include "../UI.h"
 #include <memory>
 #include <vector>
 #include <iostream>
 #include <SDL2/SDL.h>
-#include "ThemeGlobals.h"
+#include "../Theme/ThemeGlobals.h"
 #include <cctype>
 
 int main() {

@@ -1,6 +1,6 @@
 #include "ContextMenu.h"
-#include "ThemeGlobals.h"   // Provides: extern std::shared_ptr<Theme> g_currentTheme;
-#include "ThemeBase.h"      // For ThemeableElementColors
+#include "../Theme/ThemeGlobals.h"
+#include "../Theme/ThemeBase.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include <iostream>
