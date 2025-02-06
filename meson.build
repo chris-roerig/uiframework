@@ -19,6 +19,7 @@ executable('sdl_ui_demo',
     'UIElements/TextBox.cpp',
     'UIElements/CheckBox.cpp',
     'UIElements/OptionSelect.cpp',
+    'UIElements/Canvas.cpp',
   ],
   dependencies : [sdl2_dep, ttf_dep],
   install : true

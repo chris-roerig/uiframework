@@ -8,6 +8,7 @@
 #include "UIElements/TextBox.h"
 #include "UIElements/CheckBox.h"
 #include "UIElements/OptionSelect.h"
+#include "UIElements/Canvas.h"
 #include <SDL2/SDL_ttf.h>
 #include <iostream>
 
@@ -53,28 +54,6 @@ void renderText(SDL_Renderer* renderer, const std::string &text, int x, int y, c
     SDL_FreeSurface(surface);
     SDL_RenderCopy(renderer, texture, nullptr, &dst);
     SDL_DestroyTexture(texture);
-}
-
-// --- Canvas ---
-void Canvas::render(SDL_Renderer* renderer) {
-    SDL_Rect rect = { x, y, width, height };
-    // Use the theme's background color.
-    drawFilledRect(renderer, rect, g_currentTheme->backgroundColor());
-    for (auto& cmd : drawCommands)
-        cmd(renderer);
-}
-
-void Canvas::rect(const SDL_Rect &r, const Color &color) {
-    drawCommands.push_back([=](SDL_Renderer* renderer) {
-        SDL_Rect rect = { x + r.x, y + r.y, r.w, r.h };
-        drawFilledRect(renderer, rect, color);
-    });
-}
-
-void Canvas::line(int x1, int y1, int x2, int y2, const Color &color) {
-    drawCommands.push_back([=](SDL_Renderer* renderer) {
-        drawLine(renderer, x + x1, y + y1, x + x2, y + y2, color);
-    });
 }
 
 // --- UICore::UICore ---

@@ -11,6 +11,7 @@
 #include "UIElements/TextBox.h"
 #include "UIElements/CheckBox.h"
 #include "UIElements/OptionSelect.h"
+#include "UIElements/Canvas.h"
 #include <cctype>
 #include <iostream>
 
