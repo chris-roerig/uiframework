@@ -16,6 +16,7 @@ executable('sdl_ui_demo',
     'UIElements/ListView.cpp',
     'UIElements/Label.cpp',
     'UIElements/Button.cpp',
+    'UIElements/TextBox.cpp',
   ],
   dependencies : [sdl2_dep, ttf_dep],
   install : true

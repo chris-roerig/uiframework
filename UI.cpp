@@ -8,6 +8,7 @@
 #include "UIElements/Modal.h"
 #include "UIElements/Label.h"
 #include "UIElements/Button.h"
+#include "UIElements/TextBox.h"
 #include <cctype>
 #include <iostream>
 
