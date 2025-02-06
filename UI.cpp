@@ -9,6 +9,7 @@
 #include "UIElements/Label.h"
 #include "UIElements/Button.h"
 #include "UIElements/TextBox.h"
+#include "UIElements/CheckBox.h"
 #include <cctype>
 #include <iostream>
 

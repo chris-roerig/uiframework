@@ -124,6 +124,8 @@ EOF
     echo ""
     echo "  // UI.cpp, UI.h, UICore.cpp"
     echo "  #include \"UIElements/${ELEMENT_NAME}.h\""
+
+    
     if [ "$THEME_FLAG" -eq 1 ]; then
         echo ""
         echo "Also update Theme/ThemeBase.h with the following additions:"
