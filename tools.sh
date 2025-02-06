@@ -41,6 +41,7 @@ if [ "$COMMAND" == "uielement" ]; then
     # Determine target files.
     HEADER_FILE="$TARGET_DIR/${ELEMENT_NAME}.h"
     CPP_FILE="$TARGET_DIR/${ELEMENT_NAME}.cpp"
+    UI_ELEMENTS_HEADER="UIElements.h"
 
     # Function to prompt for overwriting a file.
     prompt_overwrite() {
@@ -61,90 +62,98 @@ if [ "$COMMAND" == "uielement" ]; then
     # Generate the header file.
     cat > "$HEADER_FILE" <<EOF
 #pragma once
-#include "../UICore.h"
-#include <vector>
-#include <string>
-#include <functional>
+
+#include "UIElement.h"
+#include <SDL2/SDL.h>
 
 namespace ui {
 
-class ${ELEMENT_NAME} : public UIElement {
+class ${ELEMENT_NAME}  : public UIElement {
 public:
-    ${ELEMENT_NAME}(int x_, int y_) : UIElement(x_, y_, 0, 0) {}
+    // Constructor forwarding position and size to the base class.
+    ${ELEMENT_NAME} (int x, int y, int width, int height);
+    
+    // Virtual destructor.
+    virtual ~${ELEMENT_NAME}();
+
+    // Override the render method.
     void render(SDL_Renderer* renderer) override;
+    
+    // Override the event handler.
     void handleEvent(const SDL_Event &e) override;
-    bool isInteractive() const override { return true; }
-    virtual void activate() override;
+    
+    // Indicate that this element is interactive.
+    bool isInteractive() const override;
+    
+    // Override the activation method.
+    void activate() override;
 };
 
 } // namespace ui
 EOF
 
+    THEMEABLE="";
+    # If theme flag is enabled, add theme line.
+    if [ "$THEME_FLAG" -eq 1 ]; then
+        THEMEABLE="    ThemeableElementColors tc = g_currentTheme->${ELEMENT_NAME_LOWER}Colors();"
+    fi
+
     # Generate the cpp file.
     cat > "$CPP_FILE" <<EOF
+
 #include "${ELEMENT_NAME}.h"
 #include "../Theme/ThemeGlobals.h"
-#include "../Theme/ThemeBase.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include <iostream>
 
 namespace ui {
 
+${ELEMENT_NAME}::${ELEMENT_NAME}(int x, int y, int width, int height)
+    : UIElement(x, y, width, height) {}
+
+${ELEMENT_NAME}::~${ELEMENT_NAME}() {}
+
 void ${ELEMENT_NAME}::render(SDL_Renderer* renderer) {
-EOF
-
-    # If theme flag is enabled, add theme line.
-    if [ "$THEME_FLAG" -eq 1 ]; then
-        echo "    ThemeableElementColors tc = g_currentTheme->${ELEMENT_NAME_LOWER}Colors();" >> "$CPP_FILE"
-    fi
-
-    # Close out the render function and add additional functions.
-    cat >> "$CPP_FILE" <<EOF
+    ${THEMEABLE}
+    // Example: Render a filled white rectangle.
+    SDL_Rect rect = { x, y, width, height };
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+    SDL_RenderFillRect(renderer, &rect);
 }
 
 void ${ELEMENT_NAME}::handleEvent(const SDL_Event &e) {
-  // implement event handling here
+    // Implement specific event handling here.
+}
+
+bool ${ELEMENT_NAME}::isInteractive() const {
+    return true;
 }
 
 void ${ELEMENT_NAME}::activate() {
-  // implement activate action here. typically used when triggered by hotkey
+    // Implement activation logic, e.g., for hotkey triggers.
 }
 
 } // namespace ui
+
 EOF
+
+    # Append the new element's #include inside UIElements.h if not already included.
+    if ! grep -q "#include \"UIElements/${ELEMENT_NAME}.h\"" "$UI_ELEMENTS_HEADER"; then
+        echo "#include \"UIElements/${ELEMENT_NAME}.h\"" >> "$UI_ELEMENTS_HEADER"
+    fi
 
     # Output update instructions.
     echo "Files created:"
     echo "  - ${HEADER_FILE}"
     echo "  - ${CPP_FILE}"
     echo ""
+    echo "Updated ${UI_ELEMENTS_HEADER} with:"
+    echo "  #include \"UIElements/${ELEMENT_NAME}.h\""
+    echo ""
     echo "Be sure to update the following files:"
     echo "  // meson.build"
     echo "  'UIElements/${ELEMENT_NAME}.cpp',"
-    echo ""
-    echo "  // UI.cpp, UI.h, UICore.cpp"
-    echo "  #include \"UIElements/${ELEMENT_NAME}.h\""
-
-    
-    if [ "$THEME_FLAG" -eq 1 ]; then
-        echo ""
-        echo "Also update Theme/ThemeBase.h with the following additions:"
-        echo "  Color ${ELEMENT_NAME_LOWER}Background;"
-        echo "  Color ${ELEMENT_NAME_LOWER}Foreground;"
-        echo ""
-        echo "  virtual ThemeableElementColors ${ELEMENT_NAME_LOWER}Colors() const = 0"
-        echo ""
-        echo "  Color default${ELEMENT_NAME}Background;"
-        echo "  Color default${ELEMENT_NAME}Foreground;"
-        echo ""
-        echo "      ThemeableElementColors ${ELEMENT_NAME_LOWER}Colors() const override {"
-        echo "          ThemeableElementColors c;"
-        echo "          c.${ELEMENT_NAME_LOWER}Background = default${ELEMENT_NAME}Background;"
-        echo "          c.${ELEMENT_NAME_LOWER}Foreground = default${ELEMENT_NAME}Foreground;"
-        echo "          return c;"
-        echo "      }"
-    fi
 
 elif [ "$COMMAND" == "run" ]; then
     # Run meson build and demo.
