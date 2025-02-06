@@ -10,6 +10,7 @@
 #include "UIElements/Button.h"
 #include "UIElements/TextBox.h"
 #include "UIElements/CheckBox.h"
+#include "UIElements/OptionSelect.h"
 #include <cctype>
 #include <iostream>
 

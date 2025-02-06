@@ -7,6 +7,7 @@
 #include "UIElements/Button.h"
 #include "UIElements/TextBox.h"
 #include "UIElements/CheckBox.h"
+#include "UIElements/OptionSelect.h"
 #include <memory>
 #include <functional>
 #include <vector>
