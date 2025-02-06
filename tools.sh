@@ -5,6 +5,7 @@ usage() {
     echo "Usage:"
     echo "  $0 uielement <Name> [-t]"
     echo "  $0 run"
+    echo "  $0 print [-h] [-c] [-i <name>]... [-a <file>]..."
     exit 1
 }
 
@@ -148,6 +149,50 @@ EOF
 elif [ "$COMMAND" == "run" ]; then
     # Run meson build and demo.
     meson setup demos/build --reconfigure && meson compile -C demos/build && ./demos/build/sdl_ui_demo
+
+elif [ "$COMMAND" == "print" ]; then
+    INCLUDE_H=1
+    INCLUDE_CPP=1
+    IGNORE_LIST=()
+    ADD_LIST=()
+
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            -h) INCLUDE_CPP=0 ;;
+            -c) INCLUDE_H=0 ;;
+            -i) shift; IGNORE_LIST+=("$1") ;;
+            -a) shift; ADD_LIST+=("$1") ;;
+            *) usage ;;
+        esac
+        shift
+    done
+
+    # If neither -h nor -c were specified, include both.
+    if [ "$INCLUDE_H" -eq 0 ] && [ "$INCLUDE_CPP" -eq 0 ]; then
+        INCLUDE_H=1
+        INCLUDE_CPP=1
+    fi
+
+    # Find all .h and .cpp files in the project
+    FILES=()
+    while IFS= read -r file; do
+        # Skip ignored directories and files unless they were added back
+        for ignored in "${IGNORE_LIST[@]}"; do
+            if [[ "$file" == *"$ignored"* ]] && [[ ! " ${ADD_LIST[*]} " =~ " $file " ]]; then
+                continue 2
+            fi
+        done
+        FILES+=("$file")
+    done < <(find . -type f \( -name "*.h" -o -name "*.cpp" \))
+
+    # Print the files with comments
+    for file in "${FILES[@]}"; do
+        echo "// file $(basename "$file") -->"
+        cat "$file"
+        echo "// <-- end file $(basename "$file")"
+        echo ""
+    done
+
 else
     usage
 fi

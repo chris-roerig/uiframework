@@ -9,6 +9,7 @@ ttf_dep = dependency('SDL2_ttf')
 executable('sdl_ui_demo',
   sources : [
     'demos/main.cpp',
+    'Helpers.cpp',
     'UICore.cpp',
     'UI.cpp',
     'UIElements/ContextMenu.cpp',

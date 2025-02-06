@@ -1,17 +1,6 @@
 #include "UI.h"
-#include "Theme/ThemeFrameworkDefault.h"
-#include "Theme/ThemeSolarizedDark.h"
-#include "Theme/ThemeSolarizedLight.h"
-#include "Theme/ThemeMolokai.h"
-#include "UIElements/ContextMenu.h"
-#include "UIElements/ListView.h"
-#include "UIElements/Modal.h"
-#include "UIElements/Label.h"
-#include "UIElements/Button.h"
-#include "UIElements/TextBox.h"
-#include "UIElements/CheckBox.h"
-#include "UIElements/OptionSelect.h"
-#include "UIElements/Canvas.h"
+#include "Themes.h"
+#include "UIElements.h"
 #include <cctype>
 #include <iostream>
 
