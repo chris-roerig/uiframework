@@ -64,6 +64,7 @@ public:
 
         defaultListViewScrollbarBackground = Color(200, 200, 200); // Light gray for the track.
         defaultListViewScrollbarThumb = Color(150, 150, 150);        // Darker gray for the thumb.
+        defaultContainerBackground = defaultBackground;
     }
 };
 

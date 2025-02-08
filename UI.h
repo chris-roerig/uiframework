@@ -1,6 +1,7 @@
 #pragma once
 #include "UICore.h"
 #include "UIElements.h"
+#include "UIContainers.h"
 #include <memory>
 #include <functional>
 #include <vector>
@@ -31,6 +32,15 @@ public:
     ui::AnimatedSprite* animatedSprite(const unsigned char* data, size_t dataSize, int x, int y, int w, int h,
                                          int frameCount, Uint32 frameDelay, bool stretch = false);
 
+    // UIContainers
+    ui::FlowContainer* flowContainer(int x, int y, int w, int h);
+    ui::StackContainer* stackContainer(int x, int y, int w, int h, ui::StackOrientation orientation = ui::StackOrientation::Vertical);
+    ui::GridContainer* gridContainer(int x, int y, int w, int h, int columns);
+    ui::ScrollViewContainer* scrollViewContainer(int x, int y, int w, int h, int minWidth, int minHeight);
+    ui::TabContainer* tabContainer(int x, int y, int w, int h);
+    ui::SplitContainer* splitContainer(int x, int y, int w, int h, int dividerPos);
+    ui::OverlayContainer* overlayContainer(int x, int y, int w, int h);
+    ui::LayeredContainer* layeredContainer(int x, int y, int w, int h);
 
     void assignHotKey(ui::UIElement* element, const std::string &hotKey);
     void assignHotKey(ui::UIElement* element, const std::string &hotKey, std::function<void()> customCallback);

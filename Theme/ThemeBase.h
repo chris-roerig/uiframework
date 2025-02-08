@@ -44,6 +44,7 @@ struct ThemeableElementColors {
     Color modalButtonBorder; 
     Color listViewScrollbarBackground;
     Color listViewScrollbarThumb;
+    Color containerBackground;
 
 };
 
@@ -58,9 +59,11 @@ public:
     virtual ThemeableElementColors contextMenuColors() const = 0;
     virtual ThemeableElementColors modalColors() const = 0;
     virtual ThemeableElementColors listViewColors() const = 0;
+    virtual ThemeableElementColors containerColors() const = 0;
     virtual Color highlightColor() const = 0;
     virtual Color backgroundColor() const = 0;
     virtual Color foregroundColor() const = 0;
+
 };
 
 class ThemeBase : public Theme {
@@ -105,6 +108,7 @@ protected:
     Color defaultModalButtonBorder;
     Color defaultListViewScrollbarBackground;
     Color defaultListViewScrollbarThumb;
+    Color defaultContainerBackground;
 
 public:
     ThemeBase()
@@ -125,7 +129,8 @@ public:
         defaultTextInputBackground(255,255,255),
         defaultTextInputText(255,255,255),
         defaultLabelText(255,255,255),
-        defaultLabelBackground(0,0,0)
+        defaultLabelBackground(0,0,0),
+        defaultContainerBackground(0,0,0)
     {}
 
     ThemeableElementColors labelColors() const override {
@@ -192,6 +197,11 @@ public:
         ThemeableElementColors c;
         c.listViewScrollbarBackground = defaultListViewScrollbarBackground;
         c.listViewScrollbarThumb = defaultListViewScrollbarThumb;
+        return c;
+    }
+    ThemeableElementColors containerColors() const override {
+        ThemeableElementColors c;
+        c.containerBackground = defaultContainerBackground;
         return c;
     }
     

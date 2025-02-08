@@ -168,13 +168,17 @@ int main() {
             ctxMenu->items[0].subCallbacks[2]();
     });
     
+    ui::SplitContainer* split = ui->splitContainer(cols[0], 80, 600, 400, 300);
+    split->setLeftPanel(ui->label("Left Panel", 0, 0));
+    split->setRightPanel(ui->label("Right Panel", 0, 0));
+
+
     // Assign hotkey Ctrl+m to change the theme to Molokai
     ui->assignHotKey(ctxMenu, "m", [ctxMenu]() {
         ctxMenu->activeItemIndex = 1; // "File"
         if (!ctxMenu->items.empty() && ctxMenu->items[0].subCallbacks.size() >= 3)
             ctxMenu->items[1].subCallbacks[3]();
     });
-
 
     // Assign hotkey Ctrl+b to activate the Add Todo button.
     ui->assignHotKey(addTodoButton, "b");

@@ -1,6 +1,7 @@
 #include "UI.h"
 #include "Themes.h"
 #include "UIElements.h"
+#include "UIContainers.h"
 #include <cctype>
 #include <iostream>
 
@@ -231,6 +232,85 @@ ui::Modal* UI::confirmModal(const std::string &message, std::function<void()> on
     return m.get();
 }
 
+//* CONTAINERS */
+
+// Example usage for FlowContainer:
+//   ui::FlowContainer* flow = ui->flowContainer(50, 50, 400, 300);
+//   flow->addChild(std::make_shared<ui::Label>(10, 10, "Flow Item 1"));
+//   flow->addChild(std::make_shared<ui::Button>(...));
+ui::FlowContainer* UI::flowContainer(int x, int y, int w, int h) {
+    auto container = std::make_shared<ui::FlowContainer>(x, y, w, h);
+    core->addElement(container);
+    return container.get();
+}
+
+// Example usage for StackContainer:
+//   ui::StackContainer* stack = ui->stackContainer(50, 400, 300, 200, ui::StackOrientation::Vertical);
+//   stack->addChild(std::make_shared<ui::Label>(0, 0, "Stack Item 1"));
+//   stack->addChild(std::make_shared<ui::Button>(...));
+ui::StackContainer* UI::stackContainer(int x, int y, int w, int h, ui::StackOrientation orientation) {
+    auto container = std::make_shared<ui::StackContainer>(x, y, w, h, orientation);
+    core->addElement(container);
+    return container.get();
+}
+
+// Example usage for GridContainer:
+//   ui::GridContainer* grid = ui->gridContainer(400, 50, 400, 300, 3);
+//   grid->addChild(std::make_shared<ui::Label>(0, 0, "Grid Item 1"));
+//   grid->addChild(std::make_shared<ui::Button>(...));
+ui::GridContainer* UI::gridContainer(int x, int y, int w, int h, int columns) {
+    auto container = std::make_shared<ui::GridContainer>(x, y, w, h, columns);
+    core->addElement(container);
+    return container.get();
+}
+
+// Example usage for ScrollViewContainer:
+//   ui::ScrollViewContainer* scrollView = ui->scrollViewContainer(50, 100, 400, 300, 200, 150);
+//   scrollView->addChild(std::make_shared<ui::Label>(10, 10, "Scrollable Item 1"));
+ui::ScrollViewContainer* UI::scrollViewContainer(int x, int y, int w, int h, int minWidth, int minHeight) {
+    auto container = std::make_shared<ui::ScrollViewContainer>(x, y, w, h, minWidth, minHeight);
+    core->addElement(container);
+    return container.get();
+}
+
+// Example usage for TabContainer:
+//   ui::TabContainer* tabs = ui->tabContainer(50, 50, 400, 300);
+//   tabs->addTab("Tab 1", std::make_shared<ui::Label>(0, 0, "Content for Tab 1"));
+//   tabs->addTab("Tab 2", std::make_shared<ui::Button>(0, 0, 150, 40, "Click Me", [](){ /* callback */ }));
+ui::TabContainer* UI::tabContainer(int x, int y, int w, int h) {
+    auto container = std::make_shared<ui::TabContainer>(x, y, w, h);
+    core->addElement(container);
+    return container.get();
+}
+
+// Example usage for SplitContainer:
+//   ui::SplitContainer* split = ui->splitContainer(cols[0], 80, 600, 400, 300);
+//   split->setLeftPanel(ui->label("Left Panel", 0, 0));
+//   split->setRightPanel(ui->label("Right Panel", 0, 0));
+ui::SplitContainer* UI::splitContainer(int x, int y, int w, int h, int dividerPos) {
+    auto container = std::make_shared<ui::SplitContainer>(x, y, w, h, dividerPos);
+    core->addElement(container);
+    return container.get();
+}
+
+// Example usage for OverlayContainer:
+//   ui::OverlayContainer* overlay = ui->overlayContainer(0, 0, core->width, core->height);
+//   overlay->addChild(std::make_shared<ui::Label>(100, 100, "This is an overlay"));
+ui::OverlayContainer* UI::overlayContainer(int x, int y, int w, int h) {
+    auto container = std::make_shared<ui::OverlayContainer>(x, y, w, h);
+    core->addElement(container);
+    return container.get();
+}
+
+// Example usage for LayeredContainer:
+//   ui::LayeredContainer* layered = ui->layeredContainer(0, 0, core->width, core->height);
+//   layered->addChild(std::make_shared<ui::Label>(50, 50, "Bottom Layer"), 0);
+//   layered->addChild(std::make_shared<ui::Label>(60, 60, "Top Layer"), 10);
+ui::LayeredContainer* UI::layeredContainer(int x, int y, int w, int h) {
+    auto container = std::make_shared<ui::LayeredContainer>(x, y, w, h);
+    core->addElement(container);
+    return container.get();
+}
 
 void UI::run() {
     core->run();
@@ -256,3 +336,6 @@ void UI::setTheme(const std::string &themeName) {
 void UI::addElement(std::shared_ptr<ui::UIElement> element) {
     core->addElement(element);
 }
+
+
+
