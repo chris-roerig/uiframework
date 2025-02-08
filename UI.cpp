@@ -70,6 +70,20 @@ ui::OptionSelect* UI::optionSelect(int current, const std::vector<std::string> &
     return os.get();
 }
 
+ui::Image* UI::image(const std::string &path, int x, int y, int w, int h, bool stretch) {
+    // Assuming UICore exposes a method getRenderer() that returns SDL_Renderer*
+    auto img = std::make_shared<ui::Image>(x, y, w, h, path, core->renderer, stretch);
+    core->addElement(img);
+    return img.get();
+}
+
+// for loading binary header images (#include "my_image.h")
+ui::Image* UI::image(const unsigned char* data, size_t dataSize, int x, int y, int w, int h, bool stretch) {
+    auto img = std::make_shared<ui::Image>(x, y, w, h, data, dataSize, core->renderer, stretch);
+    core->addElement(img);
+    return img.get();
+}
+
 ui::Canvas* UI::canvas(int x, int y, int width, int height) {
     auto cnv = std::make_shared<ui::Canvas>(x, y, width, height);
     core->addElement(cnv);

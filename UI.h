@@ -22,6 +22,9 @@ public:
     ui::Canvas* canvas(int x, int y, int width, int height);
     ui::ContextMenu* contextMenu(const std::vector<ui::TopMenuItem>& menus);
     ui::ListView* listView(const std::vector<std::string>& items, int x, int y, int w, int h, int itemHeight = 30);
+    ui::Image* image(const std::string &path, int x, int y, int w, int h, bool stretch = false);
+    ui::Image* image(const unsigned char* data, size_t dataSize, int x, int y, int w, int h, bool stretch = false);
+
     void assignHotKey(ui::UIElement* element, const std::string &hotKey);
     void assignHotKey(ui::UIElement* element, const std::string &hotKey, std::function<void()> customCallback);
     void setFocus(ui::UIElement* element);

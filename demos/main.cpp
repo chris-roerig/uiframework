@@ -128,6 +128,13 @@ int main() {
     });
     ui->label("Call Mom", cols[2], 260);
 
+    ui->image("demos/smiley.png", cols[1], 400, 100, 100, true);
+
+    // demo of loading a binary/embedded image
+    #include "smiley_image.h"
+    ui->image(smiley_png, smiley_png_len, cols[1] + 100, 400, 100, 100, true);
+
+
     // --- Hotkey Registration ---
     // Assign hotkey Ctrl+f to bring focus to the File menu.
     ui->assignHotKey(ctxMenu, "f", [ctxMenu, uiPtr = ui.get()](){

@@ -11,3 +11,4 @@
 #include "UIElements/Modal.h"
 #include "UIElements/OptionSelect.h"
 #include "UIElements/TextBox.h"
+#include "UIElements/Image.h"
