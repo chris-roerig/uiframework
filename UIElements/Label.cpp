@@ -11,4 +11,12 @@ void Label::render(SDL_Renderer* renderer) {
     renderText(renderer, text, x, y, tc.labelText);
 }
 
+void Label::setText(const std::string &newText) {
+    text = newText;
+    initFont();
+    if (globalFont) {
+        TTF_SizeText(globalFont, text.c_str(), &width, &height);
+    }
+}
+
 } // namespace ui

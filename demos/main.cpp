@@ -10,6 +10,9 @@ int main() {
     // Create the UI façade with a 1024x896 window.
     auto ui = std::make_unique<UI>("TODO App", 1024, 896);
 
+    std::array<int, 3> cols = {15, 555, 600};
+    std::array<int, 4> rows = {40, 64, 95, 200};
+
     // --- Context Menu ---
     // Create a context menu for global commands.
     std::vector<ui::TopMenuItem> menus = {
@@ -45,14 +48,14 @@ int main() {
     ui::ContextMenu* ctxMenu = ui->contextMenu(menus);
     
     // --- Recent Tasks ListView Demonstration ---
-    ui->label("Recent Tasks:", 50, 50);
+    ui->label("Recent Tasks:", cols[0], rows[0]);
     std::vector<std::string> tasks = {
         "Write report", "Clean room", "Email boss", "Buy groceries", "Schedule meeting",
         "Call mom", "Prepare presentation", "Pay bills", "Review code", "Fix bugs",
         "Plan trip", "Update resume", "Read book", "Watch tutorial", "Practice coding"
     };
-    // Create the ListView at (50,80) with width 400, height 300, and each item 30 pixels tall.
-    ui::ListView* lv = ui->listView(tasks, 50, 80, 400, 300, 30);
+    // Create the ListView at (25,60) with width 495, height 375 and each item 35 pixels tall.
+    ui::ListView* lv = ui->listView(tasks, cols[0], rows[1], 495, 375, 25);
     
     lv->onItemActivated = [](int index) {
         std::cout << "Item activated at index: " << index << std::endl;
@@ -70,32 +73,40 @@ int main() {
 
 
     // --- Filtering and Sorting Controls ---
-    ui->label("Filter:", 50, 400);
+    ui::Label* filterLabel = ui->label("Filter:", cols[0], 450);
     // Create a text box for filtering (positioned at 110,395, size 200x30 assumed).
-    ui::TextBox* filterBox = ui->textBox("", 110, 395);
-    
+    ui::TextBox* filterBox = ui->textBox("", cols[0] + filterLabel->width + 10, 445);
+
     // "Apply Filter" button: when pressed, applies the filter to the list.
-    ui->button("Apply Filter", 330, 395, [lv, filterBox]() {
+    ui->button("Apply Filter", cols[0], 480, [lv, filterBox]() {
          lv->applyFilter(filterBox->content);
     });
     
     // "Clear Filter" button: clears the filter and resets the list.
-    ui->button("Clear Filter", 470, 395, [lv, filterBox]() {
+    ui->button("Clear Filter", 188, 480, [lv, filterBox]() {
          filterBox->content = "";
          lv->applyFilter("");
     });
     
     // "Sort Tasks" button: sorts the tasks alphabetically.
-    ui->button("Sort Tasks", 50, 440, [lv]() {
+    ui->button("Sort Tasks", 360, 480, [lv]() {
          lv->sortItems([](const std::string &a, const std::string &b) {
              return a < b;
          });
     });
 
     // --- New Todo Input Area ---
-    ui->label("New Todo:", 20, 100);
-    ui::TextBox* inputBox = ui->textBox("Enter todo here...", 150, 100);
-    ui::Button* addTodoButton = ui->button("Add Todo", 420, 100, [uiPtr = ui.get(), inputBox]() {
+    ui::Label* newTodoLabel = ui->label("New Todo:", cols[1], rows[0]);
+    ui::TextBox* inputBox = ui->textBox("Enter todo here...", cols[1] + newTodoLabel->width + 10, rows[0] - 5);
+
+    // --- Priority Selector ---
+    ui::Label* priorityLabel = ui->label("Priority:", cols[1], rows[1]);
+    std::vector<std::string> priorities = { "Low", "Medium", "High", "Urgent" };
+    ui::OptionSelect* prioOptions = ui->optionSelect(0, priorities, cols[1] + priorityLabel->width + 10,  rows[1], [uiPtr = ui.get()](int idx) {
+         std::cout << "Priority selected: " << idx << std::endl;
+    });
+
+    ui::Button* addTodoButton = ui->button("Add Todo", prioOptions->x, rows[2], [uiPtr = ui.get(), inputBox]() {
          std::string task = inputBox->content;
          std::cout << "New task: " << task << std::endl;
          inputBox->content = "";
@@ -106,27 +117,16 @@ int main() {
          }
     });
 
-    // --- Priority Selector ---
-    ui->label("Priority:", 20, 170);
-    std::vector<std::string> priorities = { "Low", "Medium", "High", "Urgent" };
-    ui->optionSelect(0, priorities, 150, 165, [uiPtr = ui.get()](int idx) {
-         std::cout << "Priority selected: " << idx << std::endl;
-    });
-
     // --- Todo List ---
-    ui->label("Todo List:", 20, 240);
-    ui::CheckBox* firstCheckbox = ui->checkBox(false, 20, 280, [](bool state) {
+    ui->label("Todo List:", cols[1], rows[3]);
+    ui::CheckBox* firstCheckbox = ui->checkBox(false, cols[1], 220, [](bool state) {
          std::cout << "Todo 'Buy milk' done: " << (state ? "Yes" : "No") << std::endl;
     });
-    ui->label("Buy milk", 50, 278);
-    ui->checkBox(true, 20, 310, [](bool state) {
+    ui->label("Buy milk", cols[2], 248);
+    ui->checkBox(true, cols[1], 310, [](bool state) {
          std::cout << "Todo 'Call Mom' done: " << (state ? "Yes" : "No") << std::endl;
     });
-    ui->label("Call Mom", 50, 308);
-
-    // --- ListView for Recent Tasks ---
-    ui->label("Recent Tasks:", 400, 240);
-    std::vector<std::string> recentTasks = { "Finish report", "Clean kitchen", "Email boss", "Plan weekend" };
+    ui->label("Call Mom", cols[2], 260);
 
     // --- Hotkey Registration ---
     // Assign hotkey Ctrl+f to bring focus to the File menu.
@@ -144,6 +144,14 @@ int main() {
             ctxMenu->items[0].subCallbacks[2]();
     });
     
+    // Assign hotkey Ctrl+m to change the theme to Molokai
+    ui->assignHotKey(ctxMenu, "m", [ctxMenu]() {
+        ctxMenu->activeItemIndex = 1; // "File"
+        if (!ctxMenu->items.empty() && ctxMenu->items[0].subCallbacks.size() >= 3)
+            ctxMenu->items[1].subCallbacks[3]();
+    });
+
+
     // Assign hotkey Ctrl+b to activate the Add Todo button.
     ui->assignHotKey(addTodoButton, "b");
     

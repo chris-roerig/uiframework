@@ -29,16 +29,20 @@ namespace ui {
         SDL_RenderDrawLine(renderer, x1, y1, x2, y2);
     }
 
-    void renderText(SDL_Renderer* renderer, const std::string &text, int x, int y, const Color &color) {
+    std::pair<int, int> renderText(SDL_Renderer* renderer, const std::string &text, int x, int y, const Color &color) {
         initFont();
-        if (!globalFont) return;
+        if (!globalFont) return {0, 0};
+
         SDL_Color sdlColor = { color.r, color.g, color.b, color.a };
         SDL_Surface* surface = TTF_RenderText_Solid(globalFont, text.c_str(), sdlColor);
-        if (!surface) return;
+        if (!surface) return {0, 0};
+
         SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
         SDL_Rect dst = { x, y, surface->w, surface->h };
         SDL_FreeSurface(surface);
         SDL_RenderCopy(renderer, texture, nullptr, &dst);
         SDL_DestroyTexture(texture);
+
+        return {dst.w, dst.h};  // Return width and height
     }
 }
