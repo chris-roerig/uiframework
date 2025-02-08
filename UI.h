@@ -24,6 +24,13 @@ public:
     ui::ListView* listView(const std::vector<std::string>& items, int x, int y, int w, int h, int itemHeight = 30);
     ui::Image* image(const std::string &path, int x, int y, int w, int h, bool stretch = false);
     ui::Image* image(const unsigned char* data, size_t dataSize, int x, int y, int w, int h, bool stretch = false);
+    ui::Sprite* sprite(const std::string &path, int x, int y, int w, int h, bool stretch);
+    ui::Sprite* sprite(const unsigned char* data, size_t dataSize, int x, int y, int w, int h, bool stretch);
+    ui::AnimatedSprite* animatedSprite(const std::string &path, int x, int y, int w, int h,
+                                         int frameCount, Uint32 frameDelay, bool stretch = false);
+    ui::AnimatedSprite* animatedSprite(const unsigned char* data, size_t dataSize, int x, int y, int w, int h,
+                                         int frameCount, Uint32 frameDelay, bool stretch = false);
+
 
     void assignHotKey(ui::UIElement* element, const std::string &hotKey);
     void assignHotKey(ui::UIElement* element, const std::string &hotKey, std::function<void()> customCallback);

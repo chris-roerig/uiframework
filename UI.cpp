@@ -84,6 +84,32 @@ ui::Image* UI::image(const unsigned char* data, size_t dataSize, int x, int y, i
     return img.get();
 }
 
+ui::Sprite* UI::sprite(const std::string &path, int x, int y, int w, int h, bool stretch) {
+    auto spr = std::make_shared<ui::Sprite>(x, y, w, h, path, core->renderer, stretch);
+    core->addElement(spr);
+    return spr.get();
+}
+
+ui::Sprite* UI::sprite(const unsigned char* data, size_t dataSize, int x, int y, int w, int h, bool stretch) {
+    auto spr = std::make_shared<ui::Sprite>(x, y, w, h, data, dataSize, core->renderer, stretch);
+    core->addElement(spr);
+    return spr.get();
+}
+
+ui::AnimatedSprite* UI::animatedSprite(const std::string &path, int x, int y, int w, int h,
+                                       int frameCount, Uint32 frameDelay, bool stretch) {
+    auto animSpr = std::make_shared<ui::AnimatedSprite>(x, y, w, h, path, core->renderer, frameCount, frameDelay, stretch);
+    core->addElement(animSpr);
+    return animSpr.get();
+}
+
+ui::AnimatedSprite* UI::animatedSprite(const unsigned char* data, size_t dataSize, int x, int y, int w, int h,
+                                       int frameCount, Uint32 frameDelay, bool stretch) {
+    auto animSpr = std::make_shared<ui::AnimatedSprite>(x, y, w, h, data, dataSize, core->renderer, frameCount, frameDelay, stretch);
+    core->addElement(animSpr);
+    return animSpr.get();
+}
+
 ui::Canvas* UI::canvas(int x, int y, int width, int height) {
     auto cnv = std::make_shared<ui::Canvas>(x, y, width, height);
     core->addElement(cnv);

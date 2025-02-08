@@ -128,12 +128,29 @@ int main() {
     });
     ui->label("Call Mom", cols[2], 260);
 
+    // **** Image **** */
     ui->image("demos/smiley.png", cols[1], 400, 100, 100, true);
-
     // demo of loading a binary/embedded image
     #include "smiley_image.h"
     ui->image(smiley_png, smiley_png_len, cols[1] + 100, 400, 100, 100, true);
 
+
+    // **** Sprite **** */
+    // Example: File-based animated sprite.
+    // Create the animated sprite with a destination size of 85×85 (or different, if you want to scale).
+    // The parameters: x, y, width, height, file path, renderer is obtained internally,
+    // number of frames (9), frame delay in milliseconds (e.g. 100), and stretch (true).
+    ui::AnimatedSprite* animSprFile = ui->animatedSprite("demos/sprite_sheet.png", cols[1], 500, 85, 85, 9, 100, true);
+
+    // Since your sprite sheet is 1024×1024 but you want fixed 85×85 frames,
+    // override the default frame calculation by explicitly setting the frame dimensions.
+    animSprFile->setFrameDimensions(80, 80, 9);
+
+    // Example: Embedded animated sprite.
+    // Include your generated header with binary data.
+    #include "sprite_sheet_image.h"
+    ui::AnimatedSprite* animSprEmbedded = ui->animatedSprite(sprite_sheet_png, sprite_sheet_png_len, cols[1] + 120, 500, 85, 85, 9, 100, true);
+    animSprEmbedded->setFrameDimensions(80, 80, 9);
 
     // --- Hotkey Registration ---
     // Assign hotkey Ctrl+f to bring focus to the File menu.

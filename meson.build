@@ -23,6 +23,8 @@ executable('sdl_ui_demo',
     'UIElements/OptionSelect.cpp',
     'UIElements/Canvas.cpp',
     'UIElements/Image.cpp',
+    'UIElements/Sprite.cpp',
+    'UIElements/AnimatedSprite.cpp',
   ],
   dependencies : [sdl2_dep, ttf_dep, sdl2_image_dep],
   install : true

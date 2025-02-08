@@ -12,3 +12,5 @@
 #include "UIElements/OptionSelect.h"
 #include "UIElements/TextBox.h"
 #include "UIElements/Image.h"
+#include "UIElements/Sprite.h"
+#include "UIElements/AnimatedSprite.h"
