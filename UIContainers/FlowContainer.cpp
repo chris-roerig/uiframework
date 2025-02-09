@@ -11,7 +11,7 @@ FlowContainer::FlowContainer(int x_, int y_, int w_, int h_)
 
 FlowContainer::~FlowContainer() {}
 
-void FlowContainer::addChild(std::shared_ptr<UIElement> child) {
+void FlowContainer::addChild(UIElement* child) {
     children.push_back(child);
 }
 

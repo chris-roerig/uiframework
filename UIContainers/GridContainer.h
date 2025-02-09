@@ -15,7 +15,7 @@ public:
     virtual ~GridContainer();
 
     // Add a child element.
-    void addChild(std::shared_ptr<UIElement> child);
+    void addChild(UIElement* child);
 
     // Set horizontal and vertical spacing between grid cells.
     void setSpacing(int horizontal, int vertical);

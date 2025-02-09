@@ -15,7 +15,7 @@ public:
     virtual ~FlowContainer();
 
     // Add a child element to the container.
-    void addChild(std::shared_ptr<UIElement> child);
+    void addChild(UIElement* child);
 
     // Set spacing between elements.
     void setSpacing(int horizontal, int vertical);
