@@ -19,14 +19,17 @@ public:
     LayeredContainer(int x_, int y_, int w_, int h_);
     virtual ~LayeredContainer();
 
-    // Add a child element with a specified z-index.
-    void addChild(std::shared_ptr<UIElement> child, int zIndex);
+    // Adds a child UIElement to the layered container
+    void addChild(UIElement* child);
+
+    // Returns the list of children
+    const std::vector<UIElement*>& getChildren() const;
 
     virtual void render(SDL_Renderer* renderer) override;
     virtual void handleEvent(const SDL_Event &e) override;
 
 private:
-    std::vector<LayeredChild> children;
+    std::vector<UIElement*> children;
 };
 
 } // namespace ui

@@ -50,6 +50,10 @@ void FlowContainer::render(SDL_Renderer* renderer) {
     }
 }
 
+const std::vector<UIElement*>& FlowContainer::getChildren() const {
+    return children;
+}
+
 void FlowContainer::handleEvent(const SDL_Event &e) {
     for(auto &child : children)
         child->handleEvent(e);

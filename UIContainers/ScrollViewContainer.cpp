@@ -12,8 +12,12 @@ ScrollViewContainer::ScrollViewContainer(int x_, int y_, int w_, int h_, int min
 
 ScrollViewContainer::~ScrollViewContainer() {}
 
-void ScrollViewContainer::addChild(std::shared_ptr<UIElement> child) {
+void ScrollViewContainer::addChild(UIElement* child) {
     children.push_back(child);
+}
+
+const std::vector<UIElement*>& ScrollViewContainer::getChildren() const {
+    return children;
 }
 
 void ScrollViewContainer::setScrollOffset(int offsetX, int offsetY) {

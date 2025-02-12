@@ -12,8 +12,12 @@ GridContainer::GridContainer(int x_, int y_, int w_, int h_, int columns_)
 
 GridContainer::~GridContainer() {}
 
-void GridContainer::addChild(std::shared_ptr<UIElement> child) {
+void GridContainer::addChild(UIElement* child) {
     children.push_back(child);
+}
+
+const std::vector<UIElement*>& GridContainer::getChildren() const {
+    return children;
 }
 
 void GridContainer::setSpacing(int horizontal, int vertical) {

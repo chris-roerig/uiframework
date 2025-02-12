@@ -21,7 +21,8 @@ public:
     virtual ~StackContainer();
 
     // Add a child element.
-    void addChild(std::shared_ptr<UIElement> child);
+    void addChild(UIElement* child);
+    const std::vector<UIElement*>& getChildren() const;
 
     // Set spacing between elements.
     void setSpacing(int spacing);
@@ -32,7 +33,7 @@ public:
     virtual void handleEvent(const SDL_Event &e) override;
 
 private:
-    std::vector<std::shared_ptr<UIElement>> children;
+    std::vector<UIElement*> children;
     StackOrientation orientation;
     int spacing;
 };

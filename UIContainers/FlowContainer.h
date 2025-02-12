@@ -23,11 +23,13 @@ public:
     // Render the container and its children using a flow layout.
     virtual void render(SDL_Renderer* renderer) override;
 
+    const std::vector<UIElement*>& getChildren() const;
+
     // Handle events (if needed, e.g. for mouse interactions).
     virtual void handleEvent(const SDL_Event &e) override;
 
 private:
-    std::vector<std::shared_ptr<UIElement>> children;
+    std::vector<UIElement*> children;
     int horizontalSpacing;
     int verticalSpacing;
 };

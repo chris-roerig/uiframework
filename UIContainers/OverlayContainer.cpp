@@ -11,8 +11,12 @@ OverlayContainer::OverlayContainer(int x_, int y_, int w_, int h_)
 
 OverlayContainer::~OverlayContainer() {}
 
-void OverlayContainer::addChild(std::shared_ptr<UIElement> child) {
+void OverlayContainer::addChild(UIElement* child) {
     children.push_back(child);
+}
+
+const std::vector<UIElement*>& OverlayContainer::getChildren() const {
+    return children;
 }
 
 void OverlayContainer::render(SDL_Renderer* renderer) {

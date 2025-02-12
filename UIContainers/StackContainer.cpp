@@ -11,8 +11,12 @@ StackContainer::StackContainer(int x_, int y_, int w_, int h_, StackOrientation 
 
 StackContainer::~StackContainer() {}
 
-void StackContainer::addChild(std::shared_ptr<UIElement> child) {
+void StackContainer::addChild(UIElement* child) {
     children.push_back(child);
+}
+
+const std::vector<UIElement*>& StackContainer::getChildren() const {
+    return children;
 }
 
 void StackContainer::setSpacing(int sp) {

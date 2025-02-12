@@ -12,8 +12,12 @@ LayeredContainer::LayeredContainer(int x_, int y_, int w_, int h_)
 
 LayeredContainer::~LayeredContainer() {}
 
-void LayeredContainer::addChild(std::shared_ptr<UIElement> child, int zIndex) {
-    children.push_back({ zIndex, child });
+void LayeredContainer::addChild(UIElement* child) {
+    children.push_back(child);
+}
+
+const std::vector<UIElement*>& LayeredContainer::getChildren() const {
+    return children;
 }
 
 void LayeredContainer::render(SDL_Renderer* renderer) {

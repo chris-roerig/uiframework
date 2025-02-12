@@ -14,8 +14,11 @@ public:
     GridContainer(int x_, int y_, int w_, int h_, int columns);
     virtual ~GridContainer();
 
-    // Add a child element.
+    // Adds a child UIElement to the grid container
     void addChild(UIElement* child);
+
+    // Returns the list of children
+    const std::vector<UIElement*>& getChildren() const;
 
     // Set horizontal and vertical spacing between grid cells.
     void setSpacing(int horizontal, int vertical);
@@ -26,7 +29,7 @@ public:
     virtual void handleEvent(const SDL_Event &e) override;
 
 private:
-    std::vector<std::shared_ptr<UIElement>> children;
+    std::vector<UIElement*> children;
     int columns;
     int horizontalSpacing;
     int verticalSpacing;

@@ -15,8 +15,11 @@ public:
     ScrollViewContainer(int x_, int y_, int w_, int h_, int minWidth_, int minHeight_);
     virtual ~ScrollViewContainer();
 
-    // Add a child element.
-    void addChild(std::shared_ptr<UIElement> child);
+    // Adds a child UIElement to the scroll view container
+    void addChild(UIElement* child);
+
+    // Returns the list of children
+    const std::vector<UIElement*>& getChildren() const;
 
     // Set the scroll offset.
     void setScrollOffset(int offsetX, int offsetY);
@@ -28,7 +31,7 @@ public:
     virtual void handleEvent(const SDL_Event &e) override;
 
 private:
-    std::vector<std::shared_ptr<UIElement>> children;
+    std::vector<UIElement*> children;
     int scrollX, scrollY;
     int minWidth, minHeight;
 };
