@@ -35,6 +35,11 @@ public:
         defaultModalButtonText = defaultButtonText;
         defaultModalButtonHighlight = defaultHighlight;
         defaultModalButtonBorder = defaultButtonBorderDark;
+
+        defaultProgressBarBackground = Color(128, 128, 128);
+        defaultProgressBarBorder = Color(90, 90, 90);
+        defaultProgressBarForeground = Color(248, 248, 242);
+        defaultProgressBarText = Color(248, 248, 242);
     }
 };
 

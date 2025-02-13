@@ -119,14 +119,16 @@ int main() {
 
     // --- Todo List ---
     ui->label("Todo List:", cols[1], rows[3]);
-    ui::CheckBox* firstCheckbox = ui->checkBox(false, cols[1], 220, [](bool state) {
+
+    ui::CheckBox* firstCheckbox = ui->checkBox(false, cols[1], 250, [](bool state) {
          std::cout << "Todo 'Buy milk' done: " << (state ? "Yes" : "No") << std::endl;
     });
-    ui->label("Buy milk", cols[2], 248);
-    ui->checkBox(true, cols[1], 310, [](bool state) {
+    ui->label("Buy milk", cols[2], 250);
+
+    ui->checkBox(true, cols[1], 280, [](bool state) {
          std::cout << "Todo 'Call Mom' done: " << (state ? "Yes" : "No") << std::endl;
     });
-    ui->label("Call Mom", cols[2], 260);
+    ui->label("Call Mom", cols[2], 280);
 
     // **** Image **** */
     ui->image("demos/smiley.png", cols[1], 400, 100, 100, true);
@@ -151,6 +153,18 @@ int main() {
     #include "sprite_sheet_image.h"
     ui::AnimatedSprite* animSprEmbedded = ui->animatedSprite(sprite_sheet_png, sprite_sheet_png_len, cols[1] + 120, 500, 85, 85, 9, 100, true);
     animSprEmbedded->setFrameDimensions(80, 80, 9);
+
+
+    // Create a progress bar at (50, 100) with a size of 200x20 pixels
+    ui::ProgressBar* pb = ui->progressBar(cols[0], 700, 400, 40, true);
+    pb->reset(0);
+    ui::Button* pbButton = ui->button("Increment", cols[1], 700, [pb](){
+        if(pb->getProgress() >= 1) {
+            pb->reset(0);
+        }
+        pb->incrementProgress(0.01);
+    }); 
+
 
     // --- Hotkey Registration ---
     // Assign hotkey Ctrl+f to bring focus to the File menu.

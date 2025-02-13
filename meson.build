@@ -25,6 +25,7 @@ executable('sdl_ui_demo',
     'UIElements/Image.cpp',
     'UIElements/Sprite.cpp',
     'UIElements/AnimatedSprite.cpp',
+    'UIElements/ProgressBar.cpp',
   ],
   dependencies : [sdl2_dep, ttf_dep, sdl2_image_dep],
   install : true

@@ -37,6 +37,12 @@ void UI::assignHotKey(ui::UIElement* element, const std::string &hotKeyStr, std:
     }
 }
 
+// Wrapper functions to create a new ProgressBar instance easily
+ui::ProgressBar* UI::progressBar(int x, int y, int width, int height, float initValue, bool showText) {
+    auto pb = std::make_shared<ui::ProgressBar>(x, y, width, height, initValue, showText);
+    core->addElement(pb);
+    return pb.get();
+}
 
 ui::Label* UI::label(const std::string &text, int x, int y) {
     auto lbl = std::make_shared<ui::Label>(x, y, text);

@@ -31,6 +31,7 @@ public:
     ui::AnimatedSprite* animatedSprite(const unsigned char* data, size_t dataSize, int x, int y, int w, int h,
                                          int frameCount, Uint32 frameDelay, bool stretch = false);
 
+    ui::ProgressBar* progressBar(int x, int y, int width, int height, float initValue = 0.0f, bool showText = true);
 
     void assignHotKey(ui::UIElement* element, const std::string &hotKey);
     void assignHotKey(ui::UIElement* element, const std::string &hotKey, std::function<void()> customCallback);

@@ -64,6 +64,11 @@ public:
 
         defaultListViewScrollbarBackground = Color(200, 200, 200); // Light gray for the track.
         defaultListViewScrollbarThumb = Color(150, 150, 150);        // Darker gray for the thumb.
+
+        defaultProgressBarBackground = Color(68, 71, 90);
+        defaultProgressBarBorder = Color(100, 100, 110);
+        defaultProgressBarForeground = Color(255, 121, 198);
+        defaultProgressBarText = Color(0,0,0,255);
     }
 };
 

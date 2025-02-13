@@ -14,3 +14,4 @@
 #include "UIElements/Image.h"
 #include "UIElements/Sprite.h"
 #include "UIElements/AnimatedSprite.h"
+#include "UIElements/ProgressBar.h"

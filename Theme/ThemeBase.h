@@ -44,7 +44,10 @@ struct ThemeableElementColors {
     Color modalButtonBorder; 
     Color listViewScrollbarBackground;
     Color listViewScrollbarThumb;
-
+    Color progressBarBackground;
+    Color progressBarBorder;
+    Color progressBarForeground;
+    Color progressBarText;
 };
 
 class Theme {
@@ -58,6 +61,7 @@ public:
     virtual ThemeableElementColors contextMenuColors() const = 0;
     virtual ThemeableElementColors modalColors() const = 0;
     virtual ThemeableElementColors listViewColors() const = 0;
+    virtual ThemeableElementColors progressBarColors() const = 0;
     virtual Color highlightColor() const = 0;
     virtual Color backgroundColor() const = 0;
     virtual Color foregroundColor() const = 0;
@@ -105,6 +109,10 @@ protected:
     Color defaultModalButtonBorder;
     Color defaultListViewScrollbarBackground;
     Color defaultListViewScrollbarThumb;
+    Color defaultProgressBarBackground;
+    Color defaultProgressBarBorder;
+    Color defaultProgressBarForeground;
+    Color defaultProgressBarText;
 
 public:
     ThemeBase()
@@ -192,6 +200,14 @@ public:
         ThemeableElementColors c;
         c.listViewScrollbarBackground = defaultListViewScrollbarBackground;
         c.listViewScrollbarThumb = defaultListViewScrollbarThumb;
+        return c;
+    }
+    ThemeableElementColors progressBarColors() const override {
+        ThemeableElementColors c;
+        c.progressBarBackground = defaultProgressBarBackground;
+        c.progressBarBorder = defaultProgressBarBorder;
+        c.progressBarForeground = defaultProgressBarForeground;
+        c.progressBarText = defaultProgressBarText;
         return c;
     }
     
