@@ -132,7 +132,12 @@ void ListView::handleEvent(const SDL_Event &e) {
             
             if (containsPoint(mouseX, mouseY)) {
                 if (coreRef) {
-                    coreRef->setFocus(elementId);
+                    std::string elementIdCopy = elementId;
+                    coreRef->queueCallback([this, elementIdCopy]() {
+                        if (coreRef) {
+                            coreRef->setFocus(elementIdCopy);
+                        }
+                    });
                 }
                 
                 int clickedItem = getItemAt(mouseX, mouseY);
@@ -145,14 +150,24 @@ void ListView::handleEvent(const SDL_Event &e) {
                         } else {
                             selectedIndices.push_back(clickedItem);
                         }
-                        if (onSelectionChange) {
-                            onSelectionChange(selectedIndices);
+                        if (onSelectionChange && coreRef) {
+                            std::vector<int> currentSelection = selectedIndices;
+                            coreRef->queueCallback([this, currentSelection]() {
+                                if (onSelectionChange) {
+                                    onSelectionChange(currentSelection);
+                                }
+                            });
                         }
                     } else {
                         // Single selection
                         setSelectedIndex(clickedItem);
-                        if (e.button.clicks == 2 && onItemActivated) {
-                            onItemActivated(clickedItem);
+                        if (e.button.clicks == 2 && onItemActivated && coreRef) {
+                            int activatedItem = clickedItem;
+                            coreRef->queueCallback([this, activatedItem]() {
+                                if (onItemActivated) {
+                                    onItemActivated(activatedItem);
+                                }
+                            });
                         }
                     }
                 }
@@ -217,8 +232,13 @@ SDL_Rect ListView::getFocusRect() const {
 }
 
 void ListView::activate() {
-    if (onItemActivated && selectedIndex >= 0 && selectedIndex < static_cast<int>(getCurrentItems().size())) {
-        onItemActivated(selectedIndex);
+    if (onItemActivated && selectedIndex >= 0 && selectedIndex < static_cast<int>(getCurrentItems().size()) && coreRef) {
+        int currentSelectedIndex = selectedIndex;
+        coreRef->queueCallback([this, currentSelectedIndex]() {
+            if (onItemActivated && currentSelectedIndex >= 0 && currentSelectedIndex < static_cast<int>(getCurrentItems().size())) {
+                onItemActivated(currentSelectedIndex);
+            }
+        });
     }
 }
 
@@ -258,8 +278,13 @@ void ListView::setSelectedIndex(int index) {
         if (!multiSelect) {
             selectedIndices = {index};
         }
-        if (onSelectionChange) {
-            onSelectionChange(selectedIndices);
+        if (onSelectionChange && coreRef) {
+            std::vector<int> currentSelection = selectedIndices;
+            coreRef->queueCallback([this, currentSelection]() {
+                if (onSelectionChange) {
+                    onSelectionChange(currentSelection);
+                }
+            });
         }
     }
 }

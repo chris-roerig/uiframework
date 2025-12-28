@@ -1,6 +1,7 @@
 #include "CheckBox.h"
 #include "../../lib/Theme/ThemeBase.h"
 #include "../../src/Helpers.h"
+#include "../../src/UICore.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include <iostream>
@@ -66,12 +67,17 @@ void CheckBox::activate() {
 void CheckBox::setChecked(bool state) {
     if (checked != state) {
         checked = state;
-        if (onToggle) {
-            try {
-                onToggle(checked);
-            } catch (const std::exception& e) {
-                std::cerr << "Error in checkbox callback: " << e.what() << std::endl;
-            }
+        if (onToggle && coreRef) {
+            bool currentState = checked;
+            coreRef->queueCallback([this, currentState]() {
+                if (onToggle) {
+                    try {
+                        onToggle(currentState);
+                    } catch (const std::exception& e) {
+                        std::cerr << "Error in checkbox callback: " << e.what() << std::endl;
+                    }
+                }
+            });
         }
     }
 }

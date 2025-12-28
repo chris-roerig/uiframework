@@ -1,6 +1,7 @@
 #include "ContextMenu.h"
 #include "../../lib/Theme/ThemeBase.h"
 #include "../../src/Helpers.h"
+#include "../../src/UICore.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include <iostream>
@@ -249,15 +250,18 @@ SDL_Rect ContextMenu::getFocusRect() const {
 }
 
 void ContextMenu::activate() {
-    if (expanded && activeItemIndex >= 0 && activeItemIndex < static_cast<int>(items.size())) {
+    if (expanded && activeItemIndex >= 0 && activeItemIndex < static_cast<int>(items.size()) && coreRef) {
         const auto& activeItem = items[activeItemIndex];
         if (subMenuSelectedIndex >= 0 && subMenuSelectedIndex < static_cast<int>(activeItem.subCallbacks.size())) {
             if (activeItem.subCallbacks[subMenuSelectedIndex]) {
-                try {
-                    activeItem.subCallbacks[subMenuSelectedIndex]();
-                } catch (const std::exception& e) {
-                    std::cerr << "Error in context menu callback: " << e.what() << std::endl;
-                }
+                auto callback = activeItem.subCallbacks[subMenuSelectedIndex];
+                coreRef->queueCallback([callback]() {
+                    try {
+                        callback();
+                    } catch (const std::exception& e) {
+                        std::cerr << "Error in context menu callback: " << e.what() << std::endl;
+                    }
+                });
             }
             collapseMenu();
         }
