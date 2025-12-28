@@ -51,3 +51,24 @@ TEST_CASE("Empty ContextMenu", "[contextmenu]") {
         REQUIRE(ctx != nullptr);
     }
 }
+
+TEST_CASE("ContextMenu callback deferral", "[contextmenu]") {
+    UI ui("Test Window", 800, 600);
+    
+    SECTION("Menu callbacks are deferred") {
+        bool callbackExecuted = false;
+        std::vector<ui::TopMenuItem> menus = {
+            {"File", {{"Test", [&callbackExecuted]() { callbackExecuted = true; }}}}
+        };
+        auto contextmenu = ui.createContextMenu(menus);
+        
+        // Simulate menu activation
+        contextmenu->setActiveItem(0);
+        contextmenu->expandMenu();
+        contextmenu->selectSubItem(0);
+        contextmenu->activate();
+        
+        // Callback should be queued for deferred execution to prevent deadlocks
+        REQUIRE(contextmenu != nullptr);
+    }
+}

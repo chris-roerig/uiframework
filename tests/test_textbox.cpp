@@ -64,3 +64,38 @@ TEST_CASE("TextBox focus behavior", "[textbox]") {
         REQUIRE_FALSE(textBox->hasSelection());
     }
 }
+
+TEST_CASE("TextBox text input handling", "[textbox]") {
+    UI ui("Test Window", 800, 600);
+    
+    SECTION("Text input with selected text") {
+        auto textBox = ui.createTextBox("Original text", 10, 10);
+        textBox->onFocusGained();
+        textBox->selectAll();
+        
+        // Simulate text input event
+        SDL_Event e;
+        e.type = SDL_TEXTINPUT;
+        strcpy(e.text.text, "New");
+        
+        textBox->handleEvent(e);
+        
+        REQUIRE(textBox->getText() == "New");
+        REQUIRE_FALSE(textBox->hasSelection());
+    }
+    
+    SECTION("Text input without selection") {
+        auto textBox = ui.createTextBox("Test", 10, 10);
+        textBox->onFocusGained();
+        textBox->clearSelection();
+        
+        // Simulate text input event
+        SDL_Event e;
+        e.type = SDL_TEXTINPUT;
+        strcpy(e.text.text, "!");
+        
+        textBox->handleEvent(e);
+        
+        REQUIRE(textBox->getText() == "Test!");
+    }
+}

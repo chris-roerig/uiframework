@@ -177,18 +177,11 @@ executable('ui_tests',
     'tests/test_contextmenu.cpp',
     'tests/test_textbox.cpp',
     'tests/test_optionselect.cpp',
+    'tests/test_deadlock_prevention.cpp',
     # 'tests/test_layout.cpp',  # Layout tests disabled - implementation issues
   ] + common_sources,
   dependencies : [sdl2_dep, ttf_dep, sdl2_image_dep, catch2_dep],
   install : false
-)
-
-# Debug TextBox
-executable('debug_textbox', 
-    'debug_textbox.cpp',
-    common_sources,
-    dependencies : [sdl2_dep, ttf_dep, sdl2_image_dep],
-    install : false
 )
 
 # TextBox demo

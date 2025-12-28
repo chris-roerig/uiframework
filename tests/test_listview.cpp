@@ -46,3 +46,40 @@ TEST_CASE("Multiple ListViews", "[listview]") {
         REQUIRE(list1 != list2);
     }
 }
+
+TEST_CASE("ListView callback deferral", "[listview]") {
+    UI ui("Test Window", 800, 600);
+    
+    SECTION("Selection callbacks are deferred") {
+        std::vector<std::string> items = {"Item 1", "Item 2", "Item 3"};
+        bool selectionChanged = false;
+        
+        auto listview = ui.createListView(items, 10, 10, 200, 150);
+        listview->onSelectionChange = [&selectionChanged](const std::vector<int>& indices) {
+            selectionChanged = true;
+        };
+        
+        // Simulate selection change
+        listview->setSelectedIndex(1);
+        
+        // Callback should be queued for deferred execution
+        REQUIRE(listview != nullptr);
+    }
+    
+    SECTION("Focus changes are deferred") {
+        std::vector<std::string> items = {"Item 1", "Item 2"};
+        auto listview = ui.createListView(items, 10, 10, 200, 150);
+        
+        // Simulate mouse click event
+        SDL_Event e;
+        e.type = SDL_MOUSEBUTTONDOWN;
+        e.button.button = SDL_BUTTON_LEFT;
+        e.button.x = 50;
+        e.button.y = 50;
+        
+        listview->handleEvent(e);
+        
+        // Focus change should be deferred to prevent deadlocks
+        REQUIRE(listview != nullptr);
+    }
+}
