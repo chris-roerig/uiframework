@@ -1,0 +1,33 @@
+#!/bin/bash
+
+echo "🎨 UI Framework - Complete Widget Showcase"
+echo "=========================================="
+echo ""
+echo "This unified demo showcases ALL working widgets:"
+echo ""
+echo "✓ Labels - Text display with theme support"
+echo "✓ Buttons - Interactive with callbacks and hotkeys"  
+echo "✓ TextBox - Text input with cursor support"
+echo "✓ CheckBoxes - Boolean toggles with state callbacks"
+echo "✓ OptionSelect - Dropdown menu with selections"
+echo "✓ ProgressBars - Visual progress indicators"
+echo "✓ ListView - Scrollable item lists"
+echo "✓ Canvas - Custom drawing surface"
+echo "✓ Modal Dialogs - Info and confirmation popups"
+echo "✓ Context Menus - Right-click hierarchical menus"
+echo "✓ Theme System - 4 built-in themes"
+echo ""
+echo "🎮 Controls:"
+echo "• Click and interact with all widgets"
+echo "• Type in text boxes, check checkboxes"
+echo "• Right-click anywhere for context menu"
+echo "• Try theme buttons to change appearance"
+echo "• Hotkeys: 1=Button1, 2=Button2, i=Info, c=Confirm"
+echo "• Close window to exit"
+echo ""
+echo "Press any key to launch the demo..."
+read -n 1 -s
+
+cd "$(dirname "$0")"
+echo "Launching unified demo..."
+./build/unified_demo
