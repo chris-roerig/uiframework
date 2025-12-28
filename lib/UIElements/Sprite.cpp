@@ -201,10 +201,10 @@ void Sprite::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<Them
     
     // Draw focus indicator if focused
     if (hasFocus && theme) {
-        auto colors = theme->buttonColors();
+        auto colors = theme->focusColors();
         SDL_Rect focusRect = getFocusRect();
-        SDL_SetRenderDrawColor(renderer, colors.buttonText.r, colors.buttonText.g, 
-                             colors.buttonText.b, colors.buttonText.a);
+        SDL_SetRenderDrawColor(renderer, colors.focusBorder.r, colors.focusBorder.g, 
+                             colors.focusBorder.b, colors.focusBorder.a);
         SDL_RenderDrawRect(renderer, &focusRect);
     }
 }

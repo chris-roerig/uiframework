@@ -17,7 +17,8 @@ void Canvas::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<Them
     SDL_RenderSetClipRect(renderer, &clipRect);
     
     // Draw canvas background
-    drawFilledRect(renderer, clipRect, theme->backgroundColor());
+    auto colors = theme->canvasColors();
+    drawFilledRect(renderer, clipRect, colors.canvasBackground);
     
     // Execute all draw commands
     for (auto& cmd : drawCommands) {
@@ -35,9 +36,9 @@ void Canvas::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<Them
     
     // Draw border if focused
     if (hasFocus && theme) {
-        auto colors = theme->buttonColors(); // Use button colors for focus
+        auto colors = theme->focusColors();
         SDL_Rect focusRect = getFocusRect();
-        SDL_SetRenderDrawColor(renderer, colors.buttonText.r, colors.buttonText.g, colors.buttonText.b, colors.buttonText.a);
+        SDL_SetRenderDrawColor(renderer, colors.focusBorder.r, colors.focusBorder.g, colors.focusBorder.b, colors.focusBorder.a);
         SDL_RenderDrawRect(renderer, &focusRect);
     }
 }

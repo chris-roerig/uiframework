@@ -5,60 +5,199 @@
 
 int main() {
     try {
-        UI ui("Comprehensive UI Demo - All Widgets", 1200, 800);
+        UI ui("Comprehensive UI Demo - All Widgets with Layouts", 1400, 900);
         
-        // Basic widgets without problematic OptionSelect initially
-        auto titleLabel = ui.createLabel("UI Framework Widget Showcase", 200, 10);
+        // Title
+        auto titleLabel = ui.createLabel("UI Framework Widget Showcase with Layout System", 200, 10);
         
-        // Buttons
-        auto button1 = ui.createButton("Standard Button", 10, 50, []() {
+        // Create main horizontal layout for organizing content
+        auto mainHBox = ui.createHBoxLayout(10, 50, 1380, 800, 20);
+        
+        // Left column - Basic widgets in VBox
+        auto leftVBox = ui.createVBoxLayout(0, 0, 350, 750, 10);
+        
+        // Basic widgets section
+        auto basicLabel = ui.createLabel("Basic Widgets:", 0, 0);
+        leftVBox->addElement(basicLabel);
+        
+        auto button1 = ui.createButton("Standard Button", 0, 0, []() {
             std::cout << "Standard button clicked!" << std::endl;
         });
+        leftVBox->addElement(button1);
         
-        auto button2 = ui.createButton("Action Button", 150, 50, []() {
+        auto button2 = ui.createButton("Action Button", 0, 0, []() {
             std::cout << "Action performed!" << std::endl;
         });
+        leftVBox->addElement(button2);
         
-        // Text input
-        auto textBox = ui.createTextBox("Enter text here...", 10, 90);
+        auto textBox = ui.createTextBox("Enter text here...", 0, 0);
+        leftVBox->addElement(textBox);
         
-        // Checkboxes
+        // Checkboxes in horizontal layout
+        auto checkHBox = ui.createHBoxLayout(0, 0, 280, 30, 5);
         bool check1State = false, check2State = true;
-        auto checkbox1 = ui.createCheckBox(check1State, 10, 130, [&](bool state) {
+        auto checkbox1 = ui.createCheckBox(check1State, 0, 0, [&](bool state) {
             check1State = state;
             std::cout << "Checkbox 1: " << (state ? "checked" : "unchecked") << std::endl;
         });
-        auto checkLabel1 = ui.createLabel("Enable feature A", 35, 135);
+        auto checkLabel1 = ui.createLabel("Feature A", 0, 0);
+        checkHBox->addElement(checkbox1);
+        checkHBox->addElement(checkLabel1);
         
-        auto checkbox2 = ui.createCheckBox(check2State, 10, 160, [&](bool state) {
+        auto checkbox2 = ui.createCheckBox(check2State, 0, 0, [&](bool state) {
             check2State = state;
             std::cout << "Checkbox 2: " << (state ? "checked" : "unchecked") << std::endl;
         });
-        auto checkLabel2 = ui.createLabel("Enable feature B", 35, 165);
+        auto checkLabel2 = ui.createLabel("Feature B", 0, 0);
+        checkHBox->addElement(checkbox2);
+        checkHBox->addElement(checkLabel2);
         
-        // Progress bar
-        auto progressBar = ui.createProgressBar(10, 200, 200, 25, 0.65f, true);
+        leftVBox->addElement(checkHBox);
         
-        // List view
+        // Progress bars
+        auto progressLabel = ui.createLabel("Progress Bars:", 0, 0);
+        leftVBox->addElement(progressLabel);
+        
+        auto progressBar1 = ui.createProgressBar(0, 0, 280, 25, 0.35f, true);
+        leftVBox->addElement(progressBar1);
+        
+        auto progressBar2 = ui.createProgressBar(0, 0, 280, 25, 0.75f, true);
+        leftVBox->addElement(progressBar2);
+        
+        // Theme buttons in horizontal layout
+        auto themeLabel = ui.createLabel("Themes:", 0, 0);
+        leftVBox->addElement(themeLabel);
+        
+        auto themeHBox = ui.createHBoxLayout(0, 0, 280, 35, 5);
+        auto themeBtn1 = ui.createButton("Default", 0, 0, [&]() { ui.setTheme("Default"); });
+        auto themeBtn2 = ui.createButton("Dark", 0, 0, [&]() { ui.setTheme("SolarizedDark"); });
+        auto themeBtn3 = ui.createButton("Light", 0, 0, [&]() { ui.setTheme("SolarizedLight"); });
+        auto themeBtn4 = ui.createButton("Molokai", 0, 0, [&]() { ui.setTheme("Molokai"); });
+        
+        themeHBox->addElement(themeBtn1);
+        themeHBox->addElement(themeBtn2);
+        themeHBox->addElement(themeBtn3);
+        themeHBox->addElement(themeBtn4);
+        leftVBox->addElement(themeHBox);
+        
+        // Add leftVBox to main layout
+        mainHBox->addElement(leftVBox);
+        
+        // Middle column - List and Canvas in VBox
+        auto middleVBox = ui.createVBoxLayout(0, 0, 300, 750, 10);
+        
+        auto listLabel = ui.createLabel("List View:", 0, 0);
+        middleVBox->addElement(listLabel);
+        
         std::vector<std::string> listItems = {
             "List Item 1", "List Item 2", "List Item 3", 
             "List Item 4", "List Item 5", "List Item 6"
         };
-        auto listView = ui.createListView(listItems, 300, 50, 200, 150);
+        auto listView = ui.createListView(listItems, 0, 0, 240, 200);
+        middleVBox->addElement(listView);
         
-        // Canvas for custom drawing
-        auto canvas = ui.createCanvas(300, 210, 200, 100);
+        auto canvasLabel = ui.createLabel("Canvas:", 0, 0);
+        middleVBox->addElement(canvasLabel);
+        
+        auto canvas = ui.createCanvas(0, 0, 240, 150);
+        // Add some drawing to the canvas
+        canvas->filledRectRel(10, 10, 50, 30, {255, 0, 0, 255});
+        canvas->filledRectRel(70, 20, 40, 40, {0, 255, 0, 255});
+        canvas->filledRectRel(120, 15, 60, 25, {0, 0, 255, 255});
+        canvas->lineRel(0, 70, 240, 70, {255, 255, 255, 255});
+        middleVBox->addElement(canvas);
         
         // Modal buttons
-        auto infoModalBtn = ui.createButton("Info Modal", 520, 50, [&]() {
+        auto modalLabel = ui.createLabel("Modals:", 0, 0);
+        middleVBox->addElement(modalLabel);
+        
+        auto infoModalBtn = ui.createButton("Info Modal", 0, 0, [&]() {
             ui.createInfoModal("This is an information modal dialog.");
         });
+        middleVBox->addElement(infoModalBtn);
         
-        auto confirmModalBtn = ui.createButton("Confirm Modal", 520, 90, [&]() {
+        auto confirmModalBtn = ui.createButton("Confirm Modal", 0, 0, [&]() {
             ui.createConfirmModal("Are you sure you want to proceed?",
                 []() { std::cout << "Confirmed!" << std::endl; },
                 []() { std::cout << "Cancelled!" << std::endl; }
             );
+        });
+        middleVBox->addElement(confirmModalBtn);
+        
+        // Add middleVBox to main layout
+        mainHBox->addElement(middleVBox);
+        
+        // Right column - Sliders and Grid Layout Demo
+        auto rightVBox = ui.createVBoxLayout(0, 0, 350, 750, 15);
+        
+        // Sliders section
+        auto sliderLabel = ui.createLabel("Sliders:", 0, 0);
+        rightVBox->addElement(sliderLabel);
+        
+        // Horizontal slider with label
+        auto hSliderHBox = ui.createHBoxLayout(0, 0, 280, 35, 10);
+        auto hSlider = ui.createHSlider(0, 0, 180, 30, 0.0f, 100.0f, 50.0f);
+        auto hSliderLabel = ui.createLabel("H: 50", 0, 0);
+        hSliderHBox->addElement(hSlider);
+        hSliderHBox->addElement(hSliderLabel);
+        rightVBox->addElement(hSliderHBox);
+        
+        // Vertical and Knob sliders in horizontal layout
+        auto vkSliderHBox = ui.createHBoxLayout(0, 0, 280, 100, 20);
+        auto vSlider = ui.createVSlider(0, 0, 30, 90, 0.0f, 100.0f, 25.0f);
+        auto vSliderLabel = ui.createLabel("V: 25", 0, 0);
+        auto vSliderVBox = ui.createVBoxLayout(0, 0, 60, 90, 5);
+        vSliderVBox->addElement(vSlider);
+        vSliderVBox->addElement(vSliderLabel);
+        
+        auto knobSlider = ui.createKnobSlider(0, 0, 80, 0.0f, 100.0f, 75.0f);
+        auto knobLabel = ui.createLabel("Knob: 75", 0, 0);
+        auto knobVBox = ui.createVBoxLayout(0, 0, 80, 90, 5);
+        knobVBox->addElement(knobSlider);
+        knobVBox->addElement(knobLabel);
+        
+        vkSliderHBox->addElement(vSliderVBox);
+        vkSliderHBox->addElement(knobVBox);
+        rightVBox->addElement(vkSliderHBox);
+        
+        // Grid Layout Demo
+        auto gridLabel = ui.createLabel("Grid Layout Demo (2x3):", 0, 0);
+        rightVBox->addElement(gridLabel);
+        
+        auto gridDemo = ui.createGridLayout(0, 0, 280, 120, 2, 3, 5);
+        for (int i = 0; i < 6; i++) {
+            std::string label = "G" + std::to_string(i + 1);
+            auto gridBtn = ui.createButton(label, 0, 0, [i]() { 
+                std::cout << "Grid Button " << (i + 1) << " clicked!" << std::endl; 
+            });
+            gridDemo->addElement(gridBtn);
+        }
+        rightVBox->addElement(gridDemo);
+        
+        // Layout Demo section
+        auto layoutLabel = ui.createLabel("Layout Types:", 0, 0);
+        rightVBox->addElement(layoutLabel);
+        
+        auto layoutInfo1 = ui.createLabel("• VBox: Vertical stacking", 0, 0);
+        auto layoutInfo2 = ui.createLabel("• HBox: Horizontal arrangement", 0, 0);
+        auto layoutInfo3 = ui.createLabel("• Grid: 2D positioning", 0, 0);
+        rightVBox->addElement(layoutInfo1);
+        rightVBox->addElement(layoutInfo2);
+        rightVBox->addElement(layoutInfo3);
+        
+        mainHBox->addElement(rightVBox);
+        
+        // Add callbacks to update slider labels
+        hSlider->setOnChange([hSliderLabel](float value) {
+            hSliderLabel->setText("H: " + std::to_string((int)value));
+        });
+        
+        vSlider->setOnChange([vSliderLabel](float value) {
+            vSliderLabel->setText("V: " + std::to_string((int)value));
+        });
+        
+        knobSlider->setOnChange([knobLabel](float value) {
+            knobLabel->setText("Knob: " + std::to_string((int)value));
         });
         
         // Context menu
@@ -72,35 +211,18 @@ int main() {
                 {"Cut", []() { std::cout << "Cut" << std::endl; }},
                 {"Copy", []() { std::cout << "Copy" << std::endl; }},
                 {"Paste", []() { std::cout << "Paste" << std::endl; }}
+            }},
+            {"Layout", {
+                {"VBox Demo", []() { std::cout << "VBox layout demonstrated in left column" << std::endl; }},
+                {"HBox Demo", []() { std::cout << "HBox layout demonstrated in theme buttons" << std::endl; }},
+                {"Grid Demo", []() { std::cout << "Grid layout demonstrated with 6 buttons" << std::endl; }}
             }}
         };
         auto contextMenu = ui.createContextMenu(menuItems);
         
-        // Additional widgets in right column
-        auto moreButtons = ui.createLabel("More Controls:", 650, 50);
-        auto btn3 = ui.createButton("Button 3", 650, 80, []() { std::cout << "Button 3!" << std::endl; });
-        auto btn4 = ui.createButton("Button 4", 650, 120, []() { std::cout << "Button 4!" << std::endl; });
-        auto btn5 = ui.createButton("Button 5", 650, 160, []() { std::cout << "Button 5!" << std::endl; });
-        
-        // Progress bars with different values
-        auto progress1 = ui.createProgressBar(650, 200, 150, 20, 0.25f, true);
-        auto progress2 = ui.createProgressBar(650, 230, 150, 20, 0.75f, true);
-        auto progress3 = ui.createProgressBar(650, 260, 150, 20, 1.0f, true);
-        
-        // Theme selector (simplified without callback issues)
-        auto themeLabel = ui.createLabel("Themes:", 10, 250);
-        auto themeBtn1 = ui.createButton("Default", 10, 280, [&]() { ui.setTheme("Default"); });
-        auto themeBtn2 = ui.createButton("Dark", 100, 280, [&]() { ui.setTheme("SolarizedDark"); });
-        auto themeBtn3 = ui.createButton("Light", 170, 280, [&]() { ui.setTheme("SolarizedLight"); });
-        auto themeBtn4 = ui.createButton("Molokai", 240, 280, [&]() { ui.setTheme("Molokai"); });
-        
-        // Instructions
-        auto instructionLabel1 = ui.createLabel("Instructions:", 10, 350);
-        auto instructionLabel2 = ui.createLabel("• Click buttons and interact with widgets", 10, 370);
-        auto instructionLabel3 = ui.createLabel("• Type in text box and check checkboxes", 10, 390);
-        auto instructionLabel4 = ui.createLabel("• Right-click for context menu", 10, 410);
-        auto instructionLabel5 = ui.createLabel("• Try different theme buttons", 10, 430);
-        auto instructionLabel6 = ui.createLabel("• Close window to exit", 10, 450);
+        // Instructions at bottom
+        auto instructionLabel1 = ui.createLabel("Instructions: All widgets organized using VBox, HBox, and Grid layouts", 10, 760);
+        auto instructionLabel2 = ui.createLabel("• Right-click for context menu • Try theme buttons • Interact with all widgets", 10, 780);
         
         // Hotkeys
         ui.assignHotKey(button1, "1");
@@ -111,7 +233,14 @@ int main() {
         // Focus on first interactive element
         ui.setFocus(button1);
         
-        std::cout << "Comprehensive demo started! All widgets are functional." << std::endl;
+        std::cout << "Comprehensive demo with Layout System started!" << std::endl;
+        std::cout << "Layout organization:" << std::endl;
+        std::cout << "• Main HBox: 3 columns (Basic Widgets | List/Canvas | Sliders/Grid)" << std::endl;
+        std::cout << "• Left VBox: Basic widgets stacked vertically" << std::endl;
+        std::cout << "• Middle VBox: ListView and Canvas" << std::endl;
+        std::cout << "• Right VBox: Sliders and Grid layout demo" << std::endl;
+        std::cout << "• Nested layouts: Theme buttons in HBox, Checkboxes in HBox" << std::endl;
+        std::cout << "• Grid demo: 2x3 button grid" << std::endl;
         std::cout << "Hotkeys: 1=Button1, 2=Button2, i=Info Modal, c=Confirm Modal" << std::endl;
         std::cout << "Close the window to exit." << std::endl;
         

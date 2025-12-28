@@ -72,8 +72,8 @@ void OptionSelect::renderCollapsed(SDL_Renderer* renderer, TTF_Font* font, std::
         std::string displayText = truncateText(options[currentIndex], font, availableWidth);
         
         if (!displayText.empty()) {
-            SDL_Color textColor = { tc.selectOptionSelected.r, tc.selectOptionSelected.g, 
-                                    tc.selectOptionSelected.b, tc.selectOptionSelected.a };
+            SDL_Color textColor = { tc.selectOptionTextUnselected.r, tc.selectOptionTextUnselected.g, 
+                                    tc.selectOptionTextUnselected.b, tc.selectOptionTextUnselected.a };
             SDL_Surface* surface = TTF_RenderText_Solid(font, displayText.c_str(), textColor);
             if (surface) {
                 SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
@@ -146,8 +146,13 @@ void OptionSelect::renderExpanded(SDL_Renderer* renderer, TTF_Font* font, std::s
             std::string displayText = truncateText(options[i], font, availableWidth);
             
             if (!displayText.empty()) {
-                SDL_Color textColor = { tc.selectOptionSelected.r, tc.selectOptionSelected.g, 
-                                        tc.selectOptionSelected.b, tc.selectOptionSelected.a };
+                // Use selected text color for current/hovered items, unselected for others
+                bool isHighlighted = (i == currentIndex || i == hoveredIndex);
+                SDL_Color textColor = isHighlighted ? 
+                    SDL_Color{ tc.selectOptionTextSelected.r, tc.selectOptionTextSelected.g, 
+                              tc.selectOptionTextSelected.b, tc.selectOptionTextSelected.a } :
+                    SDL_Color{ tc.selectOptionTextUnselected.r, tc.selectOptionTextUnselected.g, 
+                              tc.selectOptionTextUnselected.b, tc.selectOptionTextUnselected.a };
                 SDL_Surface* surface = TTF_RenderText_Solid(font, displayText.c_str(), textColor);
                 if (surface) {
                     SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);

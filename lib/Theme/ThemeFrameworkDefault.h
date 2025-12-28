@@ -33,6 +33,8 @@ public:
         defaultSelectOptionSelected   = Color(255, 121, 198);
         defaultSelectOptionBorderLight = Color(100, 100, 110);
         defaultSelectOptionBorderDark  = Color(50, 50, 60);
+        defaultSelectOptionTextSelected = Color(31, 32, 40);
+        defaultSelectOptionTextUnselected = Color(248, 248, 242);
 
         // TextInput Colors
         defaultTextInputBackground = Color(68, 71, 90);
@@ -62,13 +64,33 @@ public:
         defaultModalButtonHighlight = defaultHighlight;
         defaultModalButtonBorder = defaultButtonBorderDark;  // or another value you prefer
 
-        defaultListViewScrollbarBackground = Color(200, 200, 200); // Light gray for the track.
-        defaultListViewScrollbarThumb = Color(150, 150, 150);        // Darker gray for the thumb.
-
         defaultProgressBarBackground = Color(68, 71, 90);
         defaultProgressBarBorder = Color(100, 100, 110);
         defaultProgressBarForeground = Color(255, 121, 198);
-        defaultProgressBarText = Color(0,0,0,255);
+        defaultProgressBarText = Color(248, 248, 242);
+
+        // ListView Colors
+        defaultListViewBackground = Color(68, 71, 90);
+        defaultListViewText = Color(248, 248, 242);
+        defaultListViewBorder = Color(50, 50, 60);
+        defaultGridBorder = Color(100, 100, 120);  // Grid border color
+        defaultListViewSelectedItem = Color(255, 121, 198);
+        defaultListViewScrollbarBackground = Color(100, 100, 110);
+        defaultListViewScrollbarThumb = Color(150, 150, 150);
+
+        // Focus Colors
+        defaultFocusBorder = Color(255, 121, 198);
+        defaultFocusBackground = Color(255, 121, 198, 30);
+
+        // Slider Colors
+        defaultSliderTrack = Color(68, 71, 90);
+        defaultSliderThumb = Color(255, 121, 198);
+        defaultSliderBorder = Color(50, 50, 60);
+
+        // Canvas Colors
+        defaultCanvasBackground = Color(31, 32, 40);
+        defaultCanvasGrid = Color(68, 71, 90);
+        defaultCanvasBorder = Color(50, 50, 60);
     }
 };
 

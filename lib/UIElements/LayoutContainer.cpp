@@ -1,7 +1,9 @@
 #include "LayoutContainer.h"
 #include "../../lib/Theme/ThemeBase.h"
+#include "../../lib/Layout/GridLayout.h"
 #include "../../src/Helpers.h"
 #include <SDL2/SDL.h>
+#include <cmath>
 
 namespace ui {
 
@@ -17,12 +19,43 @@ void LayoutContainer::render(SDL_Renderer* renderer, TTF_Font* font, std::shared
         return;
     }
     
-    // Draw container background (optional)
+    // Draw grid borders if this is a GridLayout
+    if (auto* gridLayout = dynamic_cast<ui::GridLayout*>(layout.get())) {
+        int borderWidth = gridLayout->getBorderWidth();
+        if (borderWidth > 0) {
+            auto colors = theme->gridColors();
+            SDL_SetRenderDrawColor(renderer, colors.gridBorder.r, colors.gridBorder.g, 
+                                 colors.gridBorder.b, colors.gridBorder.a);
+            
+            int rows = gridLayout->getRowCount();
+            int cols = gridLayout->getColumnCount();
+            
+            // Calculate cell dimensions
+            int cellWidth = (width - (cols + 1) * borderWidth) / cols;
+            int cellHeight = (height - (rows + 1) * borderWidth) / rows;
+            
+            // Draw vertical lines
+            for (int c = 0; c <= cols; ++c) {
+                int lineX = x + c * (cellWidth + borderWidth);
+                SDL_Rect vLine = {lineX, y, borderWidth, height};
+                SDL_RenderFillRect(renderer, &vLine);
+            }
+            
+            // Draw horizontal lines
+            for (int r = 0; r <= rows; ++r) {
+                int lineY = y + r * (cellHeight + borderWidth);
+                SDL_Rect hLine = {x, lineY, width, borderWidth};
+                SDL_RenderFillRect(renderer, &hLine);
+            }
+        }
+    }
+    
+    // Draw container focus border
     if (hasFocus) {
-        auto colors = theme->buttonColors();
+        auto colors = theme->focusColors();
         SDL_Rect focusRect = getFocusRect();
-        SDL_SetRenderDrawColor(renderer, colors.buttonText.r, colors.buttonText.g, 
-                             colors.buttonText.b, colors.buttonText.a);
+        SDL_SetRenderDrawColor(renderer, colors.focusBorder.r, colors.focusBorder.g, 
+                             colors.focusBorder.b, colors.focusBorder.a);
         SDL_RenderDrawRect(renderer, &focusRect);
     }
     
@@ -49,10 +82,21 @@ void LayoutContainer::updateLayout() {
     
     if (autoResize) {
         auto [prefWidth, prefHeight] = layout->getPreferredSize();
-        if (prefWidth != width || prefHeight != height) {
+        
+        // Add bounds checking and prevent zero dimensions
+        prefWidth = std::max(1, prefWidth);
+        prefHeight = std::max(1, prefHeight);
+        
+        // Only resize if there's a significant difference to prevent thrashing
+        if (std::abs(prefWidth - width) > 1 || std::abs(prefHeight - height) > 1) {
+            // Temporarily disable auto-resize to prevent infinite recursion
+            bool wasAutoResize = autoResize;
+            autoResize = false;
+            
             setSize(prefWidth, prefHeight);
-            // Update layout again with new size
             layout->updateLayout(x, y, width, height);
+            
+            autoResize = wasAutoResize;
         }
     }
 }
@@ -128,6 +172,27 @@ void LayoutContainer::setSize(int newWidth, int newHeight) {
 void LayoutContainer::setPosition(int newX, int newY) {
     UIElement::setPosition(newX, newY);
     updateLayout();
+}
+
+void LayoutContainer::addElement(std::shared_ptr<UIElement> element, int row, int column) {
+    if (auto* gridLayout = dynamic_cast<ui::GridLayout*>(layout.get())) {
+        gridLayout->addItem(element, row, column);
+        updateLayout();
+    }
+}
+
+void LayoutContainer::addElement(std::shared_ptr<UIElement> element, int row, int column, int rowSpan, int columnSpan) {
+    if (auto* gridLayout = dynamic_cast<ui::GridLayout*>(layout.get())) {
+        gridLayout->addItem(element, row, column, rowSpan, columnSpan);
+        updateLayout();
+    }
+}
+
+void LayoutContainer::setBorderWidth(int width) {
+    if (auto* gridLayout = dynamic_cast<ui::GridLayout*>(layout.get())) {
+        gridLayout->setBorderWidth(width);
+        updateLayout();
+    }
 }
 
 } // namespace ui

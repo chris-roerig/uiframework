@@ -65,6 +65,27 @@ executable('progressive_test',
   install : true
 )
 
+# Layout multi test executable
+executable('layout_multi_test',
+  sources : ['layout_multi_test.cpp'] + common_sources,
+  dependencies : [sdl2_dep, ttf_dep, sdl2_image_dep],
+  install : true
+)
+
+# Grid test executable
+executable('grid_test',
+  sources : ['grid_test.cpp'] + common_sources,
+  dependencies : [sdl2_dep, ttf_dep, sdl2_image_dep],
+  install : true
+)
+
+# Layout demo executable
+executable('layout_demo',
+  sources : ['examples/layout_demo.cpp'] + common_sources,
+  dependencies : [sdl2_dep, ttf_dep, sdl2_image_dep],
+  install : true
+)
+
 # Layout test executable
 executable('layout_test',
   sources : ['examples/layout_test.cpp'] + common_sources,
@@ -179,7 +200,8 @@ executable('ui_tests',
     'tests/test_textbox.cpp',
     'tests/test_optionselect.cpp',
     'tests/test_deadlock_prevention.cpp',
-    # 'tests/test_layout.cpp',  # Layout tests disabled - implementation issues
+    'tests/test_slider.cpp',
+    'tests/test_layout.cpp',  # Layout tests re-enabled after fixes
   ] + common_sources,
   dependencies : [sdl2_dep, ttf_dep, sdl2_image_dep, catch2_dep],
   install : false
@@ -196,6 +218,30 @@ executable('slider_demo',
 # TextBox demo
 executable('textbox_demo', 
     'examples/textbox_demo.cpp',
+    common_sources,
+    dependencies : [sdl2_dep, ttf_dep, sdl2_image_dep],
+    install : false
+)
+
+# Demo2 - Layout & Grid showcase
+executable('demo2', 
+    'examples/demo2.cpp',
+    common_sources,
+    dependencies : [sdl2_dep, ttf_dep, sdl2_image_dep],
+    install : false
+)
+
+# Layout Examples
+executable('layout_examples', 
+    'examples/layout_examples.cpp',
+    common_sources,
+    dependencies : [sdl2_dep, ttf_dep, sdl2_image_dep],
+    install : false
+)
+
+# Context Menu Demo
+executable('context_menu_demo', 
+    'examples/context_menu_demo.cpp',
     common_sources,
     dependencies : [sdl2_dep, ttf_dep, sdl2_image_dep],
     install : false

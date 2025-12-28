@@ -9,7 +9,7 @@ namespace ui {
 class LayoutContainer : public UIElement {
 private:
     std::unique_ptr<Layout> layout;
-    bool autoResize = true;
+    bool autoResize = false;  // Disabled by default to prevent validation issues
     
 public:
     LayoutContainer(int x_, int y_, int w_, int h_, std::unique_ptr<Layout> layout_);
@@ -24,7 +24,10 @@ public:
     void setLayout(std::unique_ptr<Layout> newLayout);
     Layout* getLayout() const { return layout.get(); }
     
-    // Container-specific methods
+    // Grid-specific methods (only work if layout is GridLayout)
+    void addElement(std::shared_ptr<UIElement> element, int row, int column);
+    void addElement(std::shared_ptr<UIElement> element, int row, int column, int rowSpan, int columnSpan);
+    void setBorderWidth(int width);  // Set grid border width
     void updateLayout();
     void setAutoResize(bool enable) { autoResize = enable; }
     bool getAutoResize() const { return autoResize; }

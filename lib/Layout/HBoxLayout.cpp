@@ -59,7 +59,7 @@ void HBoxLayout::updateLayout(int x, int y, int width, int height) {
 
 std::pair<int, int> HBoxLayout::getMinimumSize() const {
     if (items.empty()) {
-        return {padding.left + padding.right, padding.top + padding.bottom};
+        return {std::max(1, padding.left + padding.right), std::max(1, padding.top + padding.bottom)};
     }
     
     int minWidth = calculateTotalMinWidth();
@@ -73,7 +73,7 @@ std::pair<int, int> HBoxLayout::getMinimumSize() const {
 
 std::pair<int, int> HBoxLayout::getPreferredSize() const {
     if (items.empty()) {
-        return {padding.left + padding.right, padding.top + padding.bottom};
+        return {std::max(1, padding.left + padding.right), std::max(1, padding.top + padding.bottom)};
     }
     
     int prefWidth = calculateTotalPreferredWidth();

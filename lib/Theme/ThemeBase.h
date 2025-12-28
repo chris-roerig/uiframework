@@ -28,6 +28,8 @@ struct ThemeableElementColors {
     Color selectOptionSelected;
     Color selectOptionBorderLight;
     Color selectOptionBorderDark;
+    Color selectOptionTextSelected;
+    Color selectOptionTextUnselected;
     Color labelText;
     Color labelBackground;
     Color contextMenuBackground;
@@ -46,6 +48,7 @@ struct ThemeableElementColors {
     Color listViewBackground;
     Color listViewText;
     Color listViewBorder;
+    Color gridBorder;            // Border color for grid lines
     Color listViewSelectedItem;
     Color listViewScrollbarBackground;
     Color listViewScrollbarThumb;
@@ -53,6 +56,14 @@ struct ThemeableElementColors {
     Color progressBarBorder;
     Color progressBarForeground;
     Color progressBarText;
+    Color focusBorder;
+    Color focusBackground;
+    Color sliderTrack;
+    Color sliderThumb;
+    Color sliderBorder;
+    Color canvasBackground;
+    Color canvasGrid;
+    Color canvasBorder;
 };
 
 class Theme {
@@ -67,6 +78,10 @@ public:
     virtual ThemeableElementColors modalColors() const = 0;
     virtual ThemeableElementColors listViewColors() const = 0;
     virtual ThemeableElementColors progressBarColors() const = 0;
+    virtual ThemeableElementColors focusColors() const = 0;
+    virtual ThemeableElementColors sliderColors() const = 0;
+    virtual ThemeableElementColors canvasColors() const = 0;
+    virtual ThemeableElementColors gridColors() const = 0;
     virtual Color highlightColor() const = 0;
     virtual Color backgroundColor() const = 0;
     virtual Color foregroundColor() const = 0;
@@ -94,6 +109,8 @@ protected:
     Color defaultSelectOptionSelected;
     Color defaultSelectOptionBorderLight;
     Color defaultSelectOptionBorderDark;
+    Color defaultSelectOptionTextSelected;
+    Color defaultSelectOptionTextUnselected;
     Color defaultTextInputBackground;
     Color defaultTextInputText;
     Color defaultTextInputBorderLight;
@@ -116,6 +133,7 @@ protected:
     Color defaultListViewBackground;
     Color defaultListViewText;
     Color defaultListViewBorder;
+    Color defaultGridBorder;
     Color defaultListViewSelectedItem;
     Color defaultListViewScrollbarBackground;
     Color defaultListViewScrollbarThumb;
@@ -123,6 +141,14 @@ protected:
     Color defaultProgressBarBorder;
     Color defaultProgressBarForeground;
     Color defaultProgressBarText;
+    Color defaultFocusBorder;
+    Color defaultFocusBackground;
+    Color defaultSliderTrack;
+    Color defaultSliderThumb;
+    Color defaultSliderBorder;
+    Color defaultCanvasBackground;
+    Color defaultCanvasGrid;
+    Color defaultCanvasBorder;
 
 public:
     ThemeBase()
@@ -146,6 +172,8 @@ public:
         defaultSelectOptionSelected(100,149,237),
         defaultSelectOptionBorderLight(200,200,200),
         defaultSelectOptionBorderDark(100,100,100),
+        defaultSelectOptionTextSelected(255,255,255),
+        defaultSelectOptionTextUnselected(0,0,0),
         defaultTextInputBackground(255,255,255),
         defaultTextInputText(0,0,0),
         defaultTextInputBorderLight(200,200,200),
@@ -174,7 +202,15 @@ public:
         defaultProgressBarBackground(240,240,240),
         defaultProgressBarBorder(128,128,128),
         defaultProgressBarForeground(0,255,0),
-        defaultProgressBarText(0,0,0)
+        defaultProgressBarText(0,0,0),
+        defaultFocusBorder(255,255,0),
+        defaultFocusBackground(255,255,255,50),
+        defaultSliderTrack(200,200,200),
+        defaultSliderThumb(100,100,100),
+        defaultSliderBorder(128,128,128),
+        defaultCanvasBackground(255,255,255),
+        defaultCanvasGrid(240,240,240),
+        defaultCanvasBorder(200,200,200)
     {}
 
     ThemeableElementColors labelColors() const override {
@@ -211,6 +247,8 @@ public:
         c.selectOptionUnselected = defaultSelectOptionUnselected;
         c.selectOptionBorderLight = defaultSelectOptionBorderLight;
         c.selectOptionBorderDark = defaultSelectOptionBorderDark;
+        c.selectOptionTextSelected = defaultSelectOptionTextSelected;
+        c.selectOptionTextUnselected = defaultSelectOptionTextUnselected;
         return c;
     }
     
@@ -251,6 +289,7 @@ public:
         c.listViewBackground = defaultListViewBackground;
         c.listViewText = defaultListViewText;
         c.listViewBorder = defaultListViewBorder;
+        c.gridBorder = defaultGridBorder;
         c.listViewSelectedItem = defaultListViewSelectedItem;
         c.listViewScrollbarBackground = defaultListViewScrollbarBackground;
         c.listViewScrollbarThumb = defaultListViewScrollbarThumb;
@@ -263,6 +302,35 @@ public:
         c.progressBarBorder = defaultProgressBarBorder;
         c.progressBarForeground = defaultProgressBarForeground;
         c.progressBarText = defaultProgressBarText;
+        return c;
+    }
+    
+    ThemeableElementColors focusColors() const override {
+        ThemeableElementColors c;
+        c.focusBorder = defaultFocusBorder;
+        c.focusBackground = defaultFocusBackground;
+        return c;
+    }
+    
+    ThemeableElementColors sliderColors() const override {
+        ThemeableElementColors c;
+        c.sliderTrack = defaultSliderTrack;
+        c.sliderThumb = defaultSliderThumb;
+        c.sliderBorder = defaultSliderBorder;
+        return c;
+    }
+    
+    ThemeableElementColors canvasColors() const override {
+        ThemeableElementColors c;
+        c.canvasBackground = defaultCanvasBackground;
+        c.canvasGrid = defaultCanvasGrid;
+        c.canvasBorder = defaultCanvasBorder;
+        return c;
+    }
+    
+    ThemeableElementColors gridColors() const override {
+        ThemeableElementColors c;
+        c.gridBorder = defaultGridBorder;
         return c;
     }
     

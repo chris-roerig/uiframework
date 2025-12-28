@@ -54,6 +54,8 @@ void AnimatedSprite::calculateFrames(int frameCount, int frameWidth, int frameHe
 }
 
 void AnimatedSprite::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<Theme> theme) {
+    if (!renderer || !theme) return;
+    
     // Update animation before rendering
     update();
     

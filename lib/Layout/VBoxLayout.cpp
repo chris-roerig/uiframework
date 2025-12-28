@@ -59,7 +59,7 @@ void VBoxLayout::updateLayout(int x, int y, int width, int height) {
 
 std::pair<int, int> VBoxLayout::getMinimumSize() const {
     if (items.empty()) {
-        return {padding.left + padding.right, padding.top + padding.bottom};
+        return {std::max(1, padding.left + padding.right), std::max(1, padding.top + padding.bottom)};
     }
     
     int minWidth = calculateMaxWidth();
@@ -73,7 +73,7 @@ std::pair<int, int> VBoxLayout::getMinimumSize() const {
 
 std::pair<int, int> VBoxLayout::getPreferredSize() const {
     if (items.empty()) {
-        return {padding.left + padding.right, padding.top + padding.bottom};
+        return {std::max(1, padding.left + padding.right), std::max(1, padding.top + padding.bottom)};
     }
     
     int prefWidth = calculateMaxWidth();

@@ -36,10 +36,58 @@ public:
         defaultModalButtonHighlight = defaultHighlight;
         defaultModalButtonBorder = defaultButtonBorderDark;
 
+        // TextInput Colors
+        defaultTextInputBackground = Color(50, 50, 50);
+        defaultTextInputText = Color(248, 248, 242);
+        defaultTextInputBorderLight = Color(180, 180, 180);
+        defaultTextInputBorderDark = Color(90, 90, 90);
+
+        // ListView Colors
+        defaultListViewBackground = Color(50, 50, 50);
+        defaultListViewText = Color(248, 248, 242);
+        defaultListViewBorder = Color(90, 90, 90);
+        defaultGridBorder = Color(150, 150, 150);         // Lighter gray for contrast
+        defaultListViewSelectedItem = Color(189, 147, 249);
+
+        // ProgressBar Colors
         defaultProgressBarBackground = Color(128, 128, 128);
         defaultProgressBarBorder = Color(90, 90, 90);
         defaultProgressBarForeground = Color(248, 248, 242);
         defaultProgressBarText = Color(248, 248, 242);
+
+        // Label Colors
+        defaultLabelText = Color(248, 248, 242);
+        defaultLabelBackground = Color(39, 40, 34);
+
+        // CheckBox Colors
+        defaultCheckboxEnabled = Color(248, 248, 242);
+        defaultCheckboxDisabled = Color(128, 128, 128);
+        defaultCheckboxChecked = Color(166, 226, 46);
+        defaultCheckboxUnchecked = Color(50, 50, 50);
+        defaultCheckboxBorderLight = Color(180, 180, 180);
+        defaultCheckboxBorderDark = Color(90, 90, 90);
+
+        // OptionSelect Colors
+        defaultSelectOptionSelected = Color(189, 147, 249);
+        defaultSelectOptionUnselected = Color(50, 50, 50);
+        defaultSelectOptionBorderLight = Color(180, 180, 180);
+        defaultSelectOptionBorderDark = Color(90, 90, 90);
+        defaultSelectOptionTextSelected = Color(39, 40, 34);
+        defaultSelectOptionTextUnselected = Color(248, 248, 242);
+
+        // Focus Colors
+        defaultFocusBorder = Color(189, 147, 249);
+        defaultFocusBackground = Color(189, 147, 249, 30);
+
+        // Slider Colors
+        defaultSliderTrack = Color(50, 50, 50);
+        defaultSliderThumb = Color(189, 147, 249);
+        defaultSliderBorder = Color(90, 90, 90);
+
+        // Canvas Colors
+        defaultCanvasBackground = Color(39, 40, 34);
+        defaultCanvasGrid = Color(50, 50, 50);
+        defaultCanvasBorder = Color(90, 90, 90);
     }
 };
 
