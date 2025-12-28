@@ -47,6 +47,7 @@ public:
     std::shared_ptr<ui::ProgressBar> createProgressBar(int x, int y, int width, int height, float initValue = 0.0f, bool showText = true);
     std::shared_ptr<ui::HSlider> createHSlider(int x, int y, int width, int height, float min = 0.0f, float max = 100.0f, float initial = 0.0f);
     std::shared_ptr<ui::VSlider> createVSlider(int x, int y, int width, int height, float min = 0.0f, float max = 100.0f, float initial = 0.0f);
+    std::shared_ptr<ui::KnobSlider> createKnobSlider(int x, int y, int size, float min = 0.0f, float max = 100.0f, float initial = 0.0f);
 
     // Backward compatibility methods (deprecated - will be removed in future versions)
     [[deprecated("Use createLabel instead")]]

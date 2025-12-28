@@ -13,6 +13,10 @@ int main() {
         auto vslider = ui.createVSlider(20, 150, 30, 200, -50.0f, 50.0f, 0.0f);
         auto vlabel = ui.createLabel("Value: 0.0", 70, 250);
         
+        auto label3 = ui.createLabel("Knob Slider:", 300, 120);
+        auto knobslider = ui.createKnobSlider(300, 150, 80, 0.0f, 360.0f, 180.0f);
+        auto knoblabel = ui.createLabel("Value: 180.0", 400, 190);
+        
         // Set callbacks
         hslider->setOnChange([hlabel](float value) {
             hlabel->setText("Value: " + std::to_string(value));
@@ -22,8 +26,12 @@ int main() {
             vlabel->setText("Value: " + std::to_string(value));
         });
         
+        knobslider->setOnChange([knoblabel](float value) {
+            knoblabel->setText("Value: " + std::to_string(value));
+        });
+        
         std::cout << "Slider Test started" << std::endl;
-        std::cout << "Drag the sliders to test functionality" << std::endl;
+        std::cout << "Drag the sliders and knob to test functionality" << std::endl;
         
         ui.run();
         

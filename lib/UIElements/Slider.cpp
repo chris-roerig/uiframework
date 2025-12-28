@@ -5,6 +5,7 @@
 #include <SDL2/SDL.h>
 #include <algorithm>
 #include <iostream>
+#include <cmath>
 
 namespace ui {
 
@@ -140,6 +141,95 @@ void VSlider::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<The
     drawFilledRect(renderer, thumbRect, colors.buttonForeground);
     SDL_SetRenderDrawColor(renderer, colors.buttonText.r, colors.buttonText.g, colors.buttonText.b, colors.buttonText.a);
     SDL_RenderDrawRect(renderer, &thumbRect);
+    
+    // Draw focus indicator
+    if (hasFocus) {
+        SDL_Rect focusRect = getFocusRect();
+        SDL_SetRenderDrawColor(renderer, colors.buttonText.r, colors.buttonText.g, colors.buttonText.b, colors.buttonText.a);
+        SDL_RenderDrawRect(renderer, &focusRect);
+    }
+}
+
+// KnobSlider implementation
+KnobSlider::KnobSlider(int x, int y, int w, int h, float min, float max, float initial)
+    : Slider(x, y, w, h, min, max, initial) {
+}
+
+float KnobSlider::getValueFromPosition(int mouseX, int mouseY) {
+    int centerX = x + width / 2;
+    int centerY = y + height / 2;
+    int relativeX = mouseX - centerX;
+    int relativeY = mouseY - centerY;
+    
+    // Calculate angle from center (-π to π)
+    float angle = atan2(relativeY, relativeX);
+    
+    // Convert to 0-2π range, starting from top (rotate by π/2)
+    angle += M_PI / 2;
+    if (angle < 0) angle += 2 * M_PI;
+    
+    // Map angle to value (270 degrees of rotation, leaving 90 degrees gap at bottom)
+    float usableAngle = 3 * M_PI / 2; // 270 degrees
+    float startAngle = M_PI / 8; // 22.5 degrees from bottom
+    
+    if (angle < startAngle || angle > (2 * M_PI - startAngle)) {
+        // In the gap area, clamp to nearest edge
+        if (angle < M_PI) {
+            angle = startAngle;
+        } else {
+            angle = 2 * M_PI - startAngle;
+        }
+    }
+    
+    // Normalize to 0-1 range
+    float normalizedAngle = (angle - startAngle) / usableAngle;
+    normalizedAngle = std::clamp(normalizedAngle, 0.0f, 1.0f);
+    
+    return minValue + normalizedAngle * (maxValue - minValue);
+}
+
+void KnobSlider::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<Theme> theme) {
+    if (!renderer || !theme) return;
+    
+    auto colors = theme->buttonColors();
+    int centerX = x + width / 2;
+    int centerY = y + height / 2;
+    int radius = std::min(width, height) / 2 - 4;
+    
+    // Draw outer circle (knob body)
+    for (int i = 0; i < radius; i++) {
+        int x1 = centerX - radius + i;
+        int x2 = centerX + radius - i;
+        int dy = sqrt(radius * radius - (radius - i) * (radius - i));
+        SDL_SetRenderDrawColor(renderer, colors.buttonBackground.r, colors.buttonBackground.g, colors.buttonBackground.b, colors.buttonBackground.a);
+        SDL_RenderDrawLine(renderer, x1, centerY - dy, x1, centerY + dy);
+        SDL_RenderDrawLine(renderer, x2, centerY - dy, x2, centerY + dy);
+    }
+    
+    // Draw knob border
+    SDL_SetRenderDrawColor(renderer, colors.buttonText.r, colors.buttonText.g, colors.buttonText.b, colors.buttonText.a);
+    for (int i = 0; i < 360; i += 5) {
+        float angle = i * M_PI / 180;
+        int px = centerX + cos(angle) * radius;
+        int py = centerY + sin(angle) * radius;
+        SDL_RenderDrawPoint(renderer, px, py);
+    }
+    
+    // Draw value indicator line
+    float ratio = (currentValue - minValue) / (maxValue - minValue);
+    float usableAngle = 3 * M_PI / 2; // 270 degrees
+    float startAngle = M_PI / 8; // 22.5 degrees from bottom
+    float valueAngle = startAngle + ratio * usableAngle - M_PI / 2; // Adjust for top start
+    
+    int indicatorX = centerX + cos(valueAngle) * (radius - 8);
+    int indicatorY = centerY + sin(valueAngle) * (radius - 8);
+    
+    SDL_SetRenderDrawColor(renderer, colors.buttonForeground.r, colors.buttonForeground.g, colors.buttonForeground.b, colors.buttonForeground.a);
+    SDL_RenderDrawLine(renderer, centerX, centerY, indicatorX, indicatorY);
+    
+    // Draw center dot
+    SDL_Rect centerDot = { centerX - 2, centerY - 2, 4, 4 };
+    SDL_RenderFillRect(renderer, &centerDot);
     
     // Draw focus indicator
     if (hasFocus) {

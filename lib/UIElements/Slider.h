@@ -49,4 +49,13 @@ public:
     void render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<Theme> theme) override;
 };
 
+class KnobSlider : public Slider {
+protected:
+    float getValueFromPosition(int mouseX, int mouseY) override;
+    
+public:
+    KnobSlider(int x, int y, int w, int h, float min = 0.0f, float max = 100.0f, float initial = 0.0f);
+    void render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<Theme> theme) override;
+};
+
 } // namespace ui

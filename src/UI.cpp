@@ -106,6 +106,11 @@ std::shared_ptr<ui::VSlider> UI::createVSlider(int x, int y, int width, int heig
     return registerElement(vslider);
 }
 
+std::shared_ptr<ui::KnobSlider> UI::createKnobSlider(int x, int y, int size, float min, float max, float initial) {
+    auto knobslider = std::make_shared<ui::KnobSlider>(x, y, size, size, min, max, initial);
+    return registerElement(knobslider);
+}
+
 // --- Modal Methods ---
 
 std::shared_ptr<ui::Modal> UI::createModal(const std::string &message, const std::string &buttonText, bool hasCancel, std::function<void()> onCloseCallback) {
