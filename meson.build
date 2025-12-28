@@ -183,6 +183,14 @@ executable('ui_tests',
   install : false
 )
 
+# Debug TextBox
+executable('debug_textbox', 
+    'debug_textbox.cpp',
+    common_sources,
+    dependencies : [sdl2_dep, ttf_dep, sdl2_image_dep],
+    install : false
+)
+
 # TextBox demo
 executable('textbox_demo', 
     'examples/textbox_demo.cpp',

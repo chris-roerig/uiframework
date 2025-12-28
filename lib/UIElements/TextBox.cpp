@@ -139,12 +139,20 @@ void TextBox::handleEvent(const SDL_Event &e) {
                 }
             }
         }
-    } else if (e.type == SDL_TEXTINPUT && hasFocus && !textSelected) {
-        // Insert text at cursor position
+    } else if (e.type == SDL_TEXTINPUT && hasFocus) {
+        // Insert text at cursor position or replace selected text
         std::string inputText = e.text.text;
         if (!inputText.empty()) {
-            content.insert(cursorPosition, inputText);
-            cursorPosition += inputText.length();
+            if (textSelected) {
+                // Replace selected text
+                content = inputText;
+                cursorPosition = inputText.length();
+                textSelected = false;
+            } else {
+                // Insert at cursor position
+                content.insert(cursorPosition, inputText);
+                cursorPosition += inputText.length();
+            }
         }
     } else if (e.type == SDL_KEYDOWN && hasFocus) {
         switch (e.key.keysym.sym) {
@@ -211,6 +219,7 @@ SDL_Rect TextBox::getFocusRect() const {
 
 void TextBox::onFocusGained() {
     hasFocus = true;
+    SDL_StartTextInput();
     if (autoHighlight) {
         selectAll();
     }
@@ -219,6 +228,7 @@ void TextBox::onFocusGained() {
 void TextBox::onFocusLost() {
     hasFocus = false;
     textSelected = false;
+    SDL_StopTextInput();
 }
 
 void TextBox::setText(const std::string& text) {
