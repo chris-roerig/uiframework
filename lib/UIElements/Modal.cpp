@@ -1,6 +1,7 @@
 #include "Modal.h"
 #include "../../lib/Theme/ThemeBase.h"
 #include "../../src/Helpers.h"
+#include "../../src/UICore.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include <iostream>
@@ -14,10 +15,11 @@ Modal::Modal(int x_, int y_, int w_, int h_, const std::string &msg, const std::
     
     // Add primary button
     addButton(buttonText, [this, onCloseCallback]() {
-        if (onCloseCallback) {
-            onCloseCallback();
-        }
+        // Dismiss immediately, but defer the user callback
         dismiss();
+        if (onCloseCallback && coreRef) {
+            coreRef->queueCallback(onCloseCallback);
+        }
     });
     
     // Add cancel button if requested
@@ -272,25 +274,16 @@ SDL_Rect Modal::getFocusRect() const {
 
 void Modal::activate() {
     if (buttonFocusIndex >= 0 && buttonFocusIndex < static_cast<int>(buttonCallbacks.size())) {
-        if (buttonCallbacks[buttonFocusIndex]) {
-            try {
-                buttonCallbacks[buttonFocusIndex]();
-            } catch (const std::exception& e) {
-                std::cerr << "Error in modal button callback: " << e.what() << std::endl;
-            }
+        if (buttonCallbacks[buttonFocusIndex] && coreRef) {
+            // Queue the button callback to avoid deadlock
+            coreRef->queueCallback(buttonCallbacks[buttonFocusIndex]);
         }
     }
 }
 
 void Modal::dismiss() {
     dismissed = true;
-    if (onDismiss) {
-        try {
-            onDismiss();
-        } catch (const std::exception& e) {
-            std::cerr << "Error in modal dismiss callback: " << e.what() << std::endl;
-        }
-    }
+    // Don't queue onDismiss here - it's handled by button callbacks
 }
 
 void Modal::addButton(const std::string& label, std::function<void()> callback) {
@@ -324,12 +317,28 @@ SDL_Rect Modal::getButtonRect(int buttonIndex) const {
     const int buttonSpacing = 10;
     const int buttonY = y + height - buttonHeight - 20;
     
-    int buttonX = x + 20; // Start position
+    // Calculate button widths (same logic as rendering)
+    std::vector<int> buttonWidths;
+    int totalButtonWidth = 0;
+    
+    for (size_t i = 0; i < buttonLabels.size(); i++) {
+        int buttonWidth = 80; // Default width - matches rendering
+        // Note: We can't access font here, so we use default width
+        // This is a limitation, but better than the previous mismatch
+        buttonWidths.push_back(buttonWidth);
+        totalButtonWidth += buttonWidth;
+    }
+    totalButtonWidth += (buttonLabels.size() - 1) * buttonSpacing;
+    
+    // Center buttons horizontally (same as rendering)
+    int buttonX = x + (width - totalButtonWidth) / 2;
+    
+    // Calculate position for requested button
     for (int i = 0; i < buttonIndex; i++) {
-        buttonX += 80 + buttonSpacing; // Simplified - use default width
+        buttonX += buttonWidths[i] + buttonSpacing;
     }
     
-    return {buttonX, buttonY, 80, buttonHeight};
+    return {buttonX, buttonY, buttonWidths[buttonIndex], buttonHeight};
 }
 
 int Modal::getButtonAt(int mouseX, int mouseY) const {

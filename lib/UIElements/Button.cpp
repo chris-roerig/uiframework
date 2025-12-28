@@ -1,6 +1,7 @@
 #include "Button.h"
 #include "../../lib/Theme/ThemeBase.h"
 #include "../../src/Helpers.h"
+#include "../../src/UICore.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include <iostream>
@@ -84,12 +85,9 @@ void Button::handleEvent(const SDL_Event &e) {
 }
 
 void Button::activate() {
-    if (onClick) {
-        try {
-            onClick();
-        } catch (const std::exception& e) {
-            std::cerr << "Error in button callback: " << e.what() << std::endl;
-        }
+    if (onClick && coreRef) {
+        // Queue the button callback to avoid deadlock
+        coreRef->queueCallback(onClick);
     }
 }
 

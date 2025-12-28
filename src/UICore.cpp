@@ -274,6 +274,11 @@ std::string UICore::getFocusedElementId() const {
     return focusedElementId;
 }
 
+void UICore::queueCallback(std::function<void()> callback) {
+    std::lock_guard<std::mutex> lock(focusMutex);
+    pendingCallbacks.push_back(callback);
+}
+
 SDL_Keycode UICore::keycodeFromString(const std::string &s) {
     if (s.empty())
         return SDLK_UNKNOWN;
@@ -327,17 +332,31 @@ void UICore::run() {
             
             // Process pending focus changes after releasing the mutex
             std::vector<std::string> focusChanges;
+            std::vector<std::function<void()>> callbacks;
             {
                 std::lock_guard<std::mutex> focusLock(focusMutex);
                 while (!pendingFocusChanges.empty()) {
                     focusChanges.push_back(pendingFocusChanges.front());
                     pendingFocusChanges.pop();
                 }
+                callbacks = std::move(pendingCallbacks);
+                pendingCallbacks.clear();
             }
             
             // Process focus changes without holding any locks
             for (const auto& elementId : focusChanges) {
                 setFocus(elementId);
+            }
+            
+            // Process pending callbacks without holding any locks
+            for (const auto& callback : callbacks) {
+                if (callback) {
+                    try {
+                        callback();
+                    } catch (const std::exception& e) {
+                        std::cerr << "Error in pending callback: " << e.what() << std::endl;
+                    }
+                }
             }
         }
         

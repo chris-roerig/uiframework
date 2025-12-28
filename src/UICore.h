@@ -74,6 +74,8 @@ namespace ui {
         std::unordered_map<std::string, std::weak_ptr<UIElement>> elementRegistry;
         std::queue<std::string> pendingFocusChanges;
         std::mutex focusMutex;
+        std::vector<std::function<void()>> pendingCallbacks;
+        std::queue<std::function<std::shared_ptr<UIElement>()>> pendingElementCreation;
         
         bool modalActive = false;
         int width, height;
@@ -104,6 +106,9 @@ namespace ui {
         // Focus management
         void setFocus(const std::string& elementId);
         std::string getFocusedElementId() const;
+        
+        // Callback management
+        void queueCallback(std::function<void()> callback);
         
         void showQuitConfirmation(bool &quit);
         void run();
