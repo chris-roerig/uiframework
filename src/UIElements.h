@@ -16,3 +16,4 @@
 #include "../lib/UIElements/AnimatedSprite.h"
 #include "../lib/UIElements/ProgressBar.h"
 #include "../lib/UIElements/LayoutContainer.h"
+#include "../lib/UIElements/Slider.h"

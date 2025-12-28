@@ -29,6 +29,7 @@ common_sources = [
   'lib/UIElements/Sprite.cpp',
   'lib/UIElements/AnimatedSprite.cpp',
   'lib/UIElements/ProgressBar.cpp',
+  'lib/UIElements/Slider.cpp',
   'lib/UIElements/LayoutContainer.cpp',
   'lib/Layout/Layout.cpp',
   'lib/Layout/VBoxLayout.cpp',
@@ -182,6 +183,14 @@ executable('ui_tests',
   ] + common_sources,
   dependencies : [sdl2_dep, ttf_dep, sdl2_image_dep, catch2_dep],
   install : false
+)
+
+# Slider demo
+executable('slider_demo', 
+    'examples/slider_demo.cpp',
+    common_sources,
+    dependencies : [sdl2_dep, ttf_dep, sdl2_image_dep],
+    install : false
 )
 
 # TextBox demo

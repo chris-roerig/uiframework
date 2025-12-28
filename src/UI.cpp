@@ -96,6 +96,16 @@ std::shared_ptr<ui::ProgressBar> UI::createProgressBar(int x, int y, int width, 
     return registerElement(progressBar);
 }
 
+std::shared_ptr<ui::HSlider> UI::createHSlider(int x, int y, int width, int height, float min, float max, float initial) {
+    auto hslider = std::make_shared<ui::HSlider>(x, y, width, height, min, max, initial);
+    return registerElement(hslider);
+}
+
+std::shared_ptr<ui::VSlider> UI::createVSlider(int x, int y, int width, int height, float min, float max, float initial) {
+    auto vslider = std::make_shared<ui::VSlider>(x, y, width, height, min, max, initial);
+    return registerElement(vslider);
+}
+
 // --- Modal Methods ---
 
 std::shared_ptr<ui::Modal> UI::createModal(const std::string &message, const std::string &buttonText, bool hasCancel, std::function<void()> onCloseCallback) {
