@@ -1,4 +1,5 @@
 #include "GridLayout.h"
+#include "../UIElements/LayoutContainer.h"
 #include <algorithm>
 
 namespace ui {
@@ -73,6 +74,11 @@ void GridLayout::updateLayout(int x, int y, int width, int height) {
                 
                 cell.element->setPosition(elemX, elemY);
                 cell.element->setSize(elemWidth, elemHeight);
+                
+                // If this element is a LayoutContainer, trigger its layout update
+                if (auto* layoutContainer = dynamic_cast<ui::LayoutContainer*>(cell.element.get())) {
+                    layoutContainer->updateLayout();
+                }
             }
         }
     }

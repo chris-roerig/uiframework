@@ -29,41 +29,53 @@ int main() {
         auto contextMenu = ui.createContextMenu(menuItems);
 
         // Create 2-column grid layout below menu bar with borders
-        auto mainGrid = ui.createGridLayout(20, 80, 760, 500, 4, 2);  // 4 rows, 2 columns
+        auto mainGrid = ui.createGridLayout(20, 80, 760, 500, 3, 2);  // 3 rows, 2 columns
         mainGrid->setBorderWidth(2);  // 2px borders for debugging
         
         // Left Column Content
         auto leftTitle = ui.createLabel("Left Column", 0, 0);
-        auto leftBtn1 = ui.createButton("Left Button 1", 0, 0, []() {
-            std::cout << "Left Button 1 clicked" << std::endl;
+        
+        // Create a VBox layout inside the left column
+        auto leftVBox = ui.createVBoxLayout(0, 0, 350, 200);
+        auto vboxBtn1 = ui.createButton("VBox Btn 1", 0, 0, []() {
+            std::cout << "VBox Button 1 clicked" << std::endl;
         });
-        auto leftBtn2 = ui.createButton("Left Button 2", 0, 0, []() {
-            std::cout << "Left Button 2 clicked" << std::endl;
+        auto vboxBtn2 = ui.createButton("VBox Btn 2", 0, 0, []() {
+            std::cout << "VBox Button 2 clicked" << std::endl;
         });
+        leftVBox->addElement(vboxBtn1);
+        leftVBox->addElement(vboxBtn2);
+        
         auto leftInfo = ui.createLabel("Left column info", 0, 0);
         
-        // Right Column Content
+        // Right Column Content  
         auto rightTitle = ui.createLabel("Right Column", 0, 0);
-        auto rightBtn1 = ui.createButton("Right Button 1", 0, 0, []() {
-            std::cout << "Right Button 1 clicked" << std::endl;
+        
+        // Create an HBox layout inside the right column
+        auto rightHBox = ui.createHBoxLayout(0, 0, 350, 60);
+        auto hboxBtn1 = ui.createButton("H1", 0, 0, []() {
+            std::cout << "HBox Button 1 clicked" << std::endl;
         });
-        auto rightBtn2 = ui.createButton("Right Button 2", 0, 0, []() {
-            std::cout << "Right Button 2 clicked" << std::endl;
+        auto hboxBtn2 = ui.createButton("H2", 0, 0, []() {
+            std::cout << "HBox Button 2 clicked" << std::endl;
         });
+        rightHBox->addElement(hboxBtn1);
+        rightHBox->addElement(hboxBtn2);
+        
         auto rightInfo = ui.createLabel("Right column info", 0, 0);
         
         // Add elements to grid (row, column)
-        mainGrid->addElement(leftTitle, 0, 0);    // Row 0, Left column
-        mainGrid->addElement(rightTitle, 0, 1);   // Row 0, Right column
-        mainGrid->addElement(leftBtn1, 1, 0);     // Row 1, Left column
-        mainGrid->addElement(rightBtn1, 1, 1);    // Row 1, Right column
-        mainGrid->addElement(leftBtn2, 2, 0);     // Row 2, Left column
-        mainGrid->addElement(rightBtn2, 2, 1);    // Row 2, Right column
-        mainGrid->addElement(leftInfo, 3, 0);     // Row 3, Left column
-        mainGrid->addElement(rightInfo, 3, 1);    // Row 3, Right column
+        mainGrid->addElement(leftTitle, 0, 0);     // Row 0, Left column
+        mainGrid->addElement(rightTitle, 0, 1);    // Row 0, Right column
+        mainGrid->addElement(leftVBox, 1, 0);      // Row 1, Left column - VBox layout
+        mainGrid->addElement(rightHBox, 1, 1);     // Row 1, Right column - HBox layout
+        mainGrid->addElement(leftInfo, 2, 0);      // Row 2, Left column
+        mainGrid->addElement(rightInfo, 2, 1);     // Row 2, Right column
 
         std::cout << "Context Menu + Grid Demo Started" << std::endl;
         std::cout << "Menu bar at top, 2-column grid layout below" << std::endl;
+        std::cout << "Left column: VBox layout nested in grid cell" << std::endl;
+        std::cout << "Right column: HBox layout nested in grid cell" << std::endl;
         
         ui.run();
         
