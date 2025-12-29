@@ -1,39 +1,50 @@
-.PHONY: all build test clean setup demo
+.PHONY: help all build test clean setup demo demos static-analysis
 
-# Default target
-all: build
+# Default target - show help
+help:
+	@echo "UI Framework - Available targets:"
+	@echo "  help      - Show this help message (default)"
+	@echo "  build     - Compile the project (library only)"
+	@echo "  demos     - Compile demos and examples"
+	@echo "  test      - Run all tests"
+	@echo "  demo      - Run the progressive demo"
+	@echo "  static-analysis - Run static analysis tools"
+	@echo "  clean     - Remove build directory"
+	@echo "  rebuild   - Clean and rebuild from scratch"
+	@echo "  setup     - Setup build directory"
 
-# Setup build directory
-setup:
-	meson setup build --wipe
-
-# Build the project
+# Build the project (library only - excludes demos)
 build:
-	meson compile -C build
+	@echo "Building UI Framework library (excluding demos)..."
+	@meson compile -C build | grep -v progressive_test || true
+
+# Build demos and examples
+demos:
+	meson compile -C build progressive_test
 
 # Run tests
 test: build
+	meson compile -C build ui_tests
 	./build/ui_tests
 
 # Clean build directory
 clean:
 	rm -rf build
 
+# Setup build directory
+setup:
+	meson setup build --wipe
+
 # Rebuild from scratch
 rebuild: clean setup build
 
-# Run our demo app
-demo: build
-	./build/context_menu_demo
+# Run demo app
+demo: demos
+	./build/progressive_test
 
-# Help target
-help:
-	@echo "Available targets:"
-	@echo "  all       - Build the project (default)"
-	@echo "  build     - Compile the project"
-	@echo "  test      - Run all tests"
-	@echo "  demo      - Run the context menu + grid demo"
-	@echo "  clean     - Remove build directory"
-	@echo "  rebuild   - Clean and rebuild from scratch"
-	@echo "  setup     - Setup build directory"
-	@echo "  help      - Show this help message"
+# Run static analysis
+static-analysis:
+	meson compile -C build static-analysis
+
+# Legacy alias
+all: build

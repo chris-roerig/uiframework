@@ -1,8 +1,0 @@
-/Users/chrisroerig/Projects/uiframework/build_cmake/CMakeFiles/uiframework.dir
-/Users/chrisroerig/Projects/uiframework/build_cmake/CMakeFiles/uiframework_static.dir
-/Users/chrisroerig/Projects/uiframework/build_cmake/CMakeFiles/edit_cache.dir
-/Users/chrisroerig/Projects/uiframework/build_cmake/CMakeFiles/rebuild_cache.dir
-/Users/chrisroerig/Projects/uiframework/build_cmake/CMakeFiles/list_install_components.dir
-/Users/chrisroerig/Projects/uiframework/build_cmake/CMakeFiles/install.dir
-/Users/chrisroerig/Projects/uiframework/build_cmake/CMakeFiles/install/local.dir
-/Users/chrisroerig/Projects/uiframework/build_cmake/CMakeFiles/install/strip.dir

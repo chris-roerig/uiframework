@@ -13,40 +13,40 @@ catch2_dep = dependency('catch2-with-main', required: false)
 
 # Common source files
 common_sources = [
-  'src/Helpers.cpp',
-  'src/UICore.cpp', 
-  'src/UI.cpp',
-  'src/Logger.cpp',
-  'src/FontManager.cpp',
-  'src/TTFManager.cpp',
-  'src/UIElement.cpp',
-  'src/ContextMenu.cpp',
-  'src/Modal.cpp',
-  'src/ListView.cpp',
-  'src/Label.cpp',
-  'src/Button.cpp',
-  'src/TextBox.cpp',
-  'src/CheckBox.cpp',
-  'src/OptionSelect.cpp',
-  'src/Canvas.cpp',
-  'src/Image.cpp',
-  'src/Sprite.cpp',
-  'src/AnimatedSprite.cpp',
-  'src/ProgressBar.cpp',
-  'src/Slider.cpp',
-  'src/VirtualKeyboard.cpp',
-  'src/LayoutContainer.cpp',
-  'src/Layout.cpp',
-  'src/VBoxLayout.cpp',
-  'src/HBoxLayout.cpp',
-  'src/GridLayout.cpp',
+  'lib/src/Helpers.cpp',
+  'lib/src/UICore.cpp', 
+  'lib/src/UI.cpp',
+  'lib/src/Logger.cpp',
+  'lib/src/FontManager.cpp',
+  'lib/src/TTFManager.cpp',
+  'lib/src/UIElement.cpp',
+  'lib/src/ContextMenu.cpp',
+  'lib/src/Modal.cpp',
+  'lib/src/ListView.cpp',
+  'lib/src/Label.cpp',
+  'lib/src/Button.cpp',
+  'lib/src/TextBox.cpp',
+  'lib/src/CheckBox.cpp',
+  'lib/src/OptionSelect.cpp',
+  'lib/src/Canvas.cpp',
+  'lib/src/Image.cpp',
+  'lib/src/Sprite.cpp',
+  'lib/src/AnimatedSprite.cpp',
+  'lib/src/ProgressBar.cpp',
+  'lib/src/Slider.cpp',
+  'lib/src/VirtualKeyboard.cpp',
+  'lib/src/LayoutContainer.cpp',
+  'lib/src/Layout.cpp',
+  'lib/src/VBoxLayout.cpp',
+  'lib/src/HBoxLayout.cpp',
+  'lib/src/GridLayout.cpp',
 ]
 
 # Build as shared library
 uiframework_lib = shared_library('uiframework',
   sources : common_sources,
   dependencies : [sdl2_dep, ttf_dep, sdl2_image_dep],
-  include_directories : ['include'],
+  include_directories : ['lib/include'],
   install : true,
   version : '1.0.0'
 )
@@ -55,59 +55,59 @@ uiframework_lib = shared_library('uiframework',
 uiframework_static = static_library('uiframework',
   sources : common_sources,
   dependencies : [sdl2_dep, ttf_dep, sdl2_image_dep],
-  include_directories : ['include'],
+  include_directories : ['lib/include'],
   install : true
 )
 
 # Install headers
-install_headers('include/uiframework/UI.h', subdir : 'uiframework')
-install_subdir('include/uiframework', install_dir : get_option('includedir'))
+install_headers('lib/include/uiframework/UI.h', subdir : 'uiframework')
+install_subdir('lib/include/uiframework', install_dir : get_option('includedir'))
 
 # Progressive test executable
 executable('progressive_test',
-  sources : ['examples/progressive_test.cpp'] + common_sources,
+  sources : ['dev/examples/progressive_test.cpp'] + common_sources,
   dependencies : [sdl2_dep, ttf_dep, sdl2_image_dep],
-  include_directories : ['include'],
+  include_directories : ['lib/include'],
   install : true
 )
 
 
 # Static analysis targets
 run_target('static-analysis',
-  command : [find_program('scripts/run_static_analysis.sh')]
+  command : [find_program('tools/scripts/run_static_analysis.sh')]
 )
 
 if catch2_dep.found()
   executable('ui_tests',
     sources : [
-      'tests/test_main.cpp',
-      'tests/test_uicore.cpp',
-      'tests/test_button.cpp',
-      'tests/test_label.cpp',
-      'tests/test_checkbox.cpp',
-      'tests/test_progressbar.cpp',
-      'tests/test_canvas.cpp',
-      'tests/test_theme.cpp',
-      'tests/test_image.cpp',
-      'tests/test_sprite.cpp',
-      'tests/test_animatedsprite.cpp',
-      'tests/test_listview.cpp',
-      'tests/test_modal.cpp',
-      'tests/test_contextmenu.cpp',
-      'tests/test_textbox.cpp',
-      'tests/test_optionselect.cpp',
-      'tests/test_deadlock_prevention.cpp',
-      'tests/test_slider.cpp',
-      'tests/test_virtualkeyboard.cpp',
-      'tests/test_layout.cpp',  # Layout tests re-enabled after fixes
-      'tests/test_threading_improvements.cpp',
-      'tests/test_performance_benchmarks.cpp',  # New threading and performance tests
-      'tests/test_phase1_improvements.cpp',  # Phase 1 improvement tests
-      'tests/test_integration.cpp',  # Phase 2 integration tests
-      'tests/test_memory_benchmarks.cpp',  # Phase 2 memory benchmarks
+      'dev/tests/test_main.cpp',
+      'dev/tests/test_uicore.cpp',
+      'dev/tests/test_button.cpp',
+      'dev/tests/test_label.cpp',
+      'dev/tests/test_checkbox.cpp',
+      'dev/tests/test_progressbar.cpp',
+      'dev/tests/test_canvas.cpp',
+      'dev/tests/test_theme.cpp',
+      'dev/tests/test_image.cpp',
+      'dev/tests/test_sprite.cpp',
+      'dev/tests/test_animatedsprite.cpp',
+      'dev/tests/test_listview.cpp',
+      'dev/tests/test_modal.cpp',
+      'dev/tests/test_contextmenu.cpp',
+      'dev/tests/test_textbox.cpp',
+      'dev/tests/test_optionselect.cpp',
+      'dev/tests/test_deadlock_prevention.cpp',
+      'dev/tests/test_slider.cpp',
+      'dev/tests/test_virtualkeyboard.cpp',
+      'dev/tests/test_layout.cpp',  # Layout tests re-enabled after fixes
+      'dev/tests/test_threading_improvements.cpp',
+      'dev/tests/test_performance_benchmarks.cpp',  # New threading and performance tests
+      'dev/tests/test_phase1_improvements.cpp',  # Phase 1 improvement tests
+      'dev/tests/test_integration.cpp',  # Phase 2 integration tests
+      'dev/tests/test_memory_benchmarks.cpp',  # Phase 2 memory benchmarks
     ] + common_sources,
     dependencies : [sdl2_dep, ttf_dep, sdl2_image_dep, catch2_dep],
-    include_directories : ['include'],
+    include_directories : ['lib/include'],
     install : false
   )
 endif
