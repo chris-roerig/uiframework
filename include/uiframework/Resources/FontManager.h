@@ -26,6 +26,7 @@ class FontManager {
 private:
     static std::unique_ptr<FontManager> instance;
     static std::mutex instanceMutex;
+    static std::once_flag initialized;
     
     std::unordered_map<FontKey, TTF_Font*, FontKeyHash> fontCache;
     mutable std::mutex cacheMutex;

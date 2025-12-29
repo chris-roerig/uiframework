@@ -8,13 +8,16 @@ namespace ui {
 
 std::unique_ptr<FontManager> FontManager::instance = nullptr;
 std::mutex FontManager::instanceMutex;
+std::once_flag FontManager::initialized;
 static std::atomic<int> ttfRefCount{0};
 
 FontManager& FontManager::getInstance() {
-    std::lock_guard<std::mutex> lock(instanceMutex);
-    if (!instance) {
-        instance = std::unique_ptr<FontManager>(new FontManager());
-    }
+    std::call_once(initialized, []() {
+        std::lock_guard<std::mutex> lock(instanceMutex);
+        if (!instance) {
+            instance = std::unique_ptr<FontManager>(new FontManager());
+        }
+    });
     return *instance;
 }
 

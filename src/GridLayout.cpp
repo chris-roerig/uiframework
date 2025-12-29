@@ -87,8 +87,8 @@ void GridLayout::updateLayout(int x, int y, int width, int height) {
 std::pair<int, int> GridLayout::getMinimumSize() const {
     std::lock_guard<std::mutex> lock(gridMutex);
     
-    int minWidth = columns * 50 + (columns - 1) * spacing + padding.left + padding.right;
-    int minHeight = rows * 30 + (rows - 1) * spacing + padding.top + padding.bottom;
+    int minWidth = columns * ui::Constants::GRID_MIN_CELL_WIDTH + (columns - 1) * spacing + padding.left + padding.right;
+    int minHeight = rows * ui::Constants::GRID_MIN_CELL_HEIGHT + (rows - 1) * spacing + padding.top + padding.bottom;
     
     return {std::max(1, minWidth), std::max(1, minHeight)};
 }

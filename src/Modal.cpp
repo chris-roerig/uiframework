@@ -55,11 +55,11 @@ void Modal::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<Theme
     SDL_RenderDrawRect(renderer, &modalRect);
     
     // Draw title bar (optional)
-    SDL_Rect titleRect = { x, y, width, 30 };
+    SDL_Rect titleRect = { x, y, width, ui::Constants::MODAL_TITLE_HEIGHT };
     Color titleColor = tc.modalBackground;
-    titleColor.r = std::max(0, static_cast<int>(titleColor.r) - 20);
-    titleColor.g = std::max(0, static_cast<int>(titleColor.g) - 20);
-    titleColor.b = std::max(0, static_cast<int>(titleColor.b) - 20);
+    titleColor.r = std::max(0, static_cast<int>(titleColor.r) - ui::Constants::COLOR_DARKEN_AMOUNT);
+    titleColor.g = std::max(0, static_cast<int>(titleColor.g) - ui::Constants::COLOR_DARKEN_AMOUNT);
+    titleColor.b = std::max(0, static_cast<int>(titleColor.b) - ui::Constants::COLOR_DARKEN_AMOUNT);
     drawFilledRect(renderer, titleRect, titleColor);
     
     // Draw message text
@@ -67,7 +67,7 @@ void Modal::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<Theme
         SDL_Color textColor = { tc.modalText.r, tc.modalText.g, tc.modalText.b, tc.modalText.a };
         
         // Simple word wrapping for message
-        const int padding = Constants::MODAL_PADDING;
+        const int padding = ui::Constants::MODAL_PADDING;
         const int lineHeight = TTF_FontLineSkip(font);
         int textY = y + 40; // Below title bar
         int availableWidth = width - 2 * padding;
@@ -155,18 +155,18 @@ void Modal::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<Theme
     }
     
     // Draw buttons
-    const int buttonHeight = Constants::BUTTON_HEIGHT;
-    const int buttonSpacing = Constants::BUTTON_SPACING;
-    const int buttonY = y + height - buttonHeight - Constants::MODAL_PADDING;
+    const int buttonHeight = ui::Constants::BUTTON_HEIGHT;
+    const int buttonSpacing = ui::Constants::BUTTON_SPACING;
+    const int buttonY = y + height - buttonHeight - ui::Constants::MODAL_PADDING;
     
     if (!buttonLabels.empty()) {
         int totalButtonWidth = 0;
         for (const auto& label : buttonLabels) {
-            int buttonWidth = 80; // Default width
+            int buttonWidth = ui::Constants::MIN_BUTTON_WIDTH; // Default width
             if (font) {
                 int textWidth = 0;
                 TTF_SizeText(font, label.c_str(), &textWidth, nullptr);
-                buttonWidth = std::max(80, textWidth + 20);
+                buttonWidth = std::max(ui::Constants::MIN_BUTTON_WIDTH, textWidth + ui::Constants::BUTTON_TEXT_PADDING);
             }
             totalButtonWidth += buttonWidth;
         }
@@ -175,11 +175,11 @@ void Modal::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<Theme
         int buttonX = x + (width - totalButtonWidth) / 2;
         
         for (size_t i = 0; i < buttonLabels.size(); i++) {
-            int buttonWidth = 80;
+            int buttonWidth = ui::Constants::MIN_BUTTON_WIDTH;
             if (font) {
                 int textWidth = 0;
                 TTF_SizeText(font, buttonLabels[i].c_str(), &textWidth, nullptr);
-                buttonWidth = std::max(80, textWidth + 20);
+                buttonWidth = std::max(ui::Constants::MIN_BUTTON_WIDTH, textWidth + ui::Constants::BUTTON_TEXT_PADDING);
             }
             
             SDL_Rect buttonRect = { buttonX, buttonY, buttonWidth, buttonHeight };
@@ -188,8 +188,8 @@ void Modal::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<Theme
             Color buttonBg = tc.modalButtonBackground;
             if (static_cast<int>(i) == buttonFocusIndex) {
                 // Highlight focused button
-                buttonBg.r = std::min(255, static_cast<int>(buttonBg.r) + 30);
-                buttonBg.g = std::min(255, static_cast<int>(buttonBg.g) + 30);
+                buttonBg.r = std::min(ui::Constants::FULL_ALPHA, static_cast<int>(buttonBg.r) + ui::Constants::COLOR_LIGHTEN_AMOUNT);
+                buttonBg.g = std::min(ui::Constants::FULL_ALPHA, static_cast<int>(buttonBg.g) + ui::Constants::COLOR_LIGHTEN_AMOUNT);
                 buttonBg.b = std::min(255, static_cast<int>(buttonBg.b) + 30);
             }
             drawFilledRect(renderer, buttonRect, buttonBg);
@@ -314,9 +314,9 @@ SDL_Rect Modal::getButtonRect(int buttonIndex) const {
         return {0, 0, 0, 0};
     }
     
-    const int buttonHeight = Constants::BUTTON_HEIGHT;
-    const int buttonSpacing = Constants::BUTTON_SPACING;
-    const int buttonY = y + height - buttonHeight - Constants::MODAL_PADDING;
+    const int buttonHeight = ui::Constants::BUTTON_HEIGHT;
+    const int buttonSpacing = ui::Constants::BUTTON_SPACING;
+    const int buttonY = y + height - buttonHeight - ui::Constants::MODAL_PADDING;
     
     // Calculate button widths (same logic as rendering)
     std::vector<int> buttonWidths;

@@ -103,8 +103,8 @@ bool OptionSelect::isValidIndex(int index) const {
 }
 
 void OptionSelect::renderCollapsed(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<Theme> theme) {
-    const int padding = Constants::DEFAULT_PADDING;
-    const int arrowWidth = Constants::ARROW_WIDTH;
+    const int padding = ui::Constants::DEFAULT_PADDING;
+    const int arrowWidth = ui::Constants::ARROW_WIDTH;
     
     ThemeableElementColors tc = theme->optionSelectColors();
     
@@ -162,7 +162,7 @@ void OptionSelect::renderCollapsed(SDL_Renderer* renderer, TTF_Font* font, std::
 }
 
 void OptionSelect::renderExpanded(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<Theme> theme) {
-    const int padding = Constants::DEFAULT_PADDING;
+    const int padding = ui::Constants::DEFAULT_PADDING;
     int itemHeight = height;
     int totalHeight = itemHeight * static_cast<int>(options.size());
     

@@ -39,10 +39,10 @@ void CheckBox::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<Th
     
     // If checked, draw a check mark
     if (checked) {
-        drawLine(renderer, x + Constants::BORDER_OFFSET, y + Constants::BORDER_OFFSET, 
-                x + width - Constants::BORDER_OFFSET, y + height - Constants::BORDER_OFFSET, tc.checkboxChecked);
-        drawLine(renderer, x + width - Constants::BORDER_OFFSET, y + Constants::BORDER_OFFSET, 
-                x + Constants::BORDER_OFFSET, y + height - Constants::BORDER_OFFSET, tc.checkboxChecked);
+        drawLine(renderer, x + ui::Constants::BORDER_OFFSET, y + ui::Constants::BORDER_OFFSET, 
+                x + width - ui::Constants::BORDER_OFFSET, y + height - ui::Constants::BORDER_OFFSET, tc.checkboxChecked);
+        drawLine(renderer, x + width - ui::Constants::BORDER_OFFSET, y + ui::Constants::BORDER_OFFSET, 
+                x + ui::Constants::BORDER_OFFSET, y + height - ui::Constants::BORDER_OFFSET, tc.checkboxChecked);
     }
 }
 

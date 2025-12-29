@@ -7,38 +7,54 @@
 
 namespace ui {
 
+// Pre-build character sets for optimal performance
+const std::vector<std::string> VirtualKeyboard::LOWERCASE_CHARS = [](){
+    std::vector<std::string> chars;
+    for (char c = 'a'; c <= 'z'; ++c) {
+        chars.push_back(std::string(1, c));
+    }
+    return chars;
+}();
+
+const std::vector<std::string> VirtualKeyboard::UPPERCASE_CHARS = [](){
+    std::vector<std::string> chars;
+    for (char c = 'A'; c <= 'Z'; ++c) {
+        chars.push_back(std::string(1, c));
+    }
+    return chars;
+}();
+
+const std::vector<std::string> VirtualKeyboard::NUMBER_CHARS = [](){
+    std::vector<std::string> chars;
+    for (char c = '0'; c <= '9'; ++c) {
+        chars.push_back(std::string(1, c));
+    }
+    return chars;
+}();
+
+const std::vector<std::string> VirtualKeyboard::SPECIAL_CHARS = [](){
+    std::vector<std::string> chars;
+    for (char c : "!@#$%^&*()_+-=[]{}|;:,.<>?") {
+        chars.push_back(std::string(1, c));
+    }
+    return chars;
+}();
+
 VirtualKeyboard::VirtualKeyboard(int x_, int y_, int w_, int h_, std::function<void(char)> callback)
     : UIElement(x_, y_, w_, h_), onCharInput(callback) {
     updateCharacterSet();
 }
 
 void VirtualKeyboard::updateCharacterSet() {
-    currentChars.clear();
-    
+    // Simply point to the appropriate pre-built character set
     switch (mode) {
-        case KeyboardMode::LOWERCASE:
-            for (char c = 'a'; c <= 'z'; ++c) {
-                currentChars.push_back(std::string(1, c));
-            }
-            break;
-        case KeyboardMode::UPPERCASE:
-            for (char c = 'A'; c <= 'Z'; ++c) {
-                currentChars.push_back(std::string(1, c));
-            }
-            break;
-        case KeyboardMode::NUMBERS:
-            for (char c = '0'; c <= '9'; ++c) {
-                currentChars.push_back(std::string(1, c));
-            }
-            break;
-        case KeyboardMode::SPECIAL:
-            for (char c : "!@#$%^&*()_+-=[]{}|;:,.<>?") {
-                currentChars.push_back(std::string(1, c));
-            }
-            break;
+        case KeyboardMode::LOWERCASE: currentChars = &LOWERCASE_CHARS; break;
+        case KeyboardMode::UPPERCASE: currentChars = &UPPERCASE_CHARS; break;
+        case KeyboardMode::NUMBERS: currentChars = &NUMBER_CHARS; break;
+        case KeyboardMode::SPECIAL: currentChars = &SPECIAL_CHARS; break;
     }
     
-    selectedIndex = std::min(selectedIndex, static_cast<int>(currentChars.size()) - 1);
+    selectedIndex = std::min(selectedIndex, static_cast<int>(currentChars->size()) - 1);
     if (selectedIndex < 0) selectedIndex = 0;
 }
 
@@ -53,8 +69,8 @@ void VirtualKeyboard::cycleMode() {
 }
 
 void VirtualKeyboard::inputCurrentChar() {
-    if (onCharInput && selectedIndex >= 0 && selectedIndex < currentChars.size()) {
-        onCharInput(currentChars[selectedIndex][0]);
+    if (onCharInput && selectedIndex >= 0 && selectedIndex < currentChars->size()) {
+        onCharInput((*currentChars)[selectedIndex][0]);
     }
 }
 
@@ -73,16 +89,16 @@ void VirtualKeyboard::handleCursorMove(int direction) {
 void VirtualKeyboard::handleNavigation(SDL_Keycode key) {
     switch (key) {
         case SDLK_LEFT:
-            selectedIndex = (selectedIndex - 1 + currentChars.size()) % currentChars.size();
+            selectedIndex = (selectedIndex - 1 + currentChars->size()) % currentChars->size();
             break;
         case SDLK_RIGHT:
-            selectedIndex = (selectedIndex + 1) % currentChars.size();
+            selectedIndex = (selectedIndex + 1) % currentChars->size();
             break;
         case SDLK_UP:
-            selectedIndex = std::max(0, selectedIndex - 10);
+            selectedIndex = std::max(0, selectedIndex - ui::Constants::KEYBOARD_NAV_STEP);
             break;
         case SDLK_DOWN:
-            selectedIndex = std::min(static_cast<int>(currentChars.size()) - 1, selectedIndex + 10);
+            selectedIndex = std::min(static_cast<int>(currentChars->size()) - 1, selectedIndex + ui::Constants::KEYBOARD_NAV_STEP);
             break;
     }
 }
@@ -105,7 +121,7 @@ void VirtualKeyboard::render(SDL_Renderer* renderer, TTF_Font* font, std::shared
                            colors.textInputBorderDark.b, colors.textInputBorderDark.a);
     SDL_RenderDrawRect(renderer, &bgRect);
     
-    if (currentChars.empty()) return;
+    if (currentChars->empty()) return;
     
     // Calculate character display parameters
     const int padding = 5;
@@ -115,7 +131,7 @@ void VirtualKeyboard::render(SDL_Renderer* renderer, TTF_Font* font, std::shared
     int currentY = y + padding;
     
     // Render characters
-    for (size_t i = 0; i < currentChars.size(); ++i) {
+    for (size_t i = 0; i < currentChars->size(); ++i) {
         bool isSelected = (i == selectedIndex);
         
         // Wrap to next line if needed
@@ -141,7 +157,7 @@ void VirtualKeyboard::render(SDL_Renderer* renderer, TTF_Font* font, std::shared
                       colors.textInputBackground.b, colors.textInputBackground.a};
         }
         
-        SDL_Surface* surface = TTF_RenderText_Solid(font, currentChars[i].c_str(), textColor);
+        SDL_Surface* surface = TTF_RenderText_Solid(font, (*currentChars)[i].c_str(), textColor);
         if (surface) {
             SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
             if (texture) {
@@ -244,7 +260,7 @@ void VirtualKeyboard::setMode(KeyboardMode newMode) {
 }
 
 void VirtualKeyboard::setSelectedIndex(int index) {
-    if (index >= 0 && index < currentChars.size()) {
+    if (index >= 0 && index < currentChars->size()) {
         selectedIndex = index;
     }
 }

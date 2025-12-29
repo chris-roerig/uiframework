@@ -74,7 +74,7 @@ void TextBox::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<The
         lastHeight = height;
     }
     
-    const int padding = Constants::DEFAULT_PADDING;
+    const int padding = ui::Constants::DEFAULT_PADDING;
     int boxHeight = height;
     if (font) {
         boxHeight = std::max(height, TTF_FontLineSkip(font) + 2 * padding);

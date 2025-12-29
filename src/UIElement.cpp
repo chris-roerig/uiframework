@@ -1,4 +1,5 @@
 #include "uiframework/UIElements/UIElement.h"
+#include "uiframework/Resources/SDLTextureRAII.h"
 #include "uiframework/ErrorHandling.h"
 #include <SDL2/SDL_ttf.h>
 
@@ -28,25 +29,27 @@ TextCacheEntry* UIElement::getCachedText(const std::string& key, const std::stri
         return nullptr;
     }
     
-    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
-    if (!ErrorHandling::validateTexture(texture)) {
-        SDL_FreeSurface(surface);
+    SDLTextureRAII textureRAII(renderer, surface);
+    SDL_FreeSurface(surface);
+    
+    if (!textureRAII) {
         return nullptr;
     }
     
     // Create new cache entry
     auto entry = std::make_unique<TextCacheEntry>();
-    entry->texture = texture;
+    entry->texture = textureRAII.get();
     entry->width = surface->w;
     entry->height = surface->h;
     entry->text = text;
     entry->color = color;
     
-    SDL_FreeSurface(surface);
-    
-    // Store in cache
+    // Store in cache and return pointer
     TextCacheEntry* result = entry.get();
     textCache[key] = std::move(entry);
+    
+    // Release ownership from RAII wrapper since TextCacheEntry will manage it
+    const_cast<SDLTextureRAII&>(textureRAII) = SDLTextureRAII(nullptr, nullptr);
     
     return result;
 }

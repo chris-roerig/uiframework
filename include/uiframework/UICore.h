@@ -12,26 +12,6 @@
 #include <stdexcept>
 
 namespace ui {
-    
-    // Exception classes for better error handling
-    class UIException : public std::runtime_error {
-    public:
-        explicit UIException(const std::string& message) : std::runtime_error(message) {}
-    };
-    
-    class InitializationException : public UIException {
-    public:
-        explicit InitializationException(const std::string& message) 
-            : UIException("Initialization failed: " + message) {}
-    };
-    
-    class RenderException : public UIException {
-    public:
-        explicit RenderException(const std::string& message) 
-            : UIException("Render failed: " + message) {}
-    };
-
-    // RAII wrapper for SDL resources
     class SDLResources {
     private:
         SDL_Window* window = nullptr;
@@ -60,6 +40,7 @@ namespace ui {
     private:
         std::unique_ptr<SDLResources> resources;
         std::vector<std::shared_ptr<UIElement>> elements;
+    std::unordered_map<std::string, std::shared_ptr<UIElement>> elementsMap;
         std::shared_ptr<Theme> currentTheme;
         std::unordered_map<SDL_Keycode, std::function<void()>> hotKeys;
         

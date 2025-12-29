@@ -16,7 +16,13 @@ enum class KeyboardMode {
 
 class VirtualKeyboard : public UIElement {
 private:
-    std::vector<std::string> currentChars;
+    // Pre-built static character sets for performance
+    static const std::vector<std::string> LOWERCASE_CHARS;
+    static const std::vector<std::string> UPPERCASE_CHARS;
+    static const std::vector<std::string> NUMBER_CHARS;
+    static const std::vector<std::string> SPECIAL_CHARS;
+    
+    const std::vector<std::string>* currentChars = &LOWERCASE_CHARS;
     int selectedIndex = 0;
     KeyboardMode mode = KeyboardMode::LOWERCASE;
     std::function<void(char)> onCharInput;

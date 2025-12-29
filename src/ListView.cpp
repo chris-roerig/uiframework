@@ -82,7 +82,7 @@ void ListView::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<Th
                         SDL_Rect textRect = { 
                             x + 5, 
                             y + i * itemHeight + (itemHeight - surface->h) / 2, 
-                            std::min(surface->w, width - 10), 
+                            std::min(surface->w, width - ui::Constants::LISTVIEW_TEXT_PADDING), 
                             surface->h 
                         };
                         SDL_RenderCopy(renderer, texture, nullptr, &textRect);
@@ -104,14 +104,14 @@ void ListView::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<Th
     
     // Draw scrollbar if needed
     if (static_cast<int>(currentItems.size()) > visibleItems) {
-        int scrollbarWidth = 10;
+        int scrollbarWidth = ui::Constants::LISTVIEW_SCROLLBAR_WIDTH;
         int scrollbarX = x + width - scrollbarWidth;
         SDL_Rect scrollbarTrack = { scrollbarX, y, scrollbarWidth, height };
         drawFilledRect(renderer, scrollbarTrack, tc.listViewBackground);
         
         // Calculate scrollbar thumb
         float thumbRatio = static_cast<float>(visibleItems) / currentItems.size();
-        int thumbHeight = std::max(10, static_cast<int>(height * thumbRatio));
+        int thumbHeight = std::max(ui::Constants::LISTVIEW_MIN_THUMB_HEIGHT, static_cast<int>(height * thumbRatio));
         float scrollRatio = static_cast<float>(scrollOffset) / (currentItems.size() - visibleItems);
         int thumbY = y + static_cast<int>((height - thumbHeight) * scrollRatio);
         

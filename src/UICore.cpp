@@ -1,6 +1,7 @@
 #include "uiframework/UICore.h"
 #include "uiframework/Helpers.h"
 #include "uiframework/Resources/FontManager.h"
+#include "uiframework/ErrorHandling.h"
 #include <iostream>
 #include <atomic>
 #include <sstream>
@@ -122,6 +123,7 @@ std::string UICore::addElement(std::shared_ptr<UIElement> element) {
     element->setCoreReference(this);
     
     elements.push_back(element);
+    elementsMap[id] = element;
     elementRegistry[id] = element;
     
     return id;
@@ -130,17 +132,25 @@ std::string UICore::addElement(std::shared_ptr<UIElement> element) {
 void UICore::removeElement(const std::string& elementId) {
     std::lock_guard<std::mutex> lock(elementsMutex);
     
-    // Remove from registry
-    elementRegistry.erase(elementId);
+    // O(1) lookup in map
+    auto mapIt = elementsMap.find(elementId);
+    if (mapIt == elementsMap.end()) {
+        return; // Element not found
+    }
     
-    // Remove from elements vector
+    auto element = mapIt->second;
+    
+    // Remove from map (O(1))
+    elementsMap.erase(mapIt);
+    
+    // Remove from vector (O(n) but necessary for render order)
     elements.erase(
-        std::remove_if(elements.begin(), elements.end(),
-            [&elementId](const std::shared_ptr<UIElement>& elem) {
-                return elem && elem->getId() == elementId;
-            }),
+        std::remove(elements.begin(), elements.end(), element),
         elements.end()
     );
+    
+    // Remove from registry
+    elementRegistry.erase(elementId);
     
     // Clear focus if this element was focused
     if (focusedElementId == elementId) {
@@ -151,11 +161,9 @@ void UICore::removeElement(const std::string& elementId) {
 std::shared_ptr<UIElement> UICore::getElement(const std::string& elementId) const {
     std::lock_guard<std::mutex> lock(elementsMutex);
     
-    auto it = elementRegistry.find(elementId);
-    if (it != elementRegistry.end()) {
-        return it->second.lock(); // Convert weak_ptr to shared_ptr
-    }
-    return nullptr;
+    // O(1) lookup in map
+    auto it = elementsMap.find(elementId);
+    return (it != elementsMap.end()) ? it->second : nullptr;
 }
 
 void UICore::setTheme(std::shared_ptr<Theme> theme) {
@@ -326,7 +334,7 @@ void UICore::run() {
         
         // Render
         try {
-            SDL_SetRenderDrawColor(resources->getRenderer(), 0, 0, 0, 255);
+            SDL_SetRenderDrawColor(resources->getRenderer(), 0, 0, 0, ui::Constants::FULL_ALPHA);
             SDL_RenderClear(resources->getRenderer());
             
             auto theme = getTheme();

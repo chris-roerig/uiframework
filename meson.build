@@ -93,6 +93,8 @@ if catch2_dep.found()
       'tests/test_slider.cpp',
       'tests/test_virtualkeyboard.cpp',
       'tests/test_layout.cpp',  # Layout tests re-enabled after fixes
+      'tests/test_threading_improvements.cpp',
+    'tests/test_performance_benchmarks.cpp',  # New threading and performance tests
     ] + common_sources,
     dependencies : [sdl2_dep, ttf_dep, sdl2_image_dep, catch2_dep],
     include_directories : ['include'],

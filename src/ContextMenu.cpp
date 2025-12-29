@@ -38,7 +38,7 @@ void ContextMenu::renderMenuItems(SDL_Renderer* renderer, TTF_Font* font, std::s
     }
     
     // Draw top-level menu items
-    int currentX = x + Constants::MENU_PADDING; // Start with some padding
+    int currentX = x + ui::Constants::MENU_PADDING; // Start with some padding
     for (int i = 0; i < static_cast<int>(items.size()); i++) {
         const auto& item = items[i];
         SDL_Rect itemRect = { currentX, y, item.width, height };
@@ -79,7 +79,7 @@ void ContextMenu::renderSubmenuItems(SDL_Renderer* renderer, TTF_Font* font, std
     
     // Draw submenu items
     for (int i = 0; i < static_cast<int>(activeItem.subItemLabels.size()); i++) {
-        SDL_Rect subItemRect = { subMenuRect.x, subMenuRect.y + i * Constants::SUBMENU_ITEM_HEIGHT, subMenuRect.w, Constants::SUBMENU_ITEM_HEIGHT };
+        SDL_Rect subItemRect = { subMenuRect.x, subMenuRect.y + i * ui::Constants::SUBMENU_ITEM_HEIGHT, subMenuRect.w, ui::Constants::SUBMENU_ITEM_HEIGHT };
         
         // Highlight selected or hovered submenu item
         if (i == subMenuSelectedIndex || i == hoveredSubIndex) {
@@ -95,8 +95,8 @@ void ContextMenu::renderSubmenuItems(SDL_Renderer* renderer, TTF_Font* font, std
                 SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
                 if (texture) {
                     SDL_Rect textRect = { 
-                        subMenuRect.x + Constants::SUBMENU_TEXT_PADDING,
-                        subMenuRect.y + i * Constants::SUBMENU_ITEM_HEIGHT + (Constants::SUBMENU_ITEM_HEIGHT - surface->h) / 2,
+                        subMenuRect.x + ui::Constants::SUBMENU_TEXT_PADDING,
+                        subMenuRect.y + i * ui::Constants::SUBMENU_ITEM_HEIGHT + (ui::Constants::SUBMENU_ITEM_HEIGHT - surface->h) / 2,
                         surface->w, 
                         surface->h 
                     };
@@ -111,8 +111,8 @@ void ContextMenu::renderSubmenuItems(SDL_Renderer* renderer, TTF_Font* font, std
         if (i < static_cast<int>(activeItem.subItemLabels.size()) - 1) {
             SDL_SetRenderDrawColor(renderer, tc.contextMenuBorder.r, tc.contextMenuBorder.g, 
                                   tc.contextMenuBorder.b, tc.contextMenuBorder.a);
-            SDL_RenderDrawLine(renderer, subMenuRect.x, subMenuRect.y + (i + 1) * Constants::SUBMENU_ITEM_HEIGHT, 
-                             subMenuRect.x + subMenuRect.w, subMenuRect.y + (i + 1) * Constants::SUBMENU_ITEM_HEIGHT);
+            SDL_RenderDrawLine(renderer, subMenuRect.x, subMenuRect.y + (i + 1) * ui::Constants::SUBMENU_ITEM_HEIGHT, 
+                             subMenuRect.x + subMenuRect.w, subMenuRect.y + (i + 1) * ui::Constants::SUBMENU_ITEM_HEIGHT);
         }
     }
 }
@@ -132,20 +132,20 @@ void ContextMenu::renderSubmenu(SDL_Renderer* renderer, TTF_Font* font, std::sha
     // Calculate submenu position
     SDL_Rect activeItemRect = getItemRect(activeItemIndex);
     int subMenuY = y + height;
-    int subMenuWidth = Constants::SUBMENU_DEFAULT_WIDTH; // Default width
+    int subMenuWidth = ui::Constants::SUBMENU_DEFAULT_WIDTH; // Default width
     
     // Calculate actual submenu width based on text
     if (font) {
-        int maxWidth = Constants::SUBMENU_MIN_WIDTH;
+        int maxWidth = ui::Constants::SUBMENU_MIN_WIDTH;
         for (const auto& subLabel : activeItem.subItemLabels) {
             int textWidth = 0;
             TTF_SizeText(font, subLabel.c_str(), &textWidth, nullptr);
-            maxWidth = std::max(maxWidth, textWidth + Constants::MENU_ITEM_PADDING);
+            maxWidth = std::max(maxWidth, textWidth + ui::Constants::MENU_ITEM_PADDING);
         }
         subMenuWidth = maxWidth;
     }
     
-    int subMenuHeight = static_cast<int>(activeItem.subItemLabels.size()) * Constants::SUBMENU_ITEM_HEIGHT;
+    int subMenuHeight = static_cast<int>(activeItem.subItemLabels.size()) * ui::Constants::SUBMENU_ITEM_HEIGHT;
     SDL_Rect subMenuRect = { activeItemRect.x, subMenuY, subMenuWidth, subMenuHeight };
     
     // Draw submenu background
@@ -387,7 +387,7 @@ int ContextMenu::getSubItemAt(int mouseX, int mouseY) const {
     int subMenuY = y + height;
     int subMenuHeight = static_cast<int>(items[activeItemIndex].subItemLabels.size()) * 25;
     
-    if (mouseX >= activeItemRect.x && mouseX < activeItemRect.x + 200 && // Assuming 200px width
+    if (mouseX >= activeItemRect.x && mouseX < activeItemRect.x + ui::Constants::SUBMENU_DEFAULT_WIDTH && // Default submenu width
         mouseY >= subMenuY && mouseY < subMenuY + subMenuHeight) {
         return (mouseY - subMenuY) / 25;
     }
@@ -421,7 +421,7 @@ SDL_Rect ContextMenu::getSubItemRect(int subItemIndex) const {
     SDL_Rect activeItemRect = getItemRect(activeItemIndex);
     int subMenuY = y + height + subItemIndex * 25;
     
-    return {activeItemRect.x, subMenuY, 200, 25}; // Assuming 200px width, 25px height
+    return {activeItemRect.x, subMenuY, ui::Constants::SUBMENU_DEFAULT_WIDTH, ui::Constants::SUBMENU_ITEM_HEIGHT};
 }
 
 void ContextMenu::calculateItemWidths(TTF_Font* font) {
@@ -436,7 +436,7 @@ void ContextMenu::calculateItemWidths(TTF_Font* font) {
     for (auto& item : items) {
         int textWidth = 0;
         TTF_SizeText(font, item.label.c_str(), &textWidth, nullptr);
-        item.width = textWidth + Constants::MENU_ITEM_PADDING; // Add padding
+        item.width = textWidth + ui::Constants::MENU_ITEM_PADDING; // Add padding
     }
 }
 
