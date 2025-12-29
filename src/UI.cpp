@@ -1,8 +1,8 @@
-#include "UI.h"
-#include "../lib/Theme/ThemeFrameworkDefault.h"
-#include "../lib/Theme/ThemeSolarizedDark.h"
-#include "../lib/Theme/ThemeSolarizedLight.h"
-#include "../lib/Theme/ThemeMolokai.h"
+#include "uiframework/UI.h"
+#include "uiframework/Theme/ThemeFrameworkDefault.h"
+#include "uiframework/Theme/ThemeSolarizedDark.h"
+#include "uiframework/Theme/ThemeSolarizedLight.h"
+#include "uiframework/Theme/ThemeMolokai.h"
 #include <iostream>
 
 // Constructor

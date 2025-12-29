@@ -1,6 +1,6 @@
-#include "UICore.h"
-#include "Helpers.h"
-#include "../lib/Resources/FontManager.h"
+#include "uiframework/UICore.h"
+#include "uiframework/Helpers.h"
+#include "uiframework/Resources/FontManager.h"
 #include <iostream>
 #include <atomic>
 #include <sstream>

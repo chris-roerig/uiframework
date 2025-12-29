@@ -1,7 +1,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/catch_approx.hpp>
-#include "../src/UI.h"
-#include "../lib/UIElements/Slider.h"
+#include "uiframework/UI.h"
+#include "uiframework/UIElements/Slider.h"
 
 TEST_CASE("Slider Base Class", "[slider]") {
     UI ui("Test", 800, 600);

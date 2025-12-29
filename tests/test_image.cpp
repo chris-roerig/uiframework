@@ -1,5 +1,5 @@
 #include <catch2/catch_test_macros.hpp>
-#include "../src/UI.h"
+#include "uiframework/UI.h"
 
 // Simple test data
 const unsigned char test_image_data[] = {0x89, 0x50, 0x4E, 0x47}; // PNG header

@@ -1,4 +1,4 @@
-#include "../src/UI.h" #include <iostream>
+#include "uiframework/UI.h" #include <iostream>
 #include <string>
 
 int main() {

@@ -1,6 +1,6 @@
-#include "Helpers.h"
-#include "../lib/Theme/ThemeGlobals.h"
-#include "../lib/Theme/ThemeFrameworkDefault.h"  // Add this include
+#include "uiframework/Helpers.h"
+#include "uiframework/Theme/ThemeGlobals.h"
+#include "uiframework/Theme/ThemeFrameworkDefault.h"  // Add this include
 #include <iostream>
 
 namespace ui {

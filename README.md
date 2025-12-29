@@ -48,7 +48,7 @@ meson compile -C build
 
 ## Documentation
 
-📖 **[Complete Documentation](LLM_DOCS/UI_FRAMEWORK_DOCUMENTATION.md)** - Comprehensive guide covering:
+📖 **[Complete Documentation](docs/UI_FRAMEWORK_DOCUMENTATION.md)** - Comprehensive guide covering:
 - All 17+ UI elements and their usage
 - Performance optimizations and architecture
 - Thread safety and error handling

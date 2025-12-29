@@ -1,7 +1,7 @@
 #include <catch2/catch_test_macros.hpp>
-#include "../src/UICore.h"
-#include "../src/UI.h"
-#include "../lib/Theme/ThemeFrameworkDefault.h"
+#include "uiframework/UICore.h"
+#include "uiframework/UI.h"
+#include "uiframework/Theme/ThemeFrameworkDefault.h"
 
 TEST_CASE("UICore initialization", "[uicore]") {
     auto theme = std::make_shared<ui::ThemeFrameworkDefault>();

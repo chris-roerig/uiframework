@@ -1,5 +1,5 @@
 #include <catch2/catch_test_macros.hpp>
-#include "../src/UI.h"
+#include "uiframework/UI.h"
 
 TEST_CASE("TextBox creation", "[textbox]") {
     UI ui("Test Window", 800, 600);
