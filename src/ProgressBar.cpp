@@ -88,16 +88,6 @@ void ProgressBar::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr
     }
 }
 
-void ProgressBar::handleEvent(const SDL_Event &e) {
-    // Progress bars typically don't handle events, but this can be overridden
-    // for interactive progress bars if needed
-}
-
-void ProgressBar::activate() {
-    // Default activation does nothing for progress bars
-    // Can be overridden for specific behaviors
-}
-
 void ProgressBar::setProgress(float value) {
     progress = std::clamp(value, 0.0f, 1.0f);
 }

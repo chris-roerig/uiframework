@@ -13,7 +13,7 @@ private:
     
 public:
     LayoutContainer(int x_, int y_, int w_, int h_, std::unique_ptr<Layout> layout_);
-    virtual ~LayoutContainer() = default;
+    virtual ~LayoutContainer() override = default;
     
     // UIElement interface
     void render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<class Theme> theme) override;

@@ -54,6 +54,19 @@ namespace Constants {
     // Animation and interaction
     static constexpr int HOVER_ALPHA = 128;
     static constexpr int FULL_ALPHA = 255;
+    
+    // Performance and caching
+    static constexpr int FONT_CACHE_MAX_SIZE = 100;
+    static constexpr int TEXT_CACHE_MAX_ENTRIES = 500;
+    
+    // Color manipulation
+    static constexpr float BUTTON_PRESSED_DARKEN_FACTOR = 0.8f;
+    static constexpr float COLOR_DARKEN_FACTOR = 0.8f;
+    static constexpr float COLOR_LIGHTEN_FACTOR = 1.2f;
+    
+    // Text truncation
+    static constexpr int MIN_TRUNCATION_LENGTH = 3;
+    static constexpr const char* ELLIPSIS = "...";
 }
 
 } // namespace ui

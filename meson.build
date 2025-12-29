@@ -16,7 +16,9 @@ common_sources = [
   'src/Helpers.cpp',
   'src/UICore.cpp', 
   'src/UI.cpp',
+  'src/Logger.cpp',
   'src/FontManager.cpp',
+  'src/TTFManager.cpp',
   'src/UIElement.cpp',
   'src/ContextMenu.cpp',
   'src/Modal.cpp',
@@ -70,6 +72,11 @@ executable('progressive_test',
 )
 
 
+# Static analysis targets
+run_target('static-analysis',
+  command : [find_program('scripts/run_static_analysis.sh')]
+)
+
 if catch2_dep.found()
   executable('ui_tests',
     sources : [
@@ -94,7 +101,10 @@ if catch2_dep.found()
       'tests/test_virtualkeyboard.cpp',
       'tests/test_layout.cpp',  # Layout tests re-enabled after fixes
       'tests/test_threading_improvements.cpp',
-    'tests/test_performance_benchmarks.cpp',  # New threading and performance tests
+      'tests/test_performance_benchmarks.cpp',  # New threading and performance tests
+      'tests/test_phase1_improvements.cpp',  # Phase 1 improvement tests
+      'tests/test_integration.cpp',  # Phase 2 integration tests
+      'tests/test_memory_benchmarks.cpp',  # Phase 2 memory benchmarks
     ] + common_sources,
     dependencies : [sdl2_dep, ttf_dep, sdl2_image_dep, catch2_dep],
     include_directories : ['include'],

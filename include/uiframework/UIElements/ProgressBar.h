@@ -16,12 +16,9 @@ private:
 
 public:
     ProgressBar(int x, int y, int width, int height, float initValue = 0.0f, bool showText = true);
-    virtual ~ProgressBar() = default;
+    virtual ~ProgressBar() override = default;
 
     void render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<class Theme> theme) override;
-    void handleEvent(const SDL_Event &e) override;
-    bool isInteractive() const override { return false; } // Progress bars are typically not interactive
-    void activate() override;
 
     // Progress-related methods
     void setProgress(float value);

@@ -26,7 +26,7 @@ public:
     AnimatedSprite(int x_, int y_, int w_, int h_, const unsigned char* data, size_t dataSize,
                    int frameCount, Uint32 frameDelay, bool stretch = false);
 
-    virtual ~AnimatedSprite() = default;
+    virtual ~AnimatedSprite() override = default;
 
     void render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<class Theme> theme) override;
 

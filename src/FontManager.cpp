@@ -1,15 +1,14 @@
 #include "uiframework/Resources/FontManager.h"
 #include "uiframework/Resources/EmbeddedFont.h"
-#include <iostream>
+#include "uiframework/Resources/TTFManager.h"
+#include "uiframework/Logger.h"
 #include <SDL2/SDL_rwops.h>
-#include <atomic>
 
 namespace ui {
 
 std::unique_ptr<FontManager> FontManager::instance = nullptr;
 std::mutex FontManager::instanceMutex;
 std::once_flag FontManager::initialized;
-static std::atomic<int> ttfRefCount{0};
 
 FontManager& FontManager::getInstance() {
     std::call_once(initialized, []() {
@@ -31,11 +30,10 @@ TTF_Font* FontManager::getFont(const std::string& path, int size) {
         return it->second;
     }
     
-    // Ensure TTF is initialized
-    if (ttfRefCount.fetch_add(1) == 0) {
-        if (TTF_Init() == -1) {
-            ttfRefCount.fetch_sub(1);
-            std::cerr << "FontManager: TTF_Init failed: " << TTF_GetError() << std::endl;
+    // Ensure TTF is initialized using RAII
+    if (!ttfManager) {
+        ttfManager = std::make_unique<TTFManager>();
+        if (!ttfManager->isInitialized()) {
             return nullptr;
         }
     }
@@ -65,22 +63,21 @@ TTF_Font* FontManager::getFont(const std::string& path, int size) {
         for (const char* defaultFont : defaultFonts) {
             font = TTF_OpenFont(defaultFont, size);
             if (font) {
-                std::cout << "FontManager: Loaded font: " << defaultFont << " (size " << size << ")" << std::endl;
+                Logger::log(LogLevel::INFO, "Loaded font: " + std::string(defaultFont) + " (size " + std::to_string(size) + ")");
                 break;
             }
         }
     } else {
         font = TTF_OpenFont(path.c_str(), size);
         if (font) {
-            std::cout << "FontManager: Loaded font: " << path << " (size " << size << ")" << std::endl;
+            Logger::log(LogLevel::INFO, "Loaded font: " + path + " (size " + std::to_string(size) + ")");
         }
     }
     
     if (font) {
         fontCache[key] = font;
     } else {
-        std::cerr << "FontManager: Failed to load font: " << (path.empty() ? "default" : path) << std::endl;
-        ttfRefCount.fetch_sub(1);
+        Logger::log(LogLevel::ERROR, "Failed to load font: " + (path.empty() ? "default" : path));
     }
     
     return font;
@@ -89,13 +86,13 @@ TTF_Font* FontManager::getFont(const std::string& path, int size) {
 TTF_Font* FontManager::loadEmbeddedFont(int size) {
     SDL_RWops* rw = SDL_RWFromConstMem(embedded::console_font_data, embedded::console_font_size);
     if (!rw) {
-        std::cerr << "FontManager: Failed to create RWops from embedded font" << std::endl;
+        Logger::log(LogLevel::ERROR, "Failed to create RWops from embedded font");
         return nullptr;
     }
     
     TTF_Font* font = TTF_OpenFontRW(rw, 1, size); // 1 = free RWops automatically
     if (!font) {
-        std::cerr << "FontManager: Failed to load embedded font: " << TTF_GetError() << std::endl;
+        Logger::log(LogLevel::ERROR, "Failed to load embedded font: " + std::string(TTF_GetError()));
         return nullptr;
     }
     
@@ -111,10 +108,7 @@ void FontManager::cleanup() {
     }
     fontCache.clear();
     
-    // Clean up TTF if we were the last user
-    if (ttfRefCount.exchange(0) > 0) {
-        TTF_Quit();
-    }
+    // TTF cleanup is handled by TTFManager destructor
 }
 
 FontManager::~FontManager() {

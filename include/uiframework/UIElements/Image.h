@@ -28,7 +28,7 @@ public:
     // Constructor for loading from binary data
     Image(int x_, int y_, int w_, int h_, const unsigned char* data, size_t dataSize, bool stretch_ = false);
 
-    virtual ~Image();
+    virtual ~Image() override;
     
     // Non-copyable but movable
     Image(const Image&) = delete;
@@ -37,7 +37,6 @@ public:
     Image& operator=(Image&& other) noexcept;
 
     void render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<class Theme> theme) override;
-    bool isInteractive() const override { return false; }
     
     // Image-specific methods
     void setStretch(bool shouldStretch) { stretch = shouldStretch; }

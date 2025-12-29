@@ -21,14 +21,13 @@ public:
     
     void handleEvent(const SDL_Event &e) override;
     bool isInteractive() const override { return true; }
-    void activate() override;
     
     void setValue(float value);
     float getValue() const { return currentValue; }
     void setRange(float min, float max);
     void setOnChange(std::function<void(float)> callback) { onChange = callback; }
     
-    virtual ~Slider() = default;
+    virtual ~Slider() override = default;
 };
 
 class HSlider : public Slider {

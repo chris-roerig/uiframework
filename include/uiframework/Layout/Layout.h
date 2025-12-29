@@ -30,7 +30,7 @@ struct Spacing {
     int bottom = 0;
     
     Spacing() = default;
-    Spacing(int all) : left(all), top(all), right(all), bottom(all) {}
+    explicit Spacing(int all) : left(all), top(all), right(all), bottom(all) {}
     Spacing(int horizontal, int vertical) : left(horizontal), top(vertical), right(horizontal), bottom(vertical) {}
     Spacing(int l, int t, int r, int b) : left(l), top(t), right(r), bottom(b) {}
 };
@@ -49,7 +49,7 @@ struct LayoutItem {
     int maxWidth = INT_MAX;
     int maxHeight = INT_MAX;
     
-    LayoutItem(std::shared_ptr<UIElement> elem) : element(elem) {}
+    explicit LayoutItem(std::shared_ptr<UIElement> elem) : element(elem) {}
 };
 
 // Base Layout class

@@ -30,7 +30,7 @@ public:
     // Constructor: loads the sprite sheet from embedded binary data
     Sprite(int x_, int y_, int w_, int h_, const unsigned char* data, size_t dataSize, bool stretch);
 
-    virtual ~Sprite();
+    virtual ~Sprite() override;
     
     // Non-copyable but movable
     Sprite(const Sprite&) = delete;
@@ -39,7 +39,6 @@ public:
     Sprite& operator=(Sprite&& other) noexcept;
 
     void render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<class Theme> theme) override;
-    bool isInteractive() const override { return false; }
 
     // Sprite-specific methods
     void setSourceRect(const SDL_Rect &rect);

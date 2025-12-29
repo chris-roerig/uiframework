@@ -5,7 +5,6 @@
 #include "uiframework/Constants.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
-#include <iostream>
 #include <algorithm>
 
 namespace ui {
@@ -76,7 +75,7 @@ std::string OptionSelect::truncateText(const std::string& text, TTF_Font* font, 
         return text;
     }
     
-    std::string ellipsis = "...";
+    std::string ellipsis = Constants::ELLIPSIS;
     int ellipsisW = 0;
     if (TTF_SizeText(font, ellipsis.c_str(), &ellipsisW, nullptr) != 0 || ellipsisW >= availableWidth) {
         return "";

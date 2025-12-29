@@ -6,15 +6,13 @@ namespace ui {
 
 AnimatedSprite::AnimatedSprite(int x_, int y_, int w_, int h_, const std::string &path,
                                int frameCount, Uint32 frameDelay_, bool stretch)
-    : Sprite(x_, y_, w_, h_, path, stretch), frameDelay(frameDelay_) {
-    lastFrameTime = SDL_GetTicks();
+    : Sprite(x_, y_, w_, h_, path, stretch), frameDelay(frameDelay_), lastFrameTime(SDL_GetTicks()) {
     // Frames will be calculated when texture is loaded
 }
 
 AnimatedSprite::AnimatedSprite(int x_, int y_, int w_, int h_, const unsigned char* data, size_t dataSize,
                                int frameCount, Uint32 frameDelay_, bool stretch)
-    : Sprite(x_, y_, w_, h_, data, dataSize, stretch), frameDelay(frameDelay_) {
-    lastFrameTime = SDL_GetTicks();
+    : Sprite(x_, y_, w_, h_, data, dataSize, stretch), frameDelay(frameDelay_), lastFrameTime(SDL_GetTicks()) {
     // Frames will be calculated when texture is loaded
 }
 
@@ -124,7 +122,7 @@ void AnimatedSprite::setupFrameGrid(int frameWidth, int frameHeight, int framesP
     }
     
     if (framesPerRow <= 0) {
-        framesPerRow = naturalWidth / frameWidth;
+        // framesPerRow = naturalWidth / frameWidth; // Calculated but not used
     }
     
     if (totalFrames <= 0) {

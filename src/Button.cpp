@@ -3,9 +3,9 @@
 #include "uiframework/Helpers.h"
 #include "uiframework/UICore.h"
 #include "uiframework/ErrorHandling.h"
+#include "uiframework/Constants.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
-#include <iostream>
 
 namespace ui {
 
@@ -21,9 +21,9 @@ void Button::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<Them
     // Determine background color; darken if pressed
     Color bg = tc.buttonBackground;
     if (pressed) {
-        bg = Color(static_cast<uint8_t>(bg.r * 0.8),
-                   static_cast<uint8_t>(bg.g * 0.8),
-                   static_cast<uint8_t>(bg.b * 0.8),
+        bg = Color(static_cast<uint8_t>(bg.r * Constants::BUTTON_PRESSED_DARKEN_FACTOR),
+                   static_cast<uint8_t>(bg.g * Constants::BUTTON_PRESSED_DARKEN_FACTOR),
+                   static_cast<uint8_t>(bg.b * Constants::BUTTON_PRESSED_DARKEN_FACTOR),
                    bg.a);
     }
     

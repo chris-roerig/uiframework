@@ -43,10 +43,6 @@ void Slider::updateValueFromMouse(int mouseX, int mouseY) {
     setValue(newValue);
 }
 
-void Slider::activate() {
-    // Slider activation could increment/decrement by small amount
-}
-
 void Slider::setValue(float value) {
     float clampedValue = std::clamp(value, minValue, maxValue);
     if (clampedValue != currentValue) {

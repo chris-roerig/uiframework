@@ -4,7 +4,7 @@
 #include <memory>
 #include <stdexcept>
 #include <string>
-#include <iostream>
+#include "Logger.h"
 
 namespace ui {
 
@@ -29,7 +29,7 @@ public:
         : UIException("Render failed: " + message) {}
 };
 
-// Error severity levels
+// Error severity levels (deprecated - use LogLevel instead)
 enum class ErrorSeverity { INFO, WARNING, ERROR, FATAL };
 
 /**
@@ -37,30 +37,34 @@ enum class ErrorSeverity { INFO, WARNING, ERROR, FATAL };
  */
 namespace ErrorHandling {
     
-    // Static log level for filtering messages
-    static ErrorSeverity minLogLevel = ErrorSeverity::WARNING;
-    
     /**
-     * @brief Log message with specified severity level
+     * @brief Log message with specified severity level (deprecated - use Logger::log)
      */
+    [[deprecated("Use Logger::log instead")]]
     inline void log(ErrorSeverity level, const std::string& message) {
-        if (level >= minLogLevel) {
-            const char* levelStr = "";
-            switch (level) {
-                case ErrorSeverity::INFO: levelStr = "INFO"; break;
-                case ErrorSeverity::WARNING: levelStr = "WARNING"; break;
-                case ErrorSeverity::ERROR: levelStr = "ERROR"; break;
-                case ErrorSeverity::FATAL: levelStr = "FATAL"; break;
-            }
-            std::cerr << "[UI Framework " << levelStr << "] " << message << std::endl;
+        LogLevel logLevel;
+        switch (level) {
+            case ErrorSeverity::INFO: logLevel = LogLevel::INFO; break;
+            case ErrorSeverity::WARNING: logLevel = LogLevel::WARNING; break;
+            case ErrorSeverity::ERROR: logLevel = LogLevel::ERROR; break;
+            case ErrorSeverity::FATAL: logLevel = LogLevel::FATAL; break;
         }
+        Logger::log(logLevel, message);
     }
     
     /**
-     * @brief Set minimum log level for filtering messages
+     * @brief Set minimum log level for filtering messages (deprecated - use Logger::setLevel)
      */
+    [[deprecated("Use Logger::setLevel instead")]]
     inline void setLogLevel(ErrorSeverity level) {
-        minLogLevel = level;
+        LogLevel logLevel;
+        switch (level) {
+            case ErrorSeverity::INFO: logLevel = LogLevel::INFO; break;
+            case ErrorSeverity::WARNING: logLevel = LogLevel::WARNING; break;
+            case ErrorSeverity::ERROR: logLevel = LogLevel::ERROR; break;
+            case ErrorSeverity::FATAL: logLevel = LogLevel::FATAL; break;
+        }
+        Logger::setLevel(logLevel);
     }
     
     /**
@@ -70,7 +74,7 @@ namespace ErrorHandling {
      * @param font Font object (optional, can be null)
      * @return true if basic requirements are met for rendering
      */
-    inline bool validateRenderParams(SDL_Renderer* renderer, std::shared_ptr<Theme> theme, TTF_Font* font = nullptr) {
+    inline bool validateRenderParams(const SDL_Renderer* renderer, std::shared_ptr<Theme> theme, const TTF_Font* font = nullptr) {
         return renderer != nullptr && theme != nullptr;
     }
     
@@ -82,7 +86,7 @@ namespace ErrorHandling {
      * @param text Text content (required, non-empty)
      * @return true if all requirements are met for text rendering
      */
-    inline bool validateTextRenderParams(SDL_Renderer* renderer, std::shared_ptr<Theme> theme, TTF_Font* font, const std::string& text) {
+    inline bool validateTextRenderParams(const SDL_Renderer* renderer, std::shared_ptr<Theme> theme, const TTF_Font* font, const std::string& text) {
         return renderer != nullptr && theme != nullptr && font != nullptr && !text.empty();
     }
     
@@ -91,9 +95,9 @@ namespace ErrorHandling {
      * @param surface SDL surface pointer
      * @return true if surface is valid
      */
-    inline bool validateSurface(SDL_Surface* surface) {
+    inline bool validateSurface(const SDL_Surface* surface) {
         if (!surface) {
-            log(ErrorSeverity::ERROR, "SDL surface creation failed: " + std::string(SDL_GetError()));
+            Logger::log(LogLevel::ERROR, "SDL surface creation failed: " + std::string(SDL_GetError()));
             return false;
         }
         return true;
@@ -104,9 +108,9 @@ namespace ErrorHandling {
      * @param texture SDL texture pointer
      * @return true if texture is valid
      */
-    inline bool validateTexture(SDL_Texture* texture) {
+    inline bool validateTexture(const SDL_Texture* texture) {
         if (!texture) {
-            log(ErrorSeverity::ERROR, "SDL texture creation failed: " + std::string(SDL_GetError()));
+            Logger::log(LogLevel::ERROR, "SDL texture creation failed: " + std::string(SDL_GetError()));
             return false;
         }
         return true;

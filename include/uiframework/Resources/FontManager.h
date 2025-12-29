@@ -7,6 +7,9 @@
 
 namespace ui {
 
+// Forward declaration
+class TTFManager;
+
 struct FontKey {
     std::string path;
     int size;
@@ -30,6 +33,7 @@ private:
     
     std::unordered_map<FontKey, TTF_Font*, FontKeyHash> fontCache;
     mutable std::mutex cacheMutex;
+    std::unique_ptr<TTFManager> ttfManager;
     
     FontManager() = default;
     
