@@ -1,7 +1,9 @@
 #include "CheckBox.h"
-#include "../../lib/Theme/ThemeBase.h"
-#include "../../src/Helpers.h"
-#include "../../src/UICore.h"
+#include "Theme/ThemeBase.h"
+#include "Helpers.h"
+#include "UICore.h"
+#include "../Constants.h"
+#include "../ErrorHandling.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include <iostream>
@@ -9,7 +11,7 @@
 namespace ui {
 
 void CheckBox::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<Theme> theme) {
-    if (!renderer || !theme) {
+    if (!ErrorHandling::validateRenderParams(renderer, theme)) {
         return;
     }
     
@@ -37,13 +39,17 @@ void CheckBox::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<Th
     
     // If checked, draw a check mark
     if (checked) {
-        drawLine(renderer, x + 2, y + 2, x + width - 2, y + height - 2, tc.checkboxChecked);
-        drawLine(renderer, x + width - 2, y + 2, x + 2, y + height - 2, tc.checkboxChecked);
+        drawLine(renderer, x + Constants::BORDER_OFFSET, y + Constants::BORDER_OFFSET, 
+                x + width - Constants::BORDER_OFFSET, y + height - Constants::BORDER_OFFSET, tc.checkboxChecked);
+        drawLine(renderer, x + width - Constants::BORDER_OFFSET, y + Constants::BORDER_OFFSET, 
+                x + Constants::BORDER_OFFSET, y + height - Constants::BORDER_OFFSET, tc.checkboxChecked);
     }
 }
 
 void CheckBox::handleEvent(const SDL_Event &e) {
-    if (!visible) return;
+    if (!visible) {
+        return;
+    }
     
     if (e.type == SDL_MOUSEBUTTONDOWN) {
         if (e.button.button == SDL_BUTTON_LEFT) {

@@ -31,6 +31,13 @@ private:
     int hoveredItemIndex = -1;
     int hoveredSubIndex = -1;
     
+    // Render helper methods
+    void renderMenuBar(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<class Theme> theme);
+    void renderMenuItems(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<class Theme> theme);
+    void renderSubmenu(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<class Theme> theme);
+    void renderSubmenuItems(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<class Theme> theme, 
+                           const MenuItem& activeItem, const SDL_Rect& subMenuRect);
+    
 public:
     std::vector<MenuItem> items;
     int activeItemIndex = -1;       // Active top-level item

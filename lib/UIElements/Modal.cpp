@@ -1,7 +1,8 @@
 #include "Modal.h"
-#include "../../lib/Theme/ThemeBase.h"
-#include "../../src/Helpers.h"
-#include "../../src/UICore.h"
+#include "Theme/ThemeBase.h"
+#include "Helpers.h"
+#include "UICore.h"
+#include "../Constants.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include <iostream>
@@ -66,7 +67,7 @@ void Modal::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<Theme
         SDL_Color textColor = { tc.modalText.r, tc.modalText.g, tc.modalText.b, tc.modalText.a };
         
         // Simple word wrapping for message
-        const int padding = 20;
+        const int padding = Constants::MODAL_PADDING;
         const int lineHeight = TTF_FontLineSkip(font);
         int textY = y + 40; // Below title bar
         int availableWidth = width - 2 * padding;
@@ -154,9 +155,9 @@ void Modal::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<Theme
     }
     
     // Draw buttons
-    const int buttonHeight = 30;
-    const int buttonSpacing = 10;
-    const int buttonY = y + height - buttonHeight - 20;
+    const int buttonHeight = Constants::BUTTON_HEIGHT;
+    const int buttonSpacing = Constants::BUTTON_SPACING;
+    const int buttonY = y + height - buttonHeight - Constants::MODAL_PADDING;
     
     if (!buttonLabels.empty()) {
         int totalButtonWidth = 0;
@@ -313,9 +314,9 @@ SDL_Rect Modal::getButtonRect(int buttonIndex) const {
         return {0, 0, 0, 0};
     }
     
-    const int buttonHeight = 30;
-    const int buttonSpacing = 10;
-    const int buttonY = y + height - buttonHeight - 20;
+    const int buttonHeight = Constants::BUTTON_HEIGHT;
+    const int buttonSpacing = Constants::BUTTON_SPACING;
+    const int buttonY = y + height - buttonHeight - Constants::MODAL_PADDING;
     
     // Calculate button widths (same logic as rendering)
     std::vector<int> buttonWidths;

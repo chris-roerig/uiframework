@@ -1,7 +1,8 @@
 #include "OptionSelect.h"
-#include "../../lib/Theme/ThemeBase.h"
-#include "../../src/Helpers.h"
-#include "../../src/UICore.h"
+#include "Theme/ThemeBase.h"
+#include "Helpers.h"
+#include "UICore.h"
+#include "../Constants.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include <iostream>
@@ -9,7 +10,65 @@
 
 namespace ui {
 
-std::string OptionSelect::truncateText(const std::string& text, TTF_Font* font, int availableWidth) {
+std::string OptionSelect::getCachedTruncatedText(const std::string& text, TTF_Font* font, int availableWidth, StringCache& cache) const {
+    // Check if cache is valid
+    if (cache.valid && cache.originalText == text && cache.availableWidth == availableWidth) {
+        return cache.truncatedText;
+    }
+    
+    // Cache miss - calculate truncated text
+    cache.originalText = text;
+    cache.availableWidth = availableWidth;
+    cache.truncatedText = truncateText(text, font, availableWidth);
+    cache.valid = true;
+    
+    return cache.truncatedText;
+}
+
+void OptionSelect::invalidateStringCache() {
+    displayCache.valid = false;
+    for (auto& cache : dropdownCache) {
+        cache.valid = false;
+    }
+}
+
+void OptionSelect::setOptions(const std::vector<std::string>& newOptions) {
+    options = newOptions;
+    invalidateStringCache();
+    if (!isValidIndex(currentIndex)) {
+        currentIndex = options.empty() ? -1 : 0;
+    }
+}
+
+void OptionSelect::addOption(const std::string& option) {
+    options.push_back(option);
+    if (currentIndex == -1 && !options.empty()) {
+        currentIndex = 0;
+    }
+    invalidateStringCache();
+}
+
+void OptionSelect::removeOption(int index) {
+    if (isValidIndex(index)) {
+        options.erase(options.begin() + index);
+        
+        // Adjust currentIndex based on what was removed
+        if (currentIndex > index) {
+            // Current selection was after removed item - shift down
+            currentIndex--;
+        } else if (currentIndex == index) {
+            // Current selection was removed - keep same index if valid, otherwise adjust
+            if (currentIndex >= static_cast<int>(options.size())) {
+                currentIndex = options.empty() ? -1 : static_cast<int>(options.size()) - 1;
+            }
+        }
+        // If currentIndex < index, no change needed
+        
+        invalidateStringCache();
+    }
+}
+
+std::string OptionSelect::truncateText(const std::string& text, TTF_Font* font, int availableWidth) const {
     if (!font || availableWidth <= 0) return "";
     
     int textW = 0;
@@ -44,8 +103,8 @@ bool OptionSelect::isValidIndex(int index) const {
 }
 
 void OptionSelect::renderCollapsed(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<Theme> theme) {
-    const int padding = 5;
-    const int arrowWidth = 15;
+    const int padding = Constants::DEFAULT_PADDING;
+    const int arrowWidth = Constants::ARROW_WIDTH;
     
     ThemeableElementColors tc = theme->optionSelectColors();
     
@@ -69,28 +128,22 @@ void OptionSelect::renderCollapsed(SDL_Renderer* renderer, TTF_Font* font, std::
     // Render current selection text
     if (font && isValidIndex(currentIndex)) {
         int availableWidth = width - 2 * padding - arrowWidth;
-        std::string displayText = truncateText(options[currentIndex], font, availableWidth);
+        std::string displayText = getCachedTruncatedText(options[currentIndex], font, availableWidth, displayCache);
         
         if (!displayText.empty()) {
             SDL_Color textColor = { tc.selectOptionTextUnselected.r, tc.selectOptionTextUnselected.g, 
                                     tc.selectOptionTextUnselected.b, tc.selectOptionTextUnselected.a };
-            SDL_Surface* surface = TTF_RenderText_Solid(font, displayText.c_str(), textColor);
-            if (surface) {
-                SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
-                if (texture) {
-                    SDL_Rect dst = { 
-                        x + padding, 
-                        y + (height - surface->h) / 2, 
-                        surface->w, 
-                        surface->h 
-                    };
-                    SDL_RenderCopy(renderer, texture, nullptr, &dst);
-                    SDL_DestroyTexture(texture);
-                } else {
-                    SDL_FreeSurface(surface);
-                    return;
-                }
-                SDL_FreeSurface(surface);
+            
+            std::string cacheKey = "option_" + std::to_string(currentIndex);
+            TextCacheEntry* cached = getCachedText(cacheKey, displayText, textColor, renderer, font);
+            if (cached && cached->texture) {
+                SDL_Rect dst = { 
+                    x + padding, 
+                    y + (height - cached->height) / 2, 
+                    cached->width, 
+                    cached->height 
+                };
+                SDL_RenderCopy(renderer, cached->texture, nullptr, &dst);
             }
         }
     }
@@ -109,7 +162,7 @@ void OptionSelect::renderCollapsed(SDL_Renderer* renderer, TTF_Font* font, std::
 }
 
 void OptionSelect::renderExpanded(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<Theme> theme) {
-    const int padding = 5;
+    const int padding = Constants::DEFAULT_PADDING;
     int itemHeight = height;
     int totalHeight = itemHeight * static_cast<int>(options.size());
     
@@ -142,8 +195,13 @@ void OptionSelect::renderExpanded(SDL_Renderer* renderer, TTF_Font* font, std::s
         
         // Render option text
         if (font && !options[i].empty()) {
+            // Ensure dropdown cache is properly sized
+            if (dropdownCache.size() != options.size()) {
+                dropdownCache.resize(options.size());
+            }
+            
             int availableWidth = width - 2 * padding;
-            std::string displayText = truncateText(options[i], font, availableWidth);
+            std::string displayText = getCachedTruncatedText(options[i], font, availableWidth, dropdownCache[i]);
             
             if (!displayText.empty()) {
                 // Use selected text color for current/hovered items, unselected for others
@@ -179,6 +237,13 @@ void OptionSelect::renderExpanded(SDL_Renderer* renderer, TTF_Font* font, std::s
 void OptionSelect::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<Theme> theme) {
     if (!renderer || !theme || options.empty()) {
         return;
+    }
+    
+    // Check if dimensions changed and invalidate cache if needed
+    if (width != lastWidth || height != lastHeight) {
+        invalidateStringCache();
+        lastWidth = width;
+        lastHeight = height;
     }
     
     if (expanded) {
@@ -309,17 +374,10 @@ void OptionSelect::onFocusLost() {
     collapse();
 }
 
-void OptionSelect::setOptions(const std::vector<std::string>& newOptions) {
-    options = newOptions;
-    if (!isValidIndex(currentIndex)) {
-        currentIndex = options.empty() ? -1 : 0;
-    }
-    collapse();
-}
-
 void OptionSelect::setSelectedIndex(int index) {
     if (isValidIndex(index) && index != currentIndex) {
         currentIndex = index;
+        invalidateStringCache();
         if (onSelect) {
             onSelect(currentIndex);
         }
@@ -331,36 +389,10 @@ const std::string& OptionSelect::getSelectedOption() const {
     return isValidIndex(currentIndex) ? options[currentIndex] : empty;
 }
 
-void OptionSelect::addOption(const std::string& option) {
-    options.push_back(option);
-    if (currentIndex == -1 && !options.empty()) {
-        currentIndex = 0;
-    }
-}
-
-void OptionSelect::removeOption(int index) {
-    if (isValidIndex(index)) {
-        options.erase(options.begin() + index);
-        
-        // Adjust currentIndex based on what was removed
-        if (currentIndex > index) {
-            // Current selection was after removed item - shift down
-            currentIndex--;
-        } else if (currentIndex == index) {
-            // Current selection was removed - keep same index if valid, otherwise adjust
-            if (currentIndex >= static_cast<int>(options.size())) {
-                currentIndex = options.empty() ? -1 : static_cast<int>(options.size()) - 1;
-            }
-        }
-        // If currentIndex < index, no change needed
-        
-        collapse();
-    }
-}
-
 void OptionSelect::clearOptions() {
     options.clear();
     currentIndex = -1;
+    invalidateStringCache();
     collapse();
 }
 

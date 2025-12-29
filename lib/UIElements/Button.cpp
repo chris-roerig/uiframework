@@ -1,7 +1,8 @@
 #include "Button.h"
-#include "../../lib/Theme/ThemeBase.h"
-#include "../../src/Helpers.h"
-#include "../../src/UICore.h"
+#include "Theme/ThemeBase.h"
+#include "Helpers.h"
+#include "UICore.h"
+#include "../ErrorHandling.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include <iostream>
@@ -9,7 +10,7 @@
 namespace ui {
 
 void Button::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<Theme> theme) {
-    if (!renderer || !theme) {
+    if (!ErrorHandling::validateRenderParams(renderer, theme)) {
         return;
     }
     
@@ -39,20 +40,15 @@ void Button::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<Them
     // Draw the button text
     if (font && !text.empty()) {
         SDL_Color sdlColor = { tc.buttonText.r, tc.buttonText.g, tc.buttonText.b, tc.buttonText.a };
-        SDL_Surface* surface = TTF_RenderText_Solid(font, text.c_str(), sdlColor);
-        if (surface) {
-            SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
-            if (texture) {
-                SDL_Rect dst;
-                dst.w = surface->w;
-                dst.h = surface->h;
-                dst.x = x + (width - dst.w) / 2;
-                dst.y = y + (height - dst.h) / 2;
-                
-                SDL_RenderCopy(renderer, texture, nullptr, &dst);
-                SDL_DestroyTexture(texture);
-            }
-            SDL_FreeSurface(surface);
+        TextCacheEntry* cached = getCachedText("main", text, sdlColor, renderer, font);
+        if (cached && cached->texture) {
+            SDL_Rect dst;
+            dst.w = cached->width;
+            dst.h = cached->height;
+            dst.x = x + (width - dst.w) / 2;
+            dst.y = y + (height - dst.h) / 2;
+            
+            SDL_RenderCopy(renderer, cached->texture, nullptr, &dst);
         }
     }
 }

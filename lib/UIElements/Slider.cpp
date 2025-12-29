@@ -1,7 +1,7 @@
 #include "Slider.h"
-#include "../../lib/Theme/ThemeBase.h"
-#include "../../src/Helpers.h"
-#include "../../src/UICore.h"
+#include "Theme/ThemeBase.h"
+#include "Helpers.h"
+#include "UICore.h"
 #include <SDL2/SDL.h>
 #include <algorithm>
 #include <iostream>

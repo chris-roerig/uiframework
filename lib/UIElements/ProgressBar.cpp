@@ -1,6 +1,6 @@
 #include "ProgressBar.h"
-#include "../../lib/Theme/ThemeBase.h"
-#include "../../src/Helpers.h"
+#include "Theme/ThemeBase.h"
+#include "Helpers.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include <iostream>

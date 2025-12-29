@@ -12,10 +12,22 @@ private:
     int hoveredIndex = -1;     // index being hovered over in dropdown
     int currentIndex = 0;      // currently selected option
     
+    // String caching for performance
+    struct StringCache {
+        std::string originalText;
+        int availableWidth = -1;
+        std::string truncatedText;
+        bool valid = false;
+    };
+    mutable StringCache displayCache;
+    mutable std::vector<StringCache> dropdownCache;
+    mutable int lastWidth = -1, lastHeight = -1;
+    
     // Helper methods
     void renderCollapsed(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<class Theme> theme);
     void renderExpanded(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<class Theme> theme);
-    std::string truncateText(const std::string& text, TTF_Font* font, int availableWidth);
+    std::string truncateText(const std::string& text, TTF_Font* font, int availableWidth) const;
+    std::string getCachedTruncatedText(const std::string& text, TTF_Font* font, int availableWidth, StringCache& cache) const;
     bool isValidIndex(int index) const;
     
 public:
@@ -38,13 +50,18 @@ public:
     // Focus management
     void onFocusLost() override;
     
-    // OptionSelect-specific methods
+    // Cache management
+    void invalidateStringCache();
+    
+    // Safe option management
     void setOptions(const std::vector<std::string>& newOptions);
+    void addOption(const std::string& option);
+    void removeOption(int index);
+    
+    // OptionSelect-specific methods
     void setSelectedIndex(int index);
     int getSelectedIndex() const { return currentIndex; }
     const std::string& getSelectedOption() const;
-    void addOption(const std::string& option);
-    void removeOption(int index);
     void clearOptions();
     bool isExpanded() const { return expanded; }
     void collapse() { expanded = false; hoveredIndex = -1; }

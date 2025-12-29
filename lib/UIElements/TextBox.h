@@ -11,6 +11,19 @@ private:
     bool textSelected = false;   // true if text is selected
     size_t cursorPosition = 0;   // cursor position in text
     
+    // String caching for performance
+    struct StringCache {
+        std::string originalText;
+        int availableWidth = -1;
+        std::string truncatedText;
+        bool valid = false;
+    };
+    mutable StringCache displayCache;
+    mutable int lastWidth = -1, lastHeight = -1;
+    
+    // Helper method for cached truncation
+    std::string getCachedTruncatedText(const std::string& text, TTF_Font* font, int availableWidth) const;
+    
 public:
     std::string content;
     bool autoHighlight;  // auto-highlight on focus; default true
@@ -29,6 +42,9 @@ public:
     // Focus management
     void onFocusGained() override;
     void onFocusLost() override;
+    
+    // Cache management
+    void invalidateStringCache();
     
     // TextBox-specific methods
     void setText(const std::string& text);

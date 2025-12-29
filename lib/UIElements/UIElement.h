@@ -5,17 +5,39 @@
 #include <vector>
 #include <functional>
 #include <memory>
+#include <unordered_map>
+#include "../Constants.h"
 
 namespace ui {
 
 // Forward declaration
 class UICore;
 
+struct TextCacheEntry {
+    SDL_Texture* texture = nullptr;
+    int width = 0;
+    int height = 0;
+    std::string text;
+    SDL_Color color;
+    
+    ~TextCacheEntry() {
+        if (texture) {
+            SDL_DestroyTexture(texture);
+        }
+    }
+};
+
 // Base class for all UI elements with proper resource management
 class UIElement {
 protected:
     std::string elementId;
     UICore* coreRef = nullptr; // Non-owning reference to core
+    mutable std::unordered_map<std::string, std::unique_ptr<TextCacheEntry>> textCache;
+    
+    // Helper method for cached text rendering
+    TextCacheEntry* getCachedText(const std::string& key, const std::string& text, 
+                                  SDL_Color color, SDL_Renderer* renderer, TTF_Font* font) const;
+    void invalidateTextCache() const;
     
 public:
     int x, y, width, height;
@@ -27,12 +49,21 @@ public:
     
     virtual ~UIElement() = default;
     
+    // Non-copyable due to unique_ptr in textCache
+    UIElement(const UIElement&) = delete;
+    UIElement& operator=(const UIElement&) = delete;
+    
+    // Movable
+    UIElement(UIElement&&) = default;
+    UIElement& operator=(UIElement&&) = default;
+    
     // Core interface methods
     virtual void render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<class Theme> theme) = 0;
     virtual void handleEvent(const SDL_Event &e) {}
     virtual bool isInteractive() const { return false; }
     virtual SDL_Rect getFocusRect() const { 
-        return SDL_Rect{ x - 2, y - 2, width + 4, height + 4 }; 
+        return SDL_Rect{ x - Constants::FOCUS_BORDER_WIDTH, y - Constants::FOCUS_BORDER_WIDTH, 
+                        width + 2 * Constants::FOCUS_BORDER_WIDTH, height + 2 * Constants::FOCUS_BORDER_WIDTH }; 
     }
     virtual void activate() { /* default does nothing */ }
     

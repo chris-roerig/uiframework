@@ -23,7 +23,12 @@ public:
     void activate() override;
     
     // Button-specific methods
-    void setText(const std::string& newText) { text = newText; }
+    void setText(const std::string& newText) { 
+        if (text != newText) {
+            text = newText; 
+            invalidateTextCache();
+        }
+    }
     const std::string& getText() const { return text; }
     void setCallback(std::function<void()> callback) { onClick = callback; }
     bool isPressed() const { return pressed; }

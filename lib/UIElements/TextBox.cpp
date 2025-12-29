@@ -1,7 +1,9 @@
 #include "TextBox.h"
-#include "../../lib/Theme/ThemeBase.h"
-#include "../../src/Helpers.h"
-#include "../../src/UICore.h"
+#include "Theme/ThemeBase.h"
+#include "Helpers.h"
+#include "UICore.h"
+#include "../Constants.h"
+#include "../ErrorHandling.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include <iostream>
@@ -9,12 +11,70 @@
 
 namespace ui {
 
+std::string TextBox::getCachedTruncatedText(const std::string& text, TTF_Font* font, int availableWidth) const {
+    // Check if cache is valid
+    if (displayCache.valid && displayCache.originalText == text && displayCache.availableWidth == availableWidth) {
+        return displayCache.truncatedText;
+    }
+    
+    // Cache miss - calculate truncated text
+    displayCache.originalText = text;
+    displayCache.availableWidth = availableWidth;
+    
+    // Perform truncation logic
+    std::string displayText = text;
+    int textW = 0, textH = 0;
+    if (TTF_SizeText(font, displayText.c_str(), &textW, &textH) == 0 && textW > availableWidth) {
+        std::string ellipsis = "...";
+        int ellipsisW = 0;
+        if (TTF_SizeText(font, ellipsis.c_str(), &ellipsisW, &textH) == 0) {
+            if (ellipsisW >= availableWidth) {
+                displayText = "";
+            } else {
+                // Binary search for optimal truncation point
+                int left = 0, right = static_cast<int>(displayText.length());
+                while (left < right) {
+                    int mid = (left + right + 1) / 2;
+                    std::string candidate = displayText.substr(0, mid) + ellipsis;
+                    int candidateW = 0;
+                    if (TTF_SizeText(font, candidate.c_str(), &candidateW, nullptr) == 0 && candidateW <= availableWidth) {
+                        left = mid;
+                    } else {
+                        right = mid - 1;
+                    }
+                }
+                if (left > 0) {
+                    displayText = displayText.substr(0, left) + ellipsis;
+                } else {
+                    displayText = "";
+                }
+            }
+        }
+    }
+    
+    displayCache.truncatedText = displayText;
+    displayCache.valid = true;
+    
+    return displayCache.truncatedText;
+}
+
+void TextBox::invalidateStringCache() {
+    displayCache.valid = false;
+}
+
 void TextBox::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<Theme> theme) {
-    if (!renderer || !theme) {
+    if (!ErrorHandling::validateRenderParams(renderer, theme)) {
         return;
     }
     
-    const int padding = 5;
+    // Check if dimensions changed and invalidate cache if needed
+    if (width != lastWidth || height != lastHeight) {
+        invalidateStringCache();
+        lastWidth = width;
+        lastHeight = height;
+    }
+    
+    const int padding = Constants::DEFAULT_PADDING;
     int boxHeight = height;
     if (font) {
         boxHeight = std::max(height, TTF_FontLineSkip(font) + 2 * padding);
@@ -49,38 +109,7 @@ void TextBox::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<The
         int availableWidth = width - 2 * padding;
         if (availableWidth <= 0) return;
         
-        std::string displayText = content;
-        
-        // Handle text overflow with ellipsis
-        int textW = 0, textH = 0;
-        if (TTF_SizeText(font, displayText.c_str(), &textW, &textH) == 0 && textW > availableWidth) {
-            std::string ellipsis = "...";
-            int ellipsisW = 0;
-            if (TTF_SizeText(font, ellipsis.c_str(), &ellipsisW, &textH) == 0) {
-                // If ellipsis itself is too wide, just truncate
-                if (ellipsisW >= availableWidth) {
-                    displayText = "";
-                } else {
-                    // Binary search for optimal truncation point
-                    int left = 0, right = static_cast<int>(displayText.length());
-                    while (left < right) {
-                        int mid = (left + right + 1) / 2;
-                        std::string candidate = displayText.substr(0, mid) + ellipsis;
-                        int candidateW = 0;
-                        if (TTF_SizeText(font, candidate.c_str(), &candidateW, nullptr) == 0 && candidateW <= availableWidth) {
-                            left = mid;
-                        } else {
-                            right = mid - 1;
-                        }
-                    }
-                    if (left > 0) {
-                        displayText = displayText.substr(0, left) + ellipsis;
-                    } else {
-                        displayText = "";
-                    }
-                }
-            }
-        }
+        std::string displayText = getCachedTruncatedText(content, font, availableWidth);
         
         if (!displayText.empty()) {
             SDL_Color textColor = { tc.textInputText.r, tc.textInputText.g, tc.textInputText.b, tc.textInputText.a };
@@ -148,10 +177,12 @@ void TextBox::handleEvent(const SDL_Event &e) {
                 content = inputText;
                 cursorPosition = inputText.length();
                 textSelected = false;
+                invalidateStringCache();
             } else {
                 // Insert at cursor position
                 content.insert(cursorPosition, inputText);
                 cursorPosition += inputText.length();
+                invalidateStringCache();
             }
         }
     } else if (e.type == SDL_KEYDOWN && hasFocus) {
@@ -161,9 +192,11 @@ void TextBox::handleEvent(const SDL_Event &e) {
                     content.clear();
                     cursorPosition = 0;
                     textSelected = false;
+                    invalidateStringCache();
                 } else if (cursorPosition > 0) {
                     content.erase(cursorPosition - 1, 1);
                     cursorPosition--;
+                    invalidateStringCache();
                 }
                 break;
             case SDLK_DELETE:
@@ -171,8 +204,10 @@ void TextBox::handleEvent(const SDL_Event &e) {
                     content.clear();
                     cursorPosition = 0;
                     textSelected = false;
+                    invalidateStringCache();
                 } else if (cursorPosition < content.length()) {
                     content.erase(cursorPosition, 1);
+                    invalidateStringCache();
                 }
                 break;
             case SDLK_LEFT:
@@ -236,6 +271,7 @@ void TextBox::setText(const std::string& text) {
     // Validate cursor position
     cursorPosition = std::min(cursorPosition, content.length());
     textSelected = false;
+    invalidateStringCache();
 }
 
 void TextBox::selectAll() {

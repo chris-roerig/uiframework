@@ -3,7 +3,7 @@
 
 int main() {
     try {
-        UI ui("Context Menu + Grid Demo", 800, 600);
+        UI ui("Complete UI Demo - All Elements", 1200, 800);
         ui.setTheme("SolarizedDark");
 
         // Create context menu (menu bar)
@@ -11,12 +11,10 @@ int main() {
             {"File", {
                 {"New File", []() { std::cout << "New File selected" << std::endl; }},
                 {"Open File", []() { std::cout << "Open File selected" << std::endl; }},
-                {"Save", []() { std::cout << "Save selected" << std::endl; }},
-                {"Exit", []() { std::cout << "Exit selected" << std::endl; }}
+                {"Save", []() { std::cout << "Save selected" << std::endl; }}
             }},
             {"Edit", {
                 {"Undo", []() { std::cout << "Undo selected" << std::endl; }},
-                {"Redo", []() { std::cout << "Redo selected" << std::endl; }},
                 {"Copy", []() { std::cout << "Copy selected" << std::endl; }},
                 {"Paste", []() { std::cout << "Paste selected" << std::endl; }}
             }},
@@ -28,54 +26,101 @@ int main() {
         
         auto contextMenu = ui.createContextMenu(menuItems);
 
-        // Create 2-column grid layout below menu bar with borders
-        auto mainGrid = ui.createGridLayout(20, 80, 760, 500, 3, 2);  // 3 rows, 2 columns
-        mainGrid->setBorderWidth(2);  // 2px borders for debugging
-        
-        // Left Column Content
-        auto leftTitle = ui.createLabel("Left Column", 0, 0);
-        
-        // Create a VBox layout inside the left column
-        auto leftVBox = ui.createVBoxLayout(0, 0, 350, 200);
-        auto vboxBtn1 = ui.createButton("VBox Btn 1", 0, 0, []() {
-            std::cout << "VBox Button 1 clicked" << std::endl;
-        });
-        auto vboxBtn2 = ui.createButton("VBox Btn 2", 0, 0, []() {
-            std::cout << "VBox Button 2 clicked" << std::endl;
-        });
-        leftVBox->addElement(vboxBtn1);
-        leftVBox->addElement(vboxBtn2);
-        
-        auto leftInfo = ui.createLabel("Left column info", 0, 0);
-        
-        // Right Column Content  
-        auto rightTitle = ui.createLabel("Right Column", 0, 0);
-        
-        // Create an HBox layout inside the right column
-        auto rightHBox = ui.createHBoxLayout(0, 0, 350, 60);
-        auto hboxBtn1 = ui.createButton("H1", 0, 0, []() {
-            std::cout << "HBox Button 1 clicked" << std::endl;
-        });
-        auto hboxBtn2 = ui.createButton("H2", 0, 0, []() {
-            std::cout << "HBox Button 2 clicked" << std::endl;
-        });
-        rightHBox->addElement(hboxBtn1);
-        rightHBox->addElement(hboxBtn2);
-        
-        auto rightInfo = ui.createLabel("Right column info", 0, 0);
-        
-        // Add elements to grid (row, column)
-        mainGrid->addElement(leftTitle, 0, 0);     // Row 0, Left column
-        mainGrid->addElement(rightTitle, 0, 1);    // Row 0, Right column
-        mainGrid->addElement(leftVBox, 1, 0);      // Row 1, Left column - VBox layout
-        mainGrid->addElement(rightHBox, 1, 1);     // Row 1, Right column - HBox layout
-        mainGrid->addElement(leftInfo, 2, 0);      // Row 2, Left column
-        mainGrid->addElement(rightInfo, 2, 1);     // Row 2, Right column
+        // Create main 3x4 grid layout with borders
+        auto mainGrid = ui.createGridLayout(20, 80, 1160, 700, 3, 4);
+        mainGrid->setBorderWidth(2);
 
-        std::cout << "Context Menu + Grid Demo Started" << std::endl;
-        std::cout << "Menu bar at top, 2-column grid layout below" << std::endl;
-        std::cout << "Left column: VBox layout nested in grid cell" << std::endl;
-        std::cout << "Right column: HBox layout nested in grid cell" << std::endl;
+        // Row 1: Basic Input Elements
+        auto basicLabel = ui.createLabel("Basic Inputs", 0, 0);
+        mainGrid->addElement(basicLabel, 0, 0);
+        
+        auto button = ui.createButton("Click Me", 0, 0, []() {
+            std::cout << "Button clicked!" << std::endl;
+        });
+        mainGrid->addElement(button, 0, 1);
+        
+        auto textBox = ui.createTextBox("Type here...", 0, 0);
+        mainGrid->addElement(textBox, 0, 2);
+        
+        auto checkbox = ui.createCheckBox(false, 0, 0, [](bool checked) {
+            std::cout << "Checkbox: " << (checked ? "ON" : "OFF") << std::endl;
+        });
+        mainGrid->addElement(checkbox, 0, 3);
+
+        // Row 2: Progress and Sliders
+        auto progressLabel = ui.createLabel("Progress & Sliders", 0, 0);
+        mainGrid->addElement(progressLabel, 1, 0);
+        
+        auto progressBar = ui.createProgressBar(0, 0, 250, 25, 0.6f, true);
+        mainGrid->addElement(progressBar, 1, 1);
+        
+        auto hSlider = ui.createHSlider(0, 0, 200, 25, 0.0f, 100.0f, 50.0f);
+        hSlider->setOnChange([](float value) {
+            std::cout << "H-Slider: " << value << std::endl;
+        });
+        mainGrid->addElement(hSlider, 1, 2);
+        
+        // VBox for vertical slider and knob
+        auto sliderVBox = ui.createVBoxLayout(0, 0, 250, 200);
+        auto vSlider = ui.createVSlider(0, 0, 25, 100, 0.0f, 100.0f, 25.0f);
+        auto knobSlider = ui.createKnobSlider(0, 0, 60, 0.0f, 100.0f, 75.0f);
+        sliderVBox->addElement(vSlider);
+        sliderVBox->addElement(knobSlider);
+        mainGrid->addElement(sliderVBox, 1, 3);
+
+        // Row 3: Lists, Canvas, and Advanced
+        auto advancedLabel = ui.createLabel("Lists & Canvas", 0, 0);
+        mainGrid->addElement(advancedLabel, 2, 0);
+        
+        // ListView
+        std::vector<std::string> listItems = {"Item 1", "Item 2", "Item 3", "Item 4"};
+        auto listView = ui.createListView(listItems, 0, 0, 250, 150);
+        mainGrid->addElement(listView, 2, 1);
+        
+        // Canvas with some drawings
+        auto canvas = ui.createCanvas(0, 0, 250, 150);
+        canvas->filledRectRel(10, 10, 50, 30, {255, 0, 0, 255});    // Red rect
+        canvas->filledRectRel(70, 20, 40, 40, {0, 255, 0, 255});    // Green rect
+        canvas->lineRel(0, 80, 250, 80, {255, 255, 255, 255});      // White line
+        mainGrid->addElement(canvas, 2, 2);
+        
+        // VBox for modals and option select
+        auto modalVBox = ui.createVBoxLayout(0, 0, 250, 150);
+        
+        auto infoModalBtn = ui.createButton("Info Modal", 0, 0, [&]() {
+            ui.createInfoModal("This is an info modal!");
+        });
+        modalVBox->addElement(infoModalBtn);
+        
+        auto confirmModalBtn = ui.createButton("Confirm Modal", 0, 0, [&]() {
+            ui.createConfirmModal("Are you sure?",
+                []() { std::cout << "Confirmed!" << std::endl; },
+                []() { std::cout << "Cancelled!" << std::endl; }
+            );
+        });
+        modalVBox->addElement(confirmModalBtn);
+        
+        // OptionSelect
+        std::vector<std::string> options = {"Option A", "Option B", "Option C"};
+        auto optionSelect = ui.createOptionSelect(0, options, 0, 0, [](int selected) {
+            std::cout << "Selected option: " << selected << std::endl;
+        });
+        modalVBox->addElement(optionSelect);
+        
+        mainGrid->addElement(modalVBox, 2, 3);
+
+        // Add some hotkeys
+        ui.assignHotKey(button, "b");
+        ui.assignHotKey(infoModalBtn, "i");
+        ui.assignHotKey(confirmModalBtn, "c");
+
+        std::cout << "Complete UI Demo Started!" << std::endl;
+        std::cout << "All UI elements organized in a 3x4 grid with borders:" << std::endl;
+        std::cout << "Row 1: Basic inputs (Label, Button, TextBox, CheckBox)" << std::endl;
+        std::cout << "Row 2: Progress & Sliders (ProgressBar, H/V/Knob Sliders)" << std::endl;
+        std::cout << "Row 3: Advanced (ListView, Canvas, Modals, OptionSelect)" << std::endl;
+        std::cout << "Hotkeys: b=Button, i=Info Modal, c=Confirm Modal" << std::endl;
+        std::cout << "Menu bar provides File/Edit/View options" << std::endl;
         
         ui.run();
         

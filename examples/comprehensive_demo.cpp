@@ -160,11 +160,12 @@ int main() {
         vkSliderHBox->addElement(knobVBox);
         rightVBox->addElement(vkSliderHBox);
         
-        // Grid Layout Demo
-        auto gridLabel = ui.createLabel("Grid Layout Demo (2x3):", 0, 0);
+        // Grid Layout Demo with borders
+        auto gridLabel = ui.createLabel("Grid Layout Demo (2x3) with borders:", 0, 0);
         rightVBox->addElement(gridLabel);
         
         auto gridDemo = ui.createGridLayout(0, 0, 280, 120, 2, 3, 5);
+        gridDemo->setBorderWidth(1);  // Add subtle borders to show grid structure
         for (int i = 0; i < 6; i++) {
             std::string label = "G" + std::to_string(i + 1);
             auto gridBtn = ui.createButton(label, 0, 0, [i]() { 
@@ -240,7 +241,7 @@ int main() {
         std::cout << "• Middle VBox: ListView and Canvas" << std::endl;
         std::cout << "• Right VBox: Sliders and Grid layout demo" << std::endl;
         std::cout << "• Nested layouts: Theme buttons in HBox, Checkboxes in HBox" << std::endl;
-        std::cout << "• Grid demo: 2x3 button grid" << std::endl;
+        std::cout << "• Grid demo: 2x3 button grid with borders" << std::endl;
         std::cout << "Hotkeys: 1=Button1, 2=Button2, i=Info Modal, c=Confirm Modal" << std::endl;
         std::cout << "Close the window to exit." << std::endl;
         

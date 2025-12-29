@@ -1,0 +1,1 @@
+I'm about to compact your context window. provide me what the content i should share back with you after the window has been compacted. The goal is so you can pick up from where you left off after the compact action.

@@ -1,5 +1,6 @@
 #include "UICore.h"
 #include "Helpers.h"
+#include "../lib/Resources/FontManager.h"
 #include <iostream>
 #include <atomic>
 #include <sstream>
@@ -13,10 +14,7 @@ SDLResources::SDLResources(const char* title, int width, int height) {
     }
     sdl_initialized = true;
     
-    if (TTF_Init() == -1) {
-        throw InitializationException("TTF_Init failed: " + std::string(TTF_GetError()));
-    }
-    ttf_initialized = true;
+    // TTF initialization is now handled by FontManager
     
     window = SDL_CreateWindow(title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
                               width, height, SDL_WINDOW_SHOWN);
@@ -31,21 +29,18 @@ SDLResources::SDLResources(const char* title, int width, int height) {
     
     SDL_StartTextInput();
     
-    // Load default font
-    try {
-        loadFont("", 16); // Will use default font
-    } catch (const std::exception& e) {
-        std::cerr << "Warning: Could not load default font: " << e.what() << std::endl;
+    // Get default font from FontManager
+    font = ui::FontManager::getInstance().getFont("", 16);
+    if (!font) {
+        std::cerr << "Warning: Could not load default font from FontManager" << std::endl;
     }
 }
 
 SDLResources::~SDLResources() {
     SDL_StopTextInput();
     
-    if (font) {
-        TTF_CloseFont(font);
-        font = nullptr;
-    }
+    // Font is managed by FontManager, don't close it here
+    font = nullptr;
     
     if (renderer) {
         SDL_DestroyRenderer(renderer);
@@ -57,10 +52,7 @@ SDLResources::~SDLResources() {
         window = nullptr;
     }
     
-    if (ttf_initialized) {
-        TTF_Quit();
-        ttf_initialized = false;
-    }
+    // TTF cleanup is handled by FontManager
     
     if (sdl_initialized) {
         SDL_Quit();
@@ -69,39 +61,10 @@ SDLResources::~SDLResources() {
 }
 
 void SDLResources::loadFont(const std::string& fontPath, int fontSize) {
-    if (font) {
-        TTF_CloseFont(font);
-        font = nullptr;
-    }
-    
-    if (fontPath.empty()) {
-        // Try local font first, then system fonts
-        const char* defaultFonts[] = {
-            "Assets/default_font.ttf",  // Local project font
-            "../Assets/default_font.ttf",  // Local project font (alt path)
-            "/System/Library/Fonts/Helvetica.ttc",  // macOS
-            "/System/Library/Fonts/Arial.ttf",  // macOS
-            "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",  // Linux
-            "/usr/share/fonts/TTF/DejaVuSans.ttf",  // Linux alternative
-            "C:\\Windows\\Fonts\\arial.ttf"  // Windows
-        };
-        
-        for (const char* defaultFont : defaultFonts) {
-            font = TTF_OpenFont(defaultFont, fontSize);
-            if (font) {
-                std::cout << "Loaded font: " << defaultFont << std::endl;
-                return;
-            }
-        }
-        
-        // If no system font found, create a minimal fallback
-        std::cerr << "Warning: Could not load any system font, UI text may not display properly" << std::endl;
-        // Don't throw exception, let the app continue without font
-    } else {
-        font = TTF_OpenFont(fontPath.c_str(), fontSize);
-        if (!font) {
-            std::cerr << "Warning: Could not load font: " << fontPath << " - " << std::string(TTF_GetError()) << std::endl;
-        }
+    // Use FontManager instead of direct loading
+    font = ui::FontManager::getInstance().getFont(fontPath, fontSize);
+    if (!font) {
+        std::cerr << "Warning: FontManager could not load font: " << (fontPath.empty() ? "default" : fontPath) << std::endl;
     }
 }
 
@@ -271,6 +234,7 @@ void UICore::setFocus(const std::string& elementId) {
 }
 
 std::string UICore::getFocusedElementId() const {
+    std::lock_guard<std::mutex> lock(focusMutex);
     return focusedElementId;
 }
 

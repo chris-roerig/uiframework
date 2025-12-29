@@ -16,6 +16,8 @@ common_sources = [
   'src/Helpers.cpp',
   'src/UICore.cpp',
   'src/UI.cpp',
+  'lib/Resources/FontManager.cpp',
+  'lib/UIElements/UIElement.cpp',
   'lib/UIElements/ContextMenu.cpp',
   'lib/UIElements/Modal.cpp',
   'lib/UIElements/ListView.cpp',
@@ -30,6 +32,7 @@ common_sources = [
   'lib/UIElements/AnimatedSprite.cpp',
   'lib/UIElements/ProgressBar.cpp',
   'lib/UIElements/Slider.cpp',
+  'lib/UIElements/VirtualKeyboard.cpp',
   'lib/UIElements/LayoutContainer.cpp',
   'lib/Layout/Layout.cpp',
   'lib/Layout/VBoxLayout.cpp',
@@ -37,149 +40,14 @@ common_sources = [
   'lib/Layout/GridLayout.cpp',
 ]
 
-# Working widgets only demo
-executable('working_widgets_demo',
-  sources : ['examples/working_widgets_demo.cpp'] + common_sources,
-  dependencies : [sdl2_dep, ttf_dep, sdl2_image_dep],
-  install : true
-)
-
-# Unified complete demo
-executable('unified_demo',
-  sources : ['examples/unified_demo.cpp'] + common_sources,
-  dependencies : [sdl2_dep, ttf_dep, sdl2_image_dep],
-  install : true
-)
-
-# OptionSelect debug test
-executable('option_debug',
-  sources : ['examples/option_debug.cpp'] + common_sources,
-  dependencies : [sdl2_dep, ttf_dep, sdl2_image_dep],
-  install : true
-)
-
 # Progressive test executable
 executable('progressive_test',
   sources : ['examples/progressive_test.cpp'] + common_sources,
   dependencies : [sdl2_dep, ttf_dep, sdl2_image_dep],
+  include_directories : ['.', 'src', 'lib'],
   install : true
 )
 
-# Layout multi test executable
-executable('layout_multi_test',
-  sources : ['layout_multi_test.cpp'] + common_sources,
-  dependencies : [sdl2_dep, ttf_dep, sdl2_image_dep],
-  install : true
-)
-
-# Grid test executable
-executable('grid_test',
-  sources : ['grid_test.cpp'] + common_sources,
-  dependencies : [sdl2_dep, ttf_dep, sdl2_image_dep],
-  install : true
-)
-
-# Layout demo executable
-executable('layout_demo',
-  sources : ['examples/layout_demo.cpp'] + common_sources,
-  dependencies : [sdl2_dep, ttf_dep, sdl2_image_dep],
-  install : true
-)
-
-# Layout test executable
-executable('layout_test',
-  sources : ['examples/layout_test.cpp'] + common_sources,
-  dependencies : [sdl2_dep, ttf_dep, sdl2_image_dep],
-  install : true
-)
-
-# Working demo executable (without OptionSelect)
-executable('working_demo',
-  sources : ['examples/working_demo.cpp'] + common_sources,
-  dependencies : [sdl2_dep, ttf_dep, sdl2_image_dep],
-  install : true
-)
-
-# Empty test executable
-executable('empty_test',
-  sources : ['examples/empty_test.cpp'] + common_sources,
-  dependencies : [sdl2_dep, ttf_dep, sdl2_image_dep],
-  install : true
-)
-
-# Option test executable
-executable('option_test',
-  sources : ['examples/option_test.cpp'] + common_sources,
-  dependencies : [sdl2_dep, ttf_dep, sdl2_image_dep],
-  install : true
-)
-
-# Theme test executable
-executable('theme_test',
-  sources : ['examples/theme_test.cpp'] + common_sources,
-  dependencies : [sdl2_dep, ttf_dep, sdl2_image_dep],
-  install : true
-)
-
-# Minimal test executable
-executable('minimal_test',
-  sources : ['examples/minimal_test.cpp'] + common_sources,
-  dependencies : [sdl2_dep, ttf_dep, sdl2_image_dep],
-  install : true
-)
-
-# Simple demo executable
-executable('simple_demo',
-  sources : ['examples/simple_demo.cpp'] + common_sources,
-  dependencies : [sdl2_dep, ttf_dep, sdl2_image_dep],
-  install : true
-)
-
-# New comprehensive demo executable
-executable('comprehensive_demo',
-  sources : ['examples/comprehensive_demo.cpp'] + common_sources,
-  dependencies : [sdl2_dep, ttf_dep, sdl2_image_dep],
-  install : true
-)
-
-# Main demo executable
-executable('sdl_ui_demo',
-  sources : ['examples/main.cpp'] + common_sources,
-  dependencies : [sdl2_dep, ttf_dep, sdl2_image_dep],
-  install : true
-)
-
-# New showcase demo executable
-executable('ui_showcase',
-  sources : ['examples/showcase.cpp'] + common_sources,
-  dependencies : [sdl2_dep, ttf_dep, sdl2_image_dep],
-  install : true
-)
-
-# Test executable
-executable('no_optionselect_demo',
-  sources : [
-    'examples/no_optionselect_demo.cpp'
-  ] + common_sources,
-  dependencies : [sdl2_dep, ttf_dep, sdl2_image_dep],
-  install : false
-)
-
-executable('optionselect_test',
-  sources : [
-    'examples/optionselect_test.cpp'
-  ] + common_sources,
-  dependencies : [sdl2_dep, ttf_dep, sdl2_image_dep],
-  install : false
-)
-
-executable('optionselect_demo',
-  sources : [
-    'examples/optionselect_demo.cpp'
-  ] + common_sources,
-  dependencies : [sdl2_dep, ttf_dep, sdl2_image_dep],
-  install : false
-)
 
 executable('ui_tests',
   sources : [
@@ -201,48 +69,11 @@ executable('ui_tests',
     'tests/test_optionselect.cpp',
     'tests/test_deadlock_prevention.cpp',
     'tests/test_slider.cpp',
+    'tests/test_virtualkeyboard.cpp',
     'tests/test_layout.cpp',  # Layout tests re-enabled after fixes
   ] + common_sources,
   dependencies : [sdl2_dep, ttf_dep, sdl2_image_dep, catch2_dep],
+  include_directories : ['.', 'src', 'lib'],
   install : false
 )
 
-# Slider demo
-executable('slider_demo', 
-    'examples/slider_demo.cpp',
-    common_sources,
-    dependencies : [sdl2_dep, ttf_dep, sdl2_image_dep],
-    install : false
-)
-
-# TextBox demo
-executable('textbox_demo', 
-    'examples/textbox_demo.cpp',
-    common_sources,
-    dependencies : [sdl2_dep, ttf_dep, sdl2_image_dep],
-    install : false
-)
-
-# Demo2 - Layout & Grid showcase
-executable('demo2', 
-    'examples/demo2.cpp',
-    common_sources,
-    dependencies : [sdl2_dep, ttf_dep, sdl2_image_dep],
-    install : false
-)
-
-# Layout Examples
-executable('layout_examples', 
-    'examples/layout_examples.cpp',
-    common_sources,
-    dependencies : [sdl2_dep, ttf_dep, sdl2_image_dep],
-    install : false
-)
-
-# Context Menu Demo
-executable('context_menu_demo', 
-    'examples/context_menu_demo.cpp',
-    common_sources,
-    dependencies : [sdl2_dep, ttf_dep, sdl2_image_dep],
-    install : false
-)

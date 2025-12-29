@@ -111,6 +111,11 @@ std::shared_ptr<ui::KnobSlider> UI::createKnobSlider(int x, int y, int size, flo
     return registerElement(knobslider);
 }
 
+std::shared_ptr<ui::VirtualKeyboard> UI::createVirtualKeyboard(int x, int y, int width, int height, std::function<void(char)> callback) {
+    auto keyboard = std::make_shared<ui::VirtualKeyboard>(x, y, width, height, callback);
+    return registerElement(keyboard);
+}
+
 // --- Modal Methods ---
 
 std::shared_ptr<ui::Modal> UI::createModal(const std::string &message, const std::string &buttonText, bool hasCancel, std::function<void()> onCloseCallback) {
