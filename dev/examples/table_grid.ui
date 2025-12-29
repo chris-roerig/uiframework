@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<UI>
+    <Grid id="tableGrid">
+        <GridRow>
+            <GridColumn>
+                <Label id="header1" text="Name" />
+            </GridColumn>
+            <GridColumn>
+                <Label id="header2" text="Action" />
+            </GridColumn>
+            <GridColumn>
+                <Label id="header3" text="Status" />
+            </GridColumn>
+        </GridRow>
+        <GridRow>
+            <GridColumn>
+                <TextBox id="nameInput" placeholder="Enter name" />
+            </GridColumn>
+            <GridColumn>
+                <Button id="saveBtn" text="Save" />
+            </GridColumn>
+            <GridColumn>
+                <CheckBox id="enabledCheck" checked="true" />
+            </GridColumn>
+        </GridRow>
+        <GridRow>
+            <GridColumn>
+                <Label id="footer1" text="Total: 1" />
+            </GridColumn>
+            <GridColumn>
+                <Button id="clearBtn" text="Clear All" />
+            </GridColumn>
+            <GridColumn>
+                <Label id="status" text="Ready" />
+            </GridColumn>
+        </GridRow>
+    </Grid>
+</UI>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<UI>
+    <Grid id="mainGrid" rows="2" cols="2">
+        <Button id="btn1" text="Button 1" />
+        <Button id="btn2" text="Button 2" />
+        <Label id="label1" text="Label 1" />
+        <CheckBox id="check1" checked="true" />
+    </Grid>
+</UI>

@@ -1,4 +1,4 @@
-.PHONY: help all build test clean setup demo demos static-analysis
+.PHONY: help all build test clean setup demo demos static-analysis dsl-demo
 
 # Default target - show help
 help:
@@ -8,6 +8,7 @@ help:
 	@echo "  demos     - Compile demos and examples"
 	@echo "  test      - Run all tests"
 	@echo "  demo      - Run the progressive demo"
+	@echo "  dsl-demo  - Build and run the DSL demo"
 	@echo "  static-analysis - Run static analysis tools"
 	@echo "  clean     - Remove build directory"
 	@echo "  rebuild   - Clean and rebuild from scratch"
@@ -41,6 +42,12 @@ rebuild: clean setup build
 # Run demo app
 demo: demos
 	./build/progressive_test
+
+# Build and run DSL demo
+dsl-demo:
+	./tools/ui-compiler dev/examples/demo.ui dev/examples/demo_ui.h
+	meson compile -C build dsl_demo
+	./build/dsl_demo
 
 # Run static analysis
 static-analysis:

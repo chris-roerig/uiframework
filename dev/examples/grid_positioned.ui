@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<UI>
+    <Grid id="mainGrid" rows="3" cols="3">
+        <Button id="btn1" text="Top Left" row="0" col="0" />
+        <Button id="btn2" text="Top Right" row="0" col="2" />
+        <Label id="label1" text="Middle Center" row="1" col="1" />
+        <CheckBox id="check1" checked="true" row="2" col="0" />
+        <Button id="btn3" text="Bottom Right" row="2" col="2" />
+    </Grid>
+</UI>

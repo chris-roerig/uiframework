@@ -1,8 +1,62 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <UI>
-    <Label id="title" text="DSL Demo Application" x="10" y="10" />
-    <Button id="clickButton" text="Click Me!" x="10" y="50" />
-    <TextBox id="nameInput" placeholder="Enter your name" x="10" y="90" />
-    <CheckBox id="enableFeature" checked="false" x="10" y="130" />
-    <Label id="status" text="Ready" x="10" y="170" />
+    <!-- Header -->
+    <Label id="title" text="SynthSampler Pro" x="20" y="10" />
+    <Label id="version" text="v1.0" x="600" y="10" />
+    
+    <!-- Oscillator Section -->
+    <Label id="oscLabel" text="OSCILLATOR" x="20" y="50" />
+    <Button id="sineWave" text="SINE" x="20" y="80" />
+    <Button id="sawWave" text="SAW" x="90" y="80" />
+    <Button id="squareWave" text="SQR" x="160" y="80" />
+    
+    <!-- Filter Section -->
+    <Label id="filterLabel" text="FILTER" x="250" y="50" />
+    <Label id="cutoffLabel" text="Cutoff:" x="250" y="80" />
+    <TextBox id="cutoffValue" placeholder="1000" x="310" y="75" />
+    <Label id="resLabel" text="Res:" x="250" y="115" />
+    <TextBox id="resValue" placeholder="0.5" x="310" y="110" />
+    
+    <!-- Envelope Section -->
+    <Label id="envLabel" text="ENVELOPE" x="450" y="50" />
+    <Label id="attackLabel" text="A:" x="450" y="80" />
+    <TextBox id="attackValue" placeholder="0.1" x="480" y="75" />
+    <Label id="decayLabel" text="D:" x="550" y="80" />
+    <TextBox id="decayValue" placeholder="0.2" x="580" y="75" />
+    <Label id="sustainLabel" text="S:" x="450" y="115" />
+    <TextBox id="sustainValue" placeholder="0.7" x="480" y="110" />
+    <Label id="releaseLabel" text="R:" x="550" y="115" />
+    <TextBox id="releaseValue" placeholder="0.5" x="580" y="110" />
+    
+    <!-- Sample Section -->
+    <Label id="sampleLabel" text="SAMPLER" x="20" y="170" />
+    <Button id="loadSample" text="LOAD SAMPLE" x="20" y="200" />
+    <Label id="sampleName" text="No sample loaded" x="150" y="205" />
+    <CheckBox id="loopEnable" checked="false" x="20" y="240" />
+    <Label id="loopLabel" text="Loop" x="50" y="245" />
+    
+    <!-- Effects Section -->
+    <Label id="fxLabel" text="EFFECTS" x="350" y="170" />
+    <CheckBox id="reverbEnable" checked="false" x="350" y="200" />
+    <Label id="reverbLabel" text="Reverb" x="380" y="205" />
+    <CheckBox id="delayEnable" checked="false" x="470" y="200" />
+    <Label id="delayLabel" text="Delay" x="500" y="205" />
+    <CheckBox id="chorusEnable" checked="false" x="350" y="240" />
+    <Label id="chorusLabel" text="Chorus" x="380" y="245" />
+    
+    <!-- Master Section -->
+    <Label id="masterLabel" text="MASTER" x="580" y="170" />
+    <Label id="volumeLabel" text="Volume:" x="580" y="200" />
+    <TextBox id="masterVolume" placeholder="100" x="580" y="225" />
+    <Label id="panLabel" text="Pan:" x="580" y="260" />
+    <TextBox id="masterPan" placeholder="0" x="580" y="285" />
+    
+    <!-- Transport Controls -->
+    <Button id="playButton" text="PLAY" x="20" y="320" />
+    <Button id="stopButton" text="STOP" x="90" y="320" />
+    <Button id="recordButton" text="REC" x="160" y="320" />
+    
+    <!-- Status -->
+    <Label id="status" text="Ready" x="20" y="370" />
+    <Label id="midiStatus" text="MIDI: Disconnected" x="350" y="370" />
 </UI>
