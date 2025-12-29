@@ -2,6 +2,29 @@
 
 This directory contains comprehensive demo applications showcasing all available UI widgets and features in the framework.
 
+## Featured Examples
+
+### 🎵 Audio Recorder (`audio_recorder/`)
+**Real-time audio recording and playback application** - Perfect demonstration of the framework's suitability for professional audio applications like DAWs.
+
+**Features:**
+- Real-time audio recording from microphone
+- Live waveform visualization using Canvas widgets  
+- VU meter display showing audio levels
+- Playback with position indicator
+- Thread-safe audio processing with 60fps UI updates
+
+**Building:**
+```bash
+cd audio_recorder
+meson setup build && meson compile -C build
+./build/audio_recorder
+```
+
+**Requirements:** SDL2 audio support, microphone access
+
+---
+
 ## Available Demos
 
 ### 1. Simple Demo (`simple_demo`)

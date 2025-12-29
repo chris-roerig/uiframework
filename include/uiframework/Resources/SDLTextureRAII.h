@@ -53,6 +53,16 @@ public:
     SDL_Texture* get() const { return texture; }
     
     /**
+     * @brief Release ownership of the texture
+     * @return SDL_Texture* The released texture (caller takes ownership)
+     */
+    SDL_Texture* release() {
+        SDL_Texture* temp = texture;
+        texture = nullptr;
+        return temp;
+    }
+    
+    /**
      * @brief Check if texture was created successfully
      * @return true if texture is valid
      */

@@ -157,7 +157,7 @@ public:
         defaultHighlight(255,255,0),
         defaultActiveText(255,255,255),
         defaultInactiveText(128,128,128),
-        defaultButtonText(255,255,255),
+        defaultButtonText(0,0,0),
         defaultButtonBackground(150,150,150),
         defaultButtonForeground(255,255,255),
         defaultButtonBorderLight(200,200,200),

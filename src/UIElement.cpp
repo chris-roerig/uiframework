@@ -29,6 +29,10 @@ TextCacheEntry* UIElement::getCachedText(const std::string& key, const std::stri
         return nullptr;
     }
     
+    // Get dimensions before creating texture
+    int width = surface->w;
+    int height = surface->h;
+    
     SDLTextureRAII textureRAII(renderer, surface);
     SDL_FreeSurface(surface);
     
@@ -38,18 +42,15 @@ TextCacheEntry* UIElement::getCachedText(const std::string& key, const std::stri
     
     // Create new cache entry
     auto entry = std::make_unique<TextCacheEntry>();
-    entry->texture = textureRAII.get();
-    entry->width = surface->w;
-    entry->height = surface->h;
+    entry->texture = textureRAII.release(); // Transfer ownership
+    entry->width = width;
+    entry->height = height;
     entry->text = text;
     entry->color = color;
     
     // Store in cache and return pointer
     TextCacheEntry* result = entry.get();
     textCache[key] = std::move(entry);
-    
-    // Release ownership from RAII wrapper since TextCacheEntry will manage it
-    const_cast<SDLTextureRAII&>(textureRAII) = SDLTextureRAII(nullptr, nullptr);
     
     return result;
 }
