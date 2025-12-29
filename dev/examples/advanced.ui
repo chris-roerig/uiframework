@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<UI>
+    <VBox id="mainLayout" x="10" y="10" width="300" height="400">
+        <Label id="header" text="Advanced DSL Demo" />
+        <HBox id="inputRow">
+            <Label id="nameLabel" text="Name:" />
+            <TextBox id="nameField" placeholder="Enter name" />
+        </HBox>
+        <Grid id="buttonGrid" rows="2" cols="2">
+            <Button id="saveBtn" text="Save" />
+            <Button id="loadBtn" text="Load" />
+            <Button id="clearBtn" text="Clear" />
+            <CheckBox id="autoSave" checked="true" />
+        </Grid>
+        <Label id="footer" text="Status: Ready" />
+    </VBox>
+</UI>

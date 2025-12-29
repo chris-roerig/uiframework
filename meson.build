@@ -71,6 +71,14 @@ executable('progressive_test',
   install : true
 )
 
+# DSL demo executable
+executable('dsl_demo',
+  sources : ['dev/examples/dsl_demo.cpp'] + common_sources,
+  dependencies : [sdl2_dep, ttf_dep, sdl2_image_dep],
+  include_directories : ['lib/include', 'dev/examples'],
+  install : false
+)
+
 
 # Static analysis targets
 run_target('static-analysis',

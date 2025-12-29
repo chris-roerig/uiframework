@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<UI>
+    <Label id="title" text="DSL Demo Application" x="10" y="10" />
+    <Button id="clickButton" text="Click Me!" x="10" y="50" />
+    <TextBox id="nameInput" placeholder="Enter your name" x="10" y="90" />
+    <CheckBox id="enableFeature" checked="false" x="10" y="130" />
+    <Label id="status" text="Ready" x="10" y="170" />
+</UI>

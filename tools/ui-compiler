@@ -1,0 +1,150 @@
+#!/usr/bin/env python3
+"""
+UI Framework DSL Compiler - Proof of Concept
+Converts .ui files to C++ factory functions
+"""
+
+import sys
+import xml.etree.ElementTree as ET
+from pathlib import Path
+
+def generate_cpp_from_ui(ui_file_path, output_path):
+    """Generate C++ code from .ui file"""
+    
+    # Parse XML
+    tree = ET.parse(ui_file_path)
+    root = tree.getroot()
+    
+    ui_name = Path(ui_file_path).stem
+    class_name = f"{ui_name.title()}Widgets"
+    
+    # Generate header
+    cpp_code = f'''// Generated from {ui_file_path}
+// DO NOT EDIT - This file is auto-generated
+
+#pragma once
+#include "uiframework/UI.h"
+#include <memory>
+
+namespace ui_generated {{
+
+struct {class_name} {{
+'''
+    
+    # Generate widget member declarations
+    widget_members = []
+    widget_creation = []
+    layout_creation = []
+    
+    def process_element(elem, parent_var="ui", is_layout=False):
+        widget_id = elem.get('id', f"{elem.tag.lower()}_auto")
+        
+        # Handle layouts
+        if elem.tag in ["VBox", "HBox", "Grid"]:
+            if elem.tag == "VBox":
+                widget_members.append(f"    std::shared_ptr<ui::VBoxLayout> {widget_id};")
+                layout_creation.append(f"        widgets.{widget_id} = std::make_shared<ui::VBoxLayout>();")
+            elif elem.tag == "HBox":
+                widget_members.append(f"    std::shared_ptr<ui::HBoxLayout> {widget_id};")
+                layout_creation.append(f"        widgets.{widget_id} = std::make_shared<ui::HBoxLayout>();")
+            elif elem.tag == "Grid":
+                rows = elem.get('rows', '2')
+                cols = elem.get('cols', '2')
+                widget_members.append(f"    std::shared_ptr<ui::GridLayout> {widget_id};")
+                layout_creation.append(f"        widgets.{widget_id} = std::make_shared<ui::GridLayout>({rows}, {cols});")
+            
+            # Process child elements
+            for child in elem:
+                process_element(child, f"widgets.{widget_id}", True)
+            return
+        
+        # Handle regular widgets
+        widget_members.append(f"    std::shared_ptr<ui::{elem.tag}> {widget_id};")
+        
+        # Generate creation code based on element type
+        if elem.tag == "Button":
+            text = elem.get('text', 'Button')
+            x = elem.get('x', '10')
+            y = elem.get('y', '10')
+            widget_creation.append(f"        widgets.{widget_id} = {parent_var}.createButton(\"{text}\", {x}, {y}, nullptr);")
+            
+        elif elem.tag == "Label":
+            text = elem.get('text', 'Label')
+            x = elem.get('x', '10')
+            y = elem.get('y', '10')
+            widget_creation.append(f"        widgets.{widget_id} = {parent_var}.createLabel(\"{text}\", {x}, {y});")
+            
+        elif elem.tag == "TextBox":
+            placeholder = elem.get('placeholder', '')
+            x = elem.get('x', '10')
+            y = elem.get('y', '10')
+            widget_creation.append(f"        widgets.{widget_id} = {parent_var}.createTextBox(\"{placeholder}\", {x}, {y});")
+            
+        elif elem.tag == "CheckBox":
+            checked = elem.get('checked', 'false').lower() == 'true'
+            x = elem.get('x', '10')
+            y = elem.get('y', '10')
+            widget_creation.append(f"        widgets.{widget_id} = {parent_var}.createCheckBox({str(checked).lower()}, {x}, {y}, nullptr);")
+    
+    # Process all elements
+    for elem in root:
+        process_element(elem)
+    
+    # Add member declarations
+    cpp_code += '\n'.join(widget_members)
+    cpp_code += '\n};\n\n'
+    
+    # Generate factory function
+    cpp_code += f'''inline {class_name} create{ui_name.title()}(UI& ui) {{
+    {class_name} widgets;
+    
+    try {{
+        // Create layouts first
+'''
+    
+    # Add layout creation code
+    if layout_creation:
+        cpp_code += '\n'.join(layout_creation)
+        cpp_code += '\n        \n        // Create widgets\n'
+    
+    # Add widget creation code
+    cpp_code += '\n'.join(widget_creation)
+    
+    cpp_code += f'''
+    }} catch (const std::exception& e) {{
+        throw ui::UIException("Failed to create {ui_name} widgets: " + std::string(e.what()));
+    }}
+    
+    return widgets;
+}}
+
+}} // namespace ui_generated
+'''
+    
+    # Write to output file
+    with open(output_path, 'w') as f:
+        f.write(cpp_code)
+    
+    print(f"Generated {output_path} from {ui_file_path}")
+
+def main():
+    if len(sys.argv) != 3:
+        print("Usage: ui-compiler <input.ui> <output.h>")
+        sys.exit(1)
+    
+    ui_file = sys.argv[1]
+    output_file = sys.argv[2]
+    
+    if not Path(ui_file).exists():
+        print(f"Error: {ui_file} not found")
+        sys.exit(1)
+    
+    try:
+        generate_cpp_from_ui(ui_file, output_file)
+        print("Compilation successful!")
+    except Exception as e:
+        print(f"Error: {e}")
+        sys.exit(1)
+
+if __name__ == "__main__":
+    main()
