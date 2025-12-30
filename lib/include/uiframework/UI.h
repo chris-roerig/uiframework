@@ -318,6 +318,11 @@ class UI {
     void setFocus(const std::string& elementId);
     void setFocus(std::shared_ptr<ui::UIElement> element);
     std::string getFocusedElementId() const;
+    
+    // Focus cycling (Phase 2)
+    void focusNext();
+    void focusPrevious();
+    void setFocusOrder(const std::vector<std::string>& elementIds);
 
     // Modal APIs with better error handling
     std::shared_ptr<ui::Modal> createModal(const std::string& message,

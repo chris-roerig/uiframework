@@ -72,7 +72,7 @@ void SDLResources::loadFont(const std::string& fontPath, int fontSize) {
 
 // --- UICore Implementation ---
 UICore::UICore(const char* title, int w, int h, std::shared_ptr<Theme> theme)
-    : currentTheme(theme), width(w), height(h) {
+    : currentTheme(theme), focusManager(std::make_unique<FocusManager>()), width(w), height(h) {
     
     if (!theme) {
         throw std::invalid_argument("Theme cannot be null");
@@ -144,7 +144,9 @@ std::string UICore::addElement(std::shared_ptr<UIElement> element) {
     
     elements.push_back(element);
     elementsMap[id] = element;
-    elementRegistry[id] = element;
+    
+    // Register with FocusManager
+    focusManager->registerElement(id, element);
     
     return id;
 }
@@ -169,16 +171,11 @@ void UICore::removeElement(const std::string& elementId) {
         elements.end()
     );
     
-    // Remove from registry
-    elementRegistry.erase(elementId);
-    
-    // Clear focus if this element was focused
-    if (focusedElementId == elementId) {
-        focusedElementId.clear();
-    }
+    // Unregister from FocusManager
+    focusManager->unregisterElement(elementId);
 }
 
-std::shared_ptr<UIElement> UICore::getElement(const std::string& elementId) const {
+std::shared_ptr<ui::UIElement> UICore::getElement(const std::string& elementId) const {
     std::lock_guard<std::mutex> lock(elementsMutex);
     
     // O(1) lookup in map
@@ -186,7 +183,7 @@ std::shared_ptr<UIElement> UICore::getElement(const std::string& elementId) cons
     return (it != elementsMap.end()) ? it->second : nullptr;
 }
 
-void UICore::setTheme(std::shared_ptr<Theme> theme) {
+void UICore::setTheme(std::shared_ptr<ui::Theme> theme) {
     if (!theme) {
         throw std::invalid_argument("Theme cannot be null");
     }
@@ -195,7 +192,7 @@ void UICore::setTheme(std::shared_ptr<Theme> theme) {
     currentTheme = theme;
 }
 
-std::shared_ptr<Theme> UICore::getTheme() const {
+std::shared_ptr<ui::Theme> UICore::getTheme() const {
     std::lock_guard<std::mutex> lock(themeMutex);
     return currentTheme;
 }
@@ -221,54 +218,27 @@ void UICore::unregisterHotKey(SDL_Keycode key) {
 }
 
 void UICore::setFocus(const std::string& elementId) {
-    // If elements mutex is already locked (we're in event processing), defer the focus change
-    if (!elementsMutex.try_lock()) {
-        std::lock_guard<std::mutex> focusLock(focusMutex);
-        pendingFocusChanges.push(elementId);
-        return;
-    }
-    
-    // We got the lock, proceed normally
-    std::lock_guard<std::mutex> lock(elementsMutex, std::adopt_lock);
-    
-    // Clear focus from current element
-    if (!focusedElementId.empty()) {
-        // Direct lookup without calling getElement to avoid recursive lock
-        auto it = elementRegistry.find(focusedElementId);
-        if (it != elementRegistry.end()) {
-            auto currentFocused = it->second.lock();
-            if (currentFocused) {
-                currentFocused->hasFocus = false;
-                currentFocused->onFocusLost();
-            }
-        }
-    }
-    
-    // Set focus to new element
-    // Direct lookup without calling getElement to avoid recursive lock
-    auto it = elementRegistry.find(elementId);
-    if (it != elementRegistry.end()) {
-        auto newFocused = it->second.lock();
-        if (newFocused && newFocused->isInteractive()) {
-            focusedElementId = elementId;
-            newFocused->hasFocus = true;
-            newFocused->onFocusGained();
-        } else {
-            focusedElementId.clear();
-        }
-    } else {
-        focusedElementId.clear();
-    }
+    focusManager->setFocus(elementId);
 }
 
 std::string UICore::getFocusedElementId() const {
-    std::lock_guard<std::mutex> lock(focusMutex);
-    return focusedElementId;
+    return focusManager->getFocusedElementId();
+}
+
+void UICore::focusNext() {
+    focusManager->focusNext();
+}
+
+void UICore::focusPrevious() {
+    focusManager->focusPrevious();
+}
+
+void UICore::setFocusOrder(const std::vector<std::string>& elementIds) {
+    focusManager->setFocusOrder(elementIds);
 }
 
 void UICore::queueCallback(std::function<void()> callback) {
-    std::lock_guard<std::mutex> lock(focusMutex);
-    pendingCallbacks.push_back(callback);
+    focusManager->queueCallback(callback);
 }
 
 SDL_Keycode UICore::keycodeFromString(const std::string &s) {
@@ -322,34 +292,9 @@ void UICore::run() {
                 }
             }
             
-            // Process pending focus changes after releasing the mutex
-            std::vector<std::string> focusChanges;
-            std::vector<std::function<void()>> callbacks;
-            {
-                std::lock_guard<std::mutex> focusLock(focusMutex);
-                while (!pendingFocusChanges.empty()) {
-                    focusChanges.push_back(pendingFocusChanges.front());
-                    pendingFocusChanges.pop();
-                }
-                callbacks = std::move(pendingCallbacks);
-                pendingCallbacks.clear();
-            }
-            
-            // Process focus changes without holding any locks
-            for (const auto& elementId : focusChanges) {
-                setFocus(elementId);
-            }
-            
-            // Process pending callbacks without holding any locks
-            for (const auto& callback : callbacks) {
-                if (callback) {
-                    try {
-                        callback();
-                    } catch (const std::exception& e) {
-                        std::cerr << "Error in pending callback: " << e.what() << std::endl;
-                    }
-                }
-            }
+            // Process pending focus changes and callbacks
+            focusManager->processPendingFocusChanges();
+            focusManager->processPendingCallbacks();
         }
         
         // Render

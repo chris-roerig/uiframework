@@ -1,6 +1,7 @@
 #pragma once
 
 #include "uiframework/Theme/ThemeBase.h"
+#include "uiframework/Focus/FocusManager.h"
 #include "UIElements.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
@@ -49,12 +50,8 @@ namespace ui {
         mutable std::mutex themeMutex;
         mutable std::mutex hotKeysMutex;
         
-        // Focus management with element IDs instead of indices
-        std::string focusedElementId;
-        std::unordered_map<std::string, std::weak_ptr<UIElement>> elementRegistry;
-        std::queue<std::string> pendingFocusChanges;
-        mutable std::mutex focusMutex;
-        std::vector<std::function<void()>> pendingCallbacks;
+        // Focus management (delegated to FocusManager)
+        std::unique_ptr<FocusManager> focusManager;
         
         bool modalActive = false;
         int width, height;
@@ -85,6 +82,11 @@ namespace ui {
         // Focus management
         void setFocus(const std::string& elementId);
         std::string getFocusedElementId() const;
+        
+        // Focus cycling (Phase 2)
+        void focusNext();
+        void focusPrevious();
+        void setFocusOrder(const std::vector<std::string>& elementIds);
         
         // Callback management
         void queueCallback(std::function<void()> callback);

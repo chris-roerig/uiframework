@@ -20,6 +20,7 @@ common_sources = [
   'lib/src/FontManager.cpp',
   'lib/src/TTFManager.cpp',
   'lib/src/UIElement.cpp',
+  'lib/src/Focus/FocusManager.cpp',
   'lib/src/ContextMenu.cpp',
   'lib/src/Modal.cpp',
   'lib/src/ListView.cpp',
@@ -119,6 +120,7 @@ if catch2_dep.found()
       'dev/tests/test_virtualkeyboard.cpp',
       'dev/tests/test_cyclelist.cpp',
       'dev/tests/test_tabbedpanel.cpp',
+      'dev/tests/test_focusmanager.cpp',
       'dev/tests/test_layout.cpp',  # Layout tests re-enabled after fixes
       'dev/tests/test_threading_improvements.cpp',
       'dev/tests/test_performance_benchmarks.cpp',  # New threading and performance tests

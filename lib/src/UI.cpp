@@ -247,6 +247,18 @@ std::string UI::getFocusedElementId() const {
     return core->getFocusedElementId();
 }
 
+void UI::focusNext() {
+    core->focusNext();
+}
+
+void UI::focusPrevious() {
+    core->focusPrevious();
+}
+
+void UI::setFocusOrder(const std::vector<std::string>& elementIds) {
+    core->setFocusOrder(elementIds);
+}
+
 // --- Core Functionality ---
 
 void UI::run() {
