@@ -594,49 +594,50 @@ bool UI::realtimeCallback(std::function<void()> callback) {
 }
 
 void UI::processRealtimeUpdates() {
-    ui::UIUpdate update;
-    while (updateQueue->tryDequeue(update)) {
-        auto element = getElement(update.elementId);
-        if (!element && update.type != ui::UIUpdate::CUSTOM_CALLBACK) {
+    // Use batching for efficient processing
+    std::unordered_map<std::string, ui::BatchedUpdate> batchMap;
+    size_t processedCount = updateQueue->processBatch(batchMap);
+    
+    if (processedCount == 0) {
+        return; // No updates to process
+    }
+    
+    // Apply batched updates efficiently
+    for (const auto& [elementId, batch] : batchMap) {
+        auto element = getElement(elementId);
+        if (!element) {
             continue; // Element not found
         }
         
-        switch (update.type) {
-            case ui::UIUpdate::SET_TEXT:
-                if (auto label = std::dynamic_pointer_cast<ui::Label>(element)) {
-                    label->setText(update.textValue);
-                } else if (auto button = std::dynamic_pointer_cast<ui::Button>(element)) {
-                    button->setText(update.textValue);
-                }
-                break;
-                
-            case ui::UIUpdate::SET_POSITION:
-                element->setPosition(update.data.position.x, update.data.position.y);
-                break;
-                
-            case ui::UIUpdate::SET_SIZE:
-                element->setSize(update.data.size.width, update.data.size.height);
-                break;
-                
-            case ui::UIUpdate::SET_VALUE:
-                if (auto slider = std::dynamic_pointer_cast<ui::HSlider>(element)) {
-                    slider->setValue(update.data.floatValue.value);
-                } else if (auto vslider = std::dynamic_pointer_cast<ui::VSlider>(element)) {
-                    vslider->setValue(update.data.floatValue.value);
-                } else if (auto progress = std::dynamic_pointer_cast<ui::ProgressBar>(element)) {
-                    progress->setProgress(update.data.floatValue.value);
-                }
-                break;
-                
-            case ui::UIUpdate::SET_VISIBILITY:
-                element->setVisible(update.data.visibility.visible);
-                break;
-                
-            case ui::UIUpdate::CUSTOM_CALLBACK:
-                if (update.callback) {
-                    update.callback();
-                }
-                break;
+        // Apply all pending updates for this element
+        if (batch.hasText) {
+            if (auto label = std::dynamic_pointer_cast<ui::Label>(element)) {
+                label->setText(batch.textValue);
+            } else if (auto button = std::dynamic_pointer_cast<ui::Button>(element)) {
+                button->setText(batch.textValue);
+            }
+        }
+        
+        if (batch.hasPosition) {
+            element->setPosition(batch.position.x, batch.position.y);
+        }
+        
+        if (batch.hasSize) {
+            element->setSize(batch.size.width, batch.size.height);
+        }
+        
+        if (batch.hasValue) {
+            if (auto slider = std::dynamic_pointer_cast<ui::HSlider>(element)) {
+                slider->setValue(batch.value);
+            } else if (auto vslider = std::dynamic_pointer_cast<ui::VSlider>(element)) {
+                vslider->setValue(batch.value);
+            } else if (auto progress = std::dynamic_pointer_cast<ui::ProgressBar>(element)) {
+                progress->setProgress(batch.value);
+            }
+        }
+        
+        if (batch.hasVisibility) {
+            element->setVisible(batch.visible);
         }
     }
 }

@@ -3,8 +3,33 @@
 #include <memory>
 #include <functional>
 #include <string>
+#include <unordered_map>
 
 namespace ui {
+
+/**
+ * @brief Batched update state for efficient processing
+ */
+struct BatchedUpdate {
+    std::string elementId;
+    
+    // Track which updates are pending
+    bool hasText = false;
+    bool hasPosition = false;
+    bool hasSize = false;
+    bool hasValue = false;
+    bool hasVisibility = false;
+    
+    // Latest values (only most recent matters)
+    std::string textValue;
+    struct { int x, y; } position;
+    struct { int width, height; } size;
+    float value;
+    bool visible;
+    
+    // Callbacks must be processed in order
+    std::vector<std::function<void()>> callbacks;
+};
 
 /**
  * @brief Lock-free update operation for audio thread safety
@@ -69,6 +94,13 @@ public:
      * @brief Check if queue is empty
      */
     bool empty() const;
+    
+    /**
+     * @brief Process all queued updates with batching optimization
+     * @param batchMap Output map of batched updates by element ID
+     * @return Number of updates processed
+     */
+    size_t processBatch(std::unordered_map<std::string, BatchedUpdate>& batchMap);
     
     /**
      * @brief Get approximate queue size (for monitoring)
