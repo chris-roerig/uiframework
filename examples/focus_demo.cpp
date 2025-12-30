@@ -125,9 +125,9 @@ public:
         // Add instructions labels
         ui.createLabel("=== FOCUS CYCLING DEMO ===", 50, 420);
         ui.createLabel("Click elements to focus them (yellow border)", 50, 440);
-        ui.createLabel("Press 'n' for next element", 50, 460);
-        ui.createLabel("Press 'p' for previous element", 50, 480);
-        ui.createLabel("Total focusable elements: " + std::to_string(focusableElements.size()), 400, 460);
+        ui.createLabel("Press TAB/SHIFT+TAB for keyboard navigation", 50, 460);
+        ui.createLabel("Press 'n' for next, 'p' for previous", 50, 480);
+        ui.createLabel("Total focusable elements: " + std::to_string(focusableElements.size()), 400, 480);
     }
     
     void run() {
@@ -135,8 +135,8 @@ public:
         
         std::cout << "=== Focus Cycling Demo ===" << std::endl;
         std::cout << "Click elements to focus them (yellow border)" << std::endl;
-        std::cout << "Press 'n' for next element" << std::endl;
-        std::cout << "Press 'p' for previous element" << std::endl;
+        std::cout << "Press TAB/SHIFT+TAB for keyboard navigation" << std::endl;
+        std::cout << "Press 'n' for next, 'p' for previous" << std::endl;
         std::cout << "All elements auto-focus on click!" << std::endl;
         std::cout << "=========================" << std::endl;
         

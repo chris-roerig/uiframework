@@ -274,6 +274,16 @@ void UICore::run() {
             
             // Handle hotkeys
             if (e.type == SDL_KEYDOWN) {
+                // Handle Tab navigation first
+                if (e.key.keysym.sym == SDLK_TAB) {
+                    if (e.key.keysym.mod & KMOD_SHIFT) {
+                        focusManager->focusPrevious();
+                    } else {
+                        focusManager->focusNext();
+                    }
+                    continue;
+                }
+                
                 std::lock_guard<std::mutex> lock(hotKeysMutex);
                 auto it = hotKeys.find(e.key.keysym.sym);
                 if (it != hotKeys.end()) {
