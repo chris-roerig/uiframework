@@ -213,9 +213,15 @@ std::shared_ptr<ui::Modal> UI::createInfoModal(const std::string& message,
 
 void UI::removeElement(const std::string& elementId) {
     core->removeElement(elementId);
+    focusOrderHints.erase(elementId);
 }
 
 void UI::removeElement(uint64_t numericId) {
+    // Get string ID before removal for cleanup
+    auto element = core->getElement(numericId);
+    if (element) {
+        focusOrderHints.erase(element->getId());
+    }
     core->removeElement(numericId);
 }
 
