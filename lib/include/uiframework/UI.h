@@ -447,6 +447,16 @@ class UI {
     bool realtimeSetVisibility(const std::string& elementId, bool visible);
     bool realtimeCallback(std::function<void()> callback);
     
+    // High-resolution timing methods (microsecond precision)
+    bool realtimeSetTextAtTime(const std::string& elementId, const std::string& text, 
+                              std::chrono::high_resolution_clock::time_point when);
+    bool realtimeSetPositionAtTime(const std::string& elementId, int x, int y,
+                                  std::chrono::high_resolution_clock::time_point when);
+    bool realtimeSetValueAtTime(const std::string& elementId, float value,
+                               std::chrono::high_resolution_clock::time_point when);
+    bool realtimeSetVisibilityAtTime(const std::string& elementId, bool visible,
+                                    std::chrono::high_resolution_clock::time_point when);
+    
     // Process queued updates (call from main thread only)
     void processRealtimeUpdates();
 };

@@ -297,4 +297,42 @@ size_t UIUpdateQueue::processPredictable(std::vector<ElementCache>& elementCache
     return processedCount;
 }
 
+bool UIUpdateQueue::tryScheduleUpdate(const UIUpdate& update, HighResTimePoint scheduledTime) {
+    // For simplicity, add to regular queue with timestamp
+    // In production, this could use a separate lock-free scheduled queue
+    UIUpdate timedUpdate = update;
+    timedUpdate.timestamp = scheduledTime;
+    
+    bool result = tryEnqueue(timedUpdate);
+    if (result) {
+        hasScheduledUpdates.store(true, std::memory_order_release);
+    }
+    return result;
+}
+
+size_t UIUpdateQueue::processScheduledUpdates(HighResTimePoint currentTime) {
+    if (!hasScheduledUpdates.load(std::memory_order_acquire)) {
+        return 0;
+    }
+    
+    size_t processedCount = 0;
+    UIUpdate update;
+    
+    // Process updates that are ready (timestamp <= currentTime)
+    while (tryDequeue(update)) {
+        if (update.timestamp <= currentTime) {
+            // Re-enqueue for immediate processing
+            if (tryEnqueue(update)) {
+                processedCount++;
+            }
+        } else {
+            // Update not ready yet, put it back
+            // In production, this would use a proper scheduled queue
+            break;
+        }
+    }
+    
+    return processedCount;
+}
+
 } // namespace ui

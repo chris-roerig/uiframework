@@ -593,7 +593,40 @@ bool UI::realtimeCallback(std::function<void()> callback) {
     return updateQueue->tryEnqueue(update);
 }
 
+// High-resolution timing methods
+bool UI::realtimeSetTextAtTime(const std::string& elementId, const std::string& text, 
+                              std::chrono::high_resolution_clock::time_point when) {
+    ui::UIUpdate update(ui::UIUpdate::SET_TEXT, elementId, when);
+    update.textValue = text;
+    return updateQueue->tryScheduleUpdate(update, when);
+}
+
+bool UI::realtimeSetPositionAtTime(const std::string& elementId, int x, int y,
+                                  std::chrono::high_resolution_clock::time_point when) {
+    ui::UIUpdate update(ui::UIUpdate::SET_POSITION, elementId, when);
+    update.data.position.x = x;
+    update.data.position.y = y;
+    return updateQueue->tryScheduleUpdate(update, when);
+}
+
+bool UI::realtimeSetValueAtTime(const std::string& elementId, float value,
+                               std::chrono::high_resolution_clock::time_point when) {
+    ui::UIUpdate update(ui::UIUpdate::SET_VALUE, elementId, when);
+    update.data.floatValue.value = value;
+    return updateQueue->tryScheduleUpdate(update, when);
+}
+
+bool UI::realtimeSetVisibilityAtTime(const std::string& elementId, bool visible,
+                                    std::chrono::high_resolution_clock::time_point when) {
+    ui::UIUpdate update(ui::UIUpdate::SET_VISIBILITY, elementId, when);
+    update.data.visibility.visible = visible;
+    return updateQueue->tryScheduleUpdate(update, when);
+}
+
 void UI::processRealtimeUpdates() {
+    // Process scheduled updates first
+    updateQueue->processScheduledUpdates();
+    
     // Use memory-predictable processing for deterministic performance
     size_t processedCount = updateQueue->processPredictable(elementCache);
     

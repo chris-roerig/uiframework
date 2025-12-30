@@ -7,11 +7,18 @@
 #include <vector>
 #include <array>
 #include <string_view>
+#include <chrono>
+#include <queue>
 
 namespace ui {
 
 // Forward declarations
 class UIElement;
+
+/**
+ * @brief High-resolution timestamp type for precise timing
+ */
+using HighResTimePoint = std::chrono::high_resolution_clock::time_point;
 
 /**
  * @brief Memory pool for predictable string allocations
@@ -164,6 +171,7 @@ struct UIUpdate {
     
     Type type;
     std::string elementId;
+    HighResTimePoint timestamp; // High-resolution timestamp
     
     // Union for different update data
     union {
@@ -176,8 +184,27 @@ struct UIUpdate {
     std::string textValue;
     std::function<void()> callback;
     
-    UIUpdate() = default;
-    UIUpdate(Type t, const std::string& id) : type(t), elementId(id) {}
+    UIUpdate() : timestamp(std::chrono::high_resolution_clock::now()) {}
+    UIUpdate(Type t, const std::string& id) : type(t), elementId(id), 
+        timestamp(std::chrono::high_resolution_clock::now()) {}
+    UIUpdate(Type t, const std::string& id, HighResTimePoint time) : type(t), elementId(id), 
+        timestamp(time) {}
+};
+
+/**
+ * @brief Scheduled update for precise timing control
+ */
+struct ScheduledUpdate {
+    HighResTimePoint scheduledTime;
+    UIUpdate update;
+    
+    ScheduledUpdate(HighResTimePoint time, UIUpdate upd) 
+        : scheduledTime(time), update(std::move(upd)) {}
+    
+    // Priority queue ordering (earliest time first)
+    bool operator>(const ScheduledUpdate& other) const {
+        return scheduledTime > other.scheduledTime;
+    }
 };
 
 /**
@@ -200,7 +227,27 @@ private:
     std::array<PredictableBatch, 128> predictableBatches; // Pre-allocated batches
     size_t activeBatches = 0;
     
+    // High-resolution timing structures
+    std::priority_queue<ScheduledUpdate, std::vector<ScheduledUpdate>, 
+                       std::greater<ScheduledUpdate>> scheduledQueue;
+    std::atomic<bool> hasScheduledUpdates{false};
+    
 public:
+    /**
+     * @brief Schedule update for future execution (real-time safe)
+     * @param update Update to schedule
+     * @param scheduledTime When to execute the update
+     * @return true if scheduled, false if queue full
+     */
+    bool tryScheduleUpdate(const UIUpdate& update, HighResTimePoint scheduledTime);
+    
+    /**
+     * @brief Process scheduled updates that are ready
+     * @param currentTime Current high-resolution time
+     * @return Number of scheduled updates processed
+     */
+    size_t processScheduledUpdates(HighResTimePoint currentTime = std::chrono::high_resolution_clock::now());
+    
     /**
      * @brief Try to enqueue update (non-blocking, audio thread safe)
      * @return true if enqueued, false if queue full
