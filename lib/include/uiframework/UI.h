@@ -260,6 +260,7 @@ class UI {
                                                                std::function<void(char)> callback);
     std::shared_ptr<ui::CycleList> createCycleList(int x, int y, int width, int height,
                                                    const std::vector<std::string>& items);
+    std::shared_ptr<ui::TabbedPanel> createTabbedPanel(int x, int y, int width, int height);
 
     // Backward compatibility methods (deprecated - will be removed in future versions)
     [[deprecated("Use createLabel instead")]]

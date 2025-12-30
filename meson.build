@@ -36,6 +36,7 @@ common_sources = [
   'lib/src/Slider.cpp',
   'lib/src/VirtualKeyboard.cpp',
   'lib/src/UIElements/CycleList.cpp',
+  'lib/src/UIElements/TabbedPanel.cpp',
   'lib/src/LayoutContainer.cpp',
   'lib/src/Layout.cpp',
   'lib/src/VBoxLayout.cpp',

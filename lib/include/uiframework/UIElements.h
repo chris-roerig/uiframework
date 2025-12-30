@@ -19,3 +19,4 @@
 #include "uiframework/UIElements/Slider.h"
 #include "uiframework/UIElements/VirtualKeyboard.h"
 #include "uiframework/UIElements/CycleList.h"
+#include "uiframework/UIElements/TabbedPanel.h"

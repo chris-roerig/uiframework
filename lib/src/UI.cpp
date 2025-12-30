@@ -155,6 +155,11 @@ std::shared_ptr<ui::CycleList> UI::createCycleList(int x, int y, int width, int 
     return registerElement(cycleList);
 }
 
+std::shared_ptr<ui::TabbedPanel> UI::createTabbedPanel(int x, int y, int width, int height) {
+    auto tabbedPanel = std::make_shared<ui::TabbedPanel>(x, y, width, height);
+    return registerElement(tabbedPanel);
+}
+
 // --- Modal Methods ---
 
 std::shared_ptr<ui::Modal> UI::createModal(const std::string& message,
