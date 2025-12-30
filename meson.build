@@ -81,6 +81,14 @@ executable('dsl_demo',
   install : false
 )
 
+# Focus cycling demo
+executable('focus_demo',
+  sources : ['examples/focus_demo.cpp'] + common_sources,
+  dependencies : [sdl2_dep, ttf_dep, sdl2_image_dep],
+  include_directories : ['lib/include'],
+  install : false
+)
+
 
 # Static analysis targets
 run_target('static-analysis',
