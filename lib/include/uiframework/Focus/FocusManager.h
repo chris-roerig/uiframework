@@ -77,6 +77,9 @@ public:
     void processPendingFocusChanges();
     void processPendingCallbacks();
     
+    // Memory management
+    void cleanupExpiredElements();
+    
     // Utility methods
     bool hasFocusedElement() const;
     bool isElementFocusable(const std::string& elementId) const;

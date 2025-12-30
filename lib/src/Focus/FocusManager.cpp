@@ -186,12 +186,27 @@ bool FocusManager::isElementFocusable(const std::string& elementId) const {
 std::vector<std::string> FocusManager::getFocusableElementIds() const {
     // Note: This method assumes the mutex is already held by the caller
     std::vector<std::string> focusableIds;
+    std::vector<std::string> expiredIds;
+    
     for (const auto& pair : elementRegistry) {
         auto element = pair.second.lock();
-        if (element && element->isInteractive() && element->isVisible()) {
-            focusableIds.push_back(pair.first);
+        if (element) {
+            if (element->isInteractive() && element->isVisible()) {
+                focusableIds.push_back(pair.first);
+            }
+        } else {
+            expiredIds.push_back(pair.first);
         }
     }
+    
+    // Clean up expired entries (const_cast needed for cleanup in const method)
+    if (!expiredIds.empty()) {
+        auto& mutableRegistry = const_cast<std::unordered_map<std::string, std::weak_ptr<UIElement>>&>(elementRegistry);
+        for (const auto& expiredId : expiredIds) {
+            mutableRegistry.erase(expiredId);
+        }
+    }
+    
     return focusableIds;
 }
 
@@ -310,6 +325,19 @@ bool FocusManager::isElementInActiveGroup(const std::string& elementId) const {
     }
     
     return true;
+}
+
+void FocusManager::cleanupExpiredElements() {
+    std::lock_guard<std::mutex> lock(focusMutex);
+    
+    auto it = elementRegistry.begin();
+    while (it != elementRegistry.end()) {
+        if (it->second.expired()) {
+            it = elementRegistry.erase(it);
+        } else {
+            ++it;
+        }
+    }
 }
 
 } // namespace ui
