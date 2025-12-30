@@ -15,10 +15,28 @@ class UIElement;
 
 /**
  * @class FocusManager
- * @brief Centralized focus management for UI elements
+ * @brief Centralized focus management for UI elements with full thread safety
  * 
  * Handles focus tracking, tab order, keyboard navigation, and focus events
  * in a thread-safe manner. Extracted from UICore for better separation of concerns.
+ * All public methods are thread-safe and can be called from any thread.
+ *
+ * @section thread_safety Thread Safety Guarantees
+ *
+ * **ALL PUBLIC METHODS ARE THREAD-SAFE:**
+ * - Element registration: registerElement, unregisterElement
+ * - Focus management: setFocus, getFocusedElementId, clearFocus
+ * - Navigation: focusNext, focusPrevious
+ * - Focus order: setFocusOrder, getFocusOrder
+ * - Focus groups: createFocusGroup, setActiveFocusGroup, trapFocus, etc.
+ * - Callback management: queueCallback, processPendingFocusChanges
+ * - Memory management: cleanupExpiredElements
+ *
+ * **IMPLEMENTATION:**
+ * - Single focusMutex protects all internal state
+ * - Pending operations are queued for safe processing
+ * - Automatic cleanup of expired weak_ptr references
+ * - Lock-free fast paths where possible with try_lock
  */
 class FocusManager {
 private:

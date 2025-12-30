@@ -37,6 +37,33 @@ namespace ui {
         void loadFont(const std::string& fontPath, int fontSize);
     };
 
+    /**
+     * @class UICore
+     * @brief Core UI framework implementation with thread-safe element and resource management
+     *
+     * UICore provides the low-level implementation for the UI framework, handling
+     * SDL resources, element management, theme management, and focus coordination.
+     * All public methods are thread-safe unless explicitly noted.
+     *
+     * @section thread_safety Thread Safety Implementation
+     *
+     * **THREAD-SAFE METHODS** (protected by internal mutexes):
+     * - Element management: addElement, removeElement, getElement
+     * - Theme management: setTheme, getTheme
+     * - Hotkey management: assignHotKey, removeHotKey
+     * - Focus management: all focus-related operations (delegated to FocusManager)
+     * - Utility methods: getWidth, getHeight, getRenderer, etc.
+     *
+     * **MUTEX PROTECTION:**
+     * - elementsMutex: Protects elements vector and maps
+     * - themeMutex: Protects theme operations
+     * - hotKeysMutex: Protects hotkey assignments
+     * - FocusManager has its own focusMutex for focus operations
+     *
+     * **NOT THREAD-SAFE** (main thread only):
+     * - Constructor and destructor
+     * - Event processing and rendering operations
+     */
     class UICore {
     private:
         std::unique_ptr<SDLResources> resources;

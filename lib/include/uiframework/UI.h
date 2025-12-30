@@ -39,6 +39,28 @@
  * - Layout management system (VBox, HBox, Grid)
  * - Performance optimizations (texture caching, font caching)
  *
+ * @section thread_safety Thread Safety Guarantees
+ *
+ * **THREAD-SAFE METHODS** (can be called from any thread):
+ * - All widget creation methods (createButton, createLabel, etc.)
+ * - Element management (removeElement, getElement, addElement)
+ * - Focus management (setFocus, focusNext, focusPrevious, etc.)
+ * - Hotkey management (assignHotKey)
+ * - Modal creation (createModal, createConfirmModal, createInfoModal)
+ * - Layout creation (createVBoxLayout, createHBoxLayout, createGridLayout)
+ * - Theme management (setTheme)
+ * - Utility methods (getWidth, getHeight)
+ *
+ * **NOT THREAD-SAFE** (must be called from main thread only):
+ * - run() - Main event loop, blocks until window closes
+ * - Constructor and destructor
+ *
+ * **IMPLEMENTATION DETAILS:**
+ * - Internal mutexes protect all shared state (elements, themes, hotkeys, focus)
+ * - Widget creation is atomic and returns fully initialized objects
+ * - Element removal is synchronized and handles focus cleanup automatically
+ * - Focus operations are queued and processed safely during event loop
+ *
  * @example
  * @code
  * try {
