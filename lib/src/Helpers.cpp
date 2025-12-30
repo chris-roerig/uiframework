@@ -1,6 +1,7 @@
 #include "uiframework/Helpers.h"
 #include "uiframework/Theme/ThemeGlobals.h"
 #include "uiframework/Theme/ThemeFrameworkDefault.h"  // Add this include
+#include "uiframework/Resources/FontManager.h"
 #include <iostream>
 
 namespace ui {
@@ -13,9 +14,10 @@ namespace ui {
                 std::cerr << "TTF_Init error: " << TTF_GetError() << std::endl;
                 return;
             }
-            globalFont = TTF_OpenFont("Assets/default_font.ttf", 14);
+            // Use embedded font instead of TTF file
+            globalFont = ui::FontManager::getInstance().getFont("", 10);
             if (!globalFont)
-                std::cerr << "TTF_OpenFont error: " << TTF_GetError() << std::endl;
+                std::cerr << "Failed to load embedded font" << std::endl;
         }
     }
     

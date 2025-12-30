@@ -5,6 +5,7 @@
 #include <iostream>
 #include <atomic>
 #include <sstream>
+#include <typeinfo>
 
 namespace ui {
 
@@ -31,7 +32,7 @@ SDLResources::SDLResources(const char* title, int width, int height) {
     SDL_StartTextInput();
     
     // Get default font from FontManager
-    font = ui::FontManager::getInstance().getFont("", 16);
+    font = ui::FontManager::getInstance().getFont("", 10);
     if (!font) {
         std::cerr << "Warning: Could not load default font from FontManager" << std::endl;
     }
@@ -99,13 +100,16 @@ std::string UICore::generateElementId() {
 
 void UICore::validateCoordinates(int x, int y, int w, int h) const {
     if (x < 0 || y < 0) {
-        throw std::invalid_argument("Element coordinates cannot be negative");
+        throw std::invalid_argument("Element coordinates cannot be negative: x=" + std::to_string(x) + ", y=" + std::to_string(y));
     }
     if (w <= 0 || h <= 0) {
-        throw std::invalid_argument("Element dimensions must be positive");
+        throw std::invalid_argument("Element dimensions must be positive: width=" + std::to_string(w) + ", height=" + std::to_string(h));
     }
     if (x + w > width || y + h > height) {
-        throw std::invalid_argument("Element extends beyond window boundaries");
+        throw std::invalid_argument("Element extends beyond window boundaries: element(" + 
+                                  std::to_string(x) + "," + std::to_string(y) + "," + 
+                                  std::to_string(w) + "x" + std::to_string(h) + 
+                                  ") exceeds window(" + std::to_string(width) + "x" + std::to_string(height) + ")");
     }
 }
 
@@ -114,7 +118,23 @@ std::string UICore::addElement(std::shared_ptr<UIElement> element) {
         throw std::invalid_argument("Cannot add null element");
     }
     
-    validateCoordinates(element->x, element->y, element->width, element->height);
+    try {
+        validateCoordinates(element->x, element->y, element->width, element->height);
+    } catch (const std::invalid_argument& e) {
+        // Add element type information to the error
+        std::string elementType = typeid(*element).name();
+        // Clean up the mangled name for common types
+        if (elementType.find("Button") != std::string::npos) elementType = "Button";
+        else if (elementType.find("Label") != std::string::npos) elementType = "Label";
+        else if (elementType.find("TextBox") != std::string::npos) elementType = "TextBox";
+        else if (elementType.find("Canvas") != std::string::npos) elementType = "Canvas";
+        else if (elementType.find("LayoutContainer") != std::string::npos) elementType = "LayoutContainer";
+        else if (elementType.find("ListView") != std::string::npos) elementType = "ListView";
+        else if (elementType.find("ProgressBar") != std::string::npos) elementType = "ProgressBar";
+        else if (elementType.find("Slider") != std::string::npos) elementType = "Slider";
+        
+        throw std::invalid_argument("Element validation failed for " + elementType + ": " + e.what());
+    }
     
     std::lock_guard<std::mutex> lock(elementsMutex);
     

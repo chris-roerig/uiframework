@@ -1,0 +1,4 @@
+1200 800
+Button Button1 50 50 100 30
+Label Label1 200 50 80 25
+TextBox TextBox1 50 100 120 25

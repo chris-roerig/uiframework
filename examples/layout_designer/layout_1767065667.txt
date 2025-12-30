@@ -1,0 +1,26 @@
+1019 600
+VBoxLayout VBoxLayout1 0 0 260 540
+ListView ListView1 10 90 240 440
+HBoxLayout HBoxLayout1 0 540 1020 60
+Button Button7 10 550 100 30
+Button Button8 150 550 100 30
+Canvas Canvas2 270 10 740 350
+Button Button9 270 370 30 30
+Button Button10 310 370 30 30
+Button Button11 350 370 30 30
+Button Button12 390 370 30 30
+Button Button13 270 410 30 30
+Button Button14 310 410 30 30
+Button Button15 350 410 30 30
+Button Button16 390 410 30 30
+Button Button17 270 450 30 30
+Button Button18 310 450 30 30
+Button Button19 350 450 30 30
+Button Button20 390 450 30 30
+Button Button21 270 490 30 30
+Button Button22 310 490 30 30
+Button Button23 350 490 30 30
+Button Button24 390 490 30 30
+OptionSelect OptionSelect2 10 50 240 30
+Button Button25 10 10 120 30
+Button Button26 140 10 110 30
