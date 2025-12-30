@@ -390,6 +390,61 @@ int UI::getHeight() const {
     return core->getHeight();
 }
 
+// Element pooling for high-frequency scenarios
+void UI::enableElementPooling(size_t labelCount, size_t buttonCount) {
+    if (!elementPool) {
+        elementPool = std::make_unique<ui::ElementPool>();
+    }
+    elementPool->preAllocate(labelCount, buttonCount);
+}
+
+std::shared_ptr<ui::Label> UI::createLabelPooled(const std::string& text, int x, int y) {
+    if (!elementPool) {
+        elementPool = std::make_unique<ui::ElementPool>();
+    }
+    
+    auto label = elementPool->acquireLabel();
+    label->setText(text);
+    label->setPosition(x, y);
+    
+    // Register with core but don't use normal creation path
+    core->addElement(label);
+    return label;
+}
+
+std::shared_ptr<ui::Button> UI::createButtonPooled(const std::string& text, int x, int y, 
+                                                   std::function<void()> callback) {
+    if (!elementPool) {
+        elementPool = std::make_unique<ui::ElementPool>();
+    }
+    
+    auto button = elementPool->acquireButton();
+    button->setText(text);
+    button->setPosition(x, y);
+    button->setCallback(callback);
+    
+    // Register with core but don't use normal creation path
+    core->addElement(button);
+    return button;
+}
+
+void UI::releasePooledElement(const std::string& elementId) {
+    if (elementPool) {
+        elementPool->releaseElement(elementId);
+    }
+    // Also remove from core
+    core->removeElement(elementId);
+}
+
+UI::PoolStats UI::getPoolStats() const {
+    if (!elementPool) {
+        return {0, 0, 0, 0};
+    }
+    
+    auto stats = elementPool->getStats();
+    return {stats.labelsAvailable, stats.buttonsAvailable, stats.labelsInUse, stats.buttonsInUse};
+}
+
 // --- Deprecated Methods (for backward compatibility) ---
 
 ui::Label* UI::label(const std::string& text, int x, int y) {

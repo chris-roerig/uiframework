@@ -22,6 +22,7 @@
 #include "uiframework/Layout/GridLayout.h"
 #include "uiframework/Layout/HBoxLayout.h"
 #include "uiframework/Layout/VBoxLayout.h"
+#include "uiframework/Resources/ElementPool.h"
 
 /**
  * @class UI
@@ -82,6 +83,7 @@ class UI {
   private:
     std::unique_ptr<ui::UICore> core;
     std::unordered_map<std::string, int> focusOrderHints;
+    std::unique_ptr<ui::ElementPool> elementPool;
 
     // Helper method to register element and return shared_ptr
     template <typename T>
@@ -424,4 +426,13 @@ class UI {
     // Utility methods
     int getWidth() const;
     int getHeight() const;
+    
+    // Element pooling for high-frequency scenarios (audio instruments, real-time apps)
+    void enableElementPooling(size_t labelCount = 50, size_t buttonCount = 20);
+    std::shared_ptr<ui::Label> createLabelPooled(const std::string& text, int x, int y);
+    std::shared_ptr<ui::Button> createButtonPooled(const std::string& text, int x, int y, 
+                                                   std::function<void()> callback);
+    void releasePooledElement(const std::string& elementId);
+    struct PoolStats { size_t labelsAvailable, buttonsAvailable, labelsInUse, buttonsInUse; };
+    PoolStats getPoolStats() const;
 };

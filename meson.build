@@ -43,6 +43,7 @@ common_sources = [
   'lib/src/VBoxLayout.cpp',
   'lib/src/HBoxLayout.cpp',
   'lib/src/GridLayout.cpp',
+  'lib/src/ElementPool.cpp',
 ]
 
 # Build as shared library
