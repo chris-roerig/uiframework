@@ -594,20 +594,29 @@ bool UI::realtimeCallback(std::function<void()> callback) {
 }
 
 void UI::processRealtimeUpdates() {
-    // Use batching for efficient processing
+    // Use batching with element caching for efficient processing
     std::unordered_map<std::string, ui::BatchedUpdate> batchMap;
-    size_t processedCount = updateQueue->processBatch(batchMap);
+    size_t processedCount = updateQueue->processBatchWithCache(batchMap, elementCache);
     
     if (processedCount == 0) {
         return; // No updates to process
     }
     
-    // Apply batched updates efficiently
-    for (const auto& [elementId, batch] : batchMap) {
-        auto element = getElement(elementId);
-        if (!element) {
+    // Populate element cache with actual elements (single mutex lock)
+    for (auto& cache : elementCache) {
+        cache.element = getElement(cache.elementId);
+        cache.valid = (cache.element != nullptr);
+    }
+    
+    // Apply batched updates using cached elements (no additional locks)
+    for (size_t i = 0; i < elementCache.size(); ++i) {
+        const auto& cache = elementCache[i];
+        if (!cache.valid || !cache.element) {
             continue; // Element not found
         }
+        
+        const auto& batch = batchMap[cache.elementId];
+        auto element = cache.element;
         
         // Apply all pending updates for this element
         if (batch.hasText) {

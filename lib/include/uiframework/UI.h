@@ -86,6 +86,7 @@ class UI {
     std::unordered_map<std::string, int> focusOrderHints;
     std::unique_ptr<ui::ElementPool> elementPool;
     std::unique_ptr<ui::UIUpdateQueue> updateQueue;
+    std::vector<ui::ElementCache> elementCache; // Non-blocking element cache
 
     // Helper method to register element and return shared_ptr
     template <typename T>

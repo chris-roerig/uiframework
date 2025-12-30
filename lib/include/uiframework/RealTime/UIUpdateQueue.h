@@ -4,8 +4,42 @@
 #include <functional>
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 namespace ui {
+
+// Forward declarations
+class UIElement;
+
+/**
+ * @brief Non-blocking element cache for real-time access
+ */
+struct ElementCache {
+    std::string elementId;
+    std::shared_ptr<UIElement> element;
+    bool valid = true;
+    
+    ElementCache() = default;
+    ElementCache(const std::string& id, std::shared_ptr<UIElement> elem) 
+        : elementId(id), element(std::move(elem)) {}
+    
+    // Move constructor and assignment
+    ElementCache(ElementCache&& other) noexcept 
+        : elementId(std::move(other.elementId)), element(std::move(other.element)), valid(other.valid) {}
+    
+    ElementCache& operator=(ElementCache&& other) noexcept {
+        if (this != &other) {
+            elementId = std::move(other.elementId);
+            element = std::move(other.element);
+            valid = other.valid;
+        }
+        return *this;
+    }
+    
+    // Delete copy operations for performance
+    ElementCache(const ElementCache&) = delete;
+    ElementCache& operator=(const ElementCache&) = delete;
+};
 
 /**
  * @brief Batched update state for efficient processing
@@ -94,6 +128,15 @@ public:
      * @brief Check if queue is empty
      */
     bool empty() const;
+    
+    /**
+     * @brief Process all queued updates with batching and element caching
+     * @param batchMap Output map of batched updates by element ID
+     * @param elementCache Cache for non-blocking element access
+     * @return Number of updates processed
+     */
+    size_t processBatchWithCache(std::unordered_map<std::string, BatchedUpdate>& batchMap,
+                                std::vector<ElementCache>& elementCache);
     
     /**
      * @brief Process all queued updates with batching optimization
