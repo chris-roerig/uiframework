@@ -138,7 +138,8 @@ if catch2_dep.found()
       'dev/tests/test_phase1_improvements.cpp',  # Phase 1 improvement tests
       'dev/tests/test_integration.cpp',  # Phase 2 integration tests
       'dev/tests/test_memory_benchmarks.cpp',  # Phase 2 memory benchmarks
-      'dev/tests/test_focus_hints_cleanup.cpp'  # Phase 2 focus hints cleanup test
+      'dev/tests/test_focus_hints_cleanup.cpp',  # Phase 2 focus hints cleanup test
+      'dev/tests/test_coordinate_validation.cpp'  # Phase 3 coordinate validation test
     ] + common_sources,
     dependencies : [sdl2_dep, ttf_dep, sdl2_image_dep, catch2_dep],
     include_directories : ['lib/include'],

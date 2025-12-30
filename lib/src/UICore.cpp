@@ -104,6 +104,12 @@ uint64_t UICore::generateNumericId() {
 }
 
 void UICore::validateCoordinates(int x, int y, int w, int h) const {
+    // Fast path: most common case - valid coordinates
+    if (x >= 0 && y >= 0 && w > 0 && h > 0 && x + w <= width && y + h <= height) {
+        return;
+    }
+    
+    // Slow path: generate detailed error messages only when needed
     if (x < 0 || y < 0) {
         throw std::invalid_argument("Element coordinates cannot be negative: x=" + std::to_string(x) + ", y=" + std::to_string(y));
     }
