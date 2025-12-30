@@ -62,6 +62,10 @@ void Button::handleEvent(const SDL_Event &e) {
             int mouseY = e.button.y;
             if (containsPoint(mouseX, mouseY)) {
                 pressed = true;
+                // Auto-focus on click for consistency with other widgets
+                if (coreRef) {
+                    coreRef->setFocus(elementId);
+                }
             }
         }
     } else if (e.type == SDL_MOUSEBUTTONUP) {

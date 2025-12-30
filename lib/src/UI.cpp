@@ -1,5 +1,6 @@
 #include "uiframework/UI.h"
 #include <iostream>
+#include <algorithm>
 #include "uiframework/ErrorHandling.h"
 #include "uiframework/Theme/ThemeFrameworkDefault.h"
 #include "uiframework/Theme/ThemeMolokai.h"
@@ -36,12 +37,28 @@ std::shared_ptr<ui::Button> UI::createButton(const std::string& text, int x, int
     return registerElement(button);
 }
 
+std::shared_ptr<ui::Button> UI::createButton(const std::string& text, int x, int y,
+                                             std::function<void()> callback, int focusOrder) {
+    auto button = createButton(text, x, y, callback);
+    // Store focus order hint for later use in setFocusOrder
+    focusOrderHints[button->getId()] = focusOrder;
+    return button;
+}
+
 std::shared_ptr<ui::TextBox> UI::createTextBox(const std::string& defaultText, int x, int y,
                                                bool autoHighlight) {
     auto textBox = std::make_shared<ui::TextBox>(x, y, ui::Constants::DEFAULT_TEXTBOX_WIDTH,
                                                  ui::Constants::DEFAULT_TEXTBOX_HEIGHT, defaultText,
                                                  autoHighlight);
     return registerElement(textBox);
+}
+
+std::shared_ptr<ui::TextBox> UI::createTextBox(const std::string& defaultText, int x, int y,
+                                               bool autoHighlight, int focusOrder) {
+    auto textBox = createTextBox(defaultText, x, y, autoHighlight);
+    // Store focus order hint for later use in setFocusOrder
+    focusOrderHints[textBox->getId()] = focusOrder;
+    return textBox;
 }
 
 std::shared_ptr<ui::CheckBox> UI::createCheckBox(bool state, int x, int y,
@@ -257,6 +274,27 @@ void UI::focusPrevious() {
 
 void UI::setFocusOrder(const std::vector<std::string>& elementIds) {
     core->setFocusOrder(elementIds);
+}
+
+void UI::applyFocusOrderHints() {
+    if (focusOrderHints.empty()) return;
+    
+    // Create vector of pairs (elementId, focusOrder) and sort by focusOrder
+    std::vector<std::pair<std::string, int>> sortedHints;
+    for (const auto& hint : focusOrderHints) {
+        sortedHints.emplace_back(hint.first, hint.second);
+    }
+    
+    std::sort(sortedHints.begin(), sortedHints.end(), 
+              [](const auto& a, const auto& b) { return a.second < b.second; });
+    
+    // Extract sorted element IDs
+    std::vector<std::string> sortedIds;
+    for (const auto& hint : sortedHints) {
+        sortedIds.push_back(hint.first);
+    }
+    
+    setFocusOrder(sortedIds);
 }
 
 // --- Core Functionality ---

@@ -15,6 +15,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <unordered_map>
 #include "ErrorHandling.h"
 #include "UICore.h"
 #include "UIElements.h"
@@ -58,6 +59,7 @@
 class UI {
   private:
     std::unique_ptr<ui::UICore> core;
+    std::unordered_map<std::string, int> focusOrderHints;
 
     // Helper method to register element and return shared_ptr
     template <typename T>
@@ -147,6 +149,18 @@ class UI {
      */
     std::shared_ptr<ui::Button> createButton(const std::string& text, int x, int y,
                                              std::function<void()> callback);
+    
+    /**
+     * @brief Creates a button with focus order hint
+     * @param text Button text
+     * @param x X coordinate
+     * @param y Y coordinate  
+     * @param callback Click callback
+     * @param focusOrder Focus order hint (lower = earlier in tab sequence)
+     * @return Shared pointer to the created button
+     */
+    std::shared_ptr<ui::Button> createButton(const std::string& text, int x, int y,
+                                             std::function<void()> callback, int focusOrder);
 
     /**
      * @brief Creates a text input widget
@@ -170,6 +184,18 @@ class UI {
      */
     std::shared_ptr<ui::TextBox> createTextBox(const std::string& defaultText, int x, int y,
                                                bool autoHighlight = true);
+    
+    /**
+     * @brief Creates a text box with focus order hint
+     * @param defaultText Initial text content or placeholder
+     * @param x X coordinate
+     * @param y Y coordinate
+     * @param autoHighlight Auto-select text when focused
+     * @param focusOrder Focus order hint (lower = earlier in tab sequence)
+     * @return Shared pointer to the created text box
+     */
+    std::shared_ptr<ui::TextBox> createTextBox(const std::string& defaultText, int x, int y,
+                                               bool autoHighlight, int focusOrder);
     /**
      * @brief Creates a checkbox widget with state callback
      *
@@ -323,6 +349,12 @@ class UI {
     void focusNext();
     void focusPrevious();
     void setFocusOrder(const std::vector<std::string>& elementIds);
+    
+    /**
+     * @brief Apply focus order based on hints provided during element creation
+     * Automatically sorts elements by their focus order hints and applies the order
+     */
+    void applyFocusOrderHints();
 
     // Modal APIs with better error handling
     std::shared_ptr<ui::Modal> createModal(const std::string& message,
