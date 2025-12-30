@@ -98,6 +98,11 @@ std::string UICore::generateElementId() {
     return oss.str();
 }
 
+uint64_t UICore::generateNumericId() {
+    static std::atomic<uint64_t> counter{1}; // Start from 1, 0 reserved for invalid
+    return counter.fetch_add(1);
+}
+
 void UICore::validateCoordinates(int x, int y, int w, int h) const {
     if (x < 0 || y < 0) {
         throw std::invalid_argument("Element coordinates cannot be negative: x=" + std::to_string(x) + ", y=" + std::to_string(y));
@@ -139,11 +144,15 @@ std::string UICore::addElement(std::shared_ptr<UIElement> element) {
     std::lock_guard<std::mutex> lock(elementsMutex);
     
     std::string id = generateElementId();
+    uint64_t numericId = generateNumericId();
+    
     element->setId(id);
+    element->setNumericId(numericId);
     element->setCoreReference(this);
     
     elements.push_back(element);
     elementsMap[id] = element;
+    numericElementsMap[numericId] = element;
     
     // Register with FocusManager
     focusManager->registerElement(id, element);
@@ -165,6 +174,35 @@ void UICore::removeElement(const std::string& elementId) {
     // Remove from map (O(1))
     elementsMap.erase(mapIt);
     
+    // Remove from numeric map (O(1))
+    numericElementsMap.erase(element->getNumericId());
+    
+    // Remove from vector (O(n) but necessary for render order)
+    elements.erase(
+        std::remove(elements.begin(), elements.end(), element),
+        elements.end()
+    );
+    
+    // Unregister from FocusManager
+    focusManager->unregisterElement(elementId);
+}
+
+void UICore::removeElement(uint64_t numericId) {
+    std::lock_guard<std::mutex> lock(elementsMutex);
+    
+    // O(1) lookup in numeric map
+    auto mapIt = numericElementsMap.find(numericId);
+    if (mapIt == numericElementsMap.end()) {
+        return; // Element not found
+    }
+    
+    auto element = mapIt->second;
+    std::string elementId = element->getId();
+    
+    // Remove from both maps (O(1))
+    numericElementsMap.erase(mapIt);
+    elementsMap.erase(elementId);
+    
     // Remove from vector (O(n) but necessary for render order)
     elements.erase(
         std::remove(elements.begin(), elements.end(), element),
@@ -181,6 +219,14 @@ std::shared_ptr<ui::UIElement> UICore::getElement(const std::string& elementId) 
     // O(1) lookup in map
     auto it = elementsMap.find(elementId);
     return (it != elementsMap.end()) ? it->second : nullptr;
+}
+
+std::shared_ptr<ui::UIElement> UICore::getElement(uint64_t numericId) const {
+    std::lock_guard<std::mutex> lock(elementsMutex);
+    
+    // O(1) lookup in numeric map
+    auto it = numericElementsMap.find(numericId);
+    return (it != numericElementsMap.end()) ? it->second : nullptr;
 }
 
 void UICore::setTheme(std::shared_ptr<ui::Theme> theme) {

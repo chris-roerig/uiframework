@@ -31,6 +31,7 @@ struct TextCacheEntry {
 class UIElement {
 protected:
     std::string elementId;
+    uint64_t numericId = 0; // Performance-optimized numeric ID
     UICore* coreRef = nullptr; // Non-owning reference to core
     mutable std::unordered_map<std::string, std::unique_ptr<TextCacheEntry>> textCache;
     
@@ -73,7 +74,9 @@ public:
     
     // Element management
     const std::string& getId() const { return elementId; }
+    uint64_t getNumericId() const { return numericId; }
     void setId(const std::string& id) { elementId = id; }
+    void setNumericId(uint64_t id) { numericId = id; }
     void setCoreReference(UICore* core) { coreRef = core; }
     
     // Utility methods

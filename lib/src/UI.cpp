@@ -215,8 +215,16 @@ void UI::removeElement(const std::string& elementId) {
     core->removeElement(elementId);
 }
 
+void UI::removeElement(uint64_t numericId) {
+    core->removeElement(numericId);
+}
+
 std::shared_ptr<ui::UIElement> UI::getElement(const std::string& elementId) {
     return core->getElement(elementId);
+}
+
+std::shared_ptr<ui::UIElement> UI::getElement(uint64_t numericId) {
+    return core->getElement(numericId);
 }
 
 // --- Hotkey Management ---

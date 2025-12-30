@@ -330,7 +330,9 @@ class UI {
 
     // Element management
     void removeElement(const std::string& elementId);
+    void removeElement(uint64_t numericId); // Performance version
     std::shared_ptr<ui::UIElement> getElement(const std::string& elementId);
+    std::shared_ptr<ui::UIElement> getElement(uint64_t numericId); // Performance version
 
     // Hotkey management - now uses element IDs instead of raw pointers
     void assignHotKey(const std::string& elementId, const std::string& hotKey);
