@@ -41,6 +41,12 @@ void CycleList::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<T
     
     // Render current value text
     if (!items.empty()) {
+        // Calculate indicator area for text color inversion
+        int segmentWidth = items.size() > 1 ? width / items.size() : 0;
+        int indicatorX = items.size() > 1 ? x + (selectedIndex * segmentWidth) : 0;
+        int indicatorY = y + height - 6;
+        int indicatorHeight = 4;
+        
         auto* textEntry = getCachedText("current_value", items[selectedIndex], 
                                        {colors.textInputText.r, colors.textInputText.g, colors.textInputText.b, colors.textInputText.a}, 
                                        renderer, font);
@@ -49,21 +55,42 @@ void CycleList::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<T
             int textY = y + (height - textEntry->height) / 2;
             SDL_Rect textRect = {textX, textY, textEntry->width, textEntry->height};
             SDL_RenderCopy(renderer, textEntry->texture, nullptr, &textRect);
+            
+            // Render inverted text over indicator area if text overlaps
+            if (items.size() > 1 && textX < indicatorX + segmentWidth && textX + textEntry->width > indicatorX &&
+                textY < indicatorY + indicatorHeight && textY + textEntry->height > indicatorY) {
+                
+                auto* invertedTextEntry = getCachedText("inverted_value", items[selectedIndex], 
+                                                       {colors.textInputBackground.r, colors.textInputBackground.g, colors.textInputBackground.b, colors.textInputBackground.a}, 
+                                                       renderer, font);
+                if (invertedTextEntry && invertedTextEntry->texture) {
+                    // Calculate intersection area
+                    int clipX = std::max(textX, indicatorX);
+                    int clipY = std::max(textY, indicatorY);
+                    int clipW = std::min(textX + textEntry->width, indicatorX + segmentWidth) - clipX;
+                    int clipH = std::min(textY + textEntry->height, indicatorY + indicatorHeight) - clipY;
+                    
+                    if (clipW > 0 && clipH > 0) {
+                        SDL_Rect srcRect = {clipX - textX, clipY - textY, clipW, clipH};
+                        SDL_Rect dstRect = {clipX, clipY, clipW, clipH};
+                        SDL_RenderCopy(renderer, invertedTextEntry->texture, &srcRect, &dstRect);
+                    }
+                }
+            }
         }
     }
     
     // Draw position indicator
     if (items.size() > 1) {
-        int indicatorWidth = 8;
-        int indicatorY = y + height - 4;
+        int segmentWidth = width / items.size();
+        int indicatorX = x + (selectedIndex * segmentWidth);
+        int indicatorY = y + height - 6;
+        int indicatorHeight = 4;
         
-        // Calculate position based on current selection
-        float progress = static_cast<float>(selectedIndex) / (items.size() - 1);
-        int indicatorX = x + static_cast<int>(progress * (width - indicatorWidth));
-        
-        SDL_SetRenderDrawColor(renderer, colors.textInputText.r, colors.textInputText.g, 
-                              colors.textInputText.b, colors.textInputText.a);
-        SDL_Rect indicatorRect = {indicatorX, indicatorY, indicatorWidth, 2};
+        // Draw indicator background with border color
+        SDL_SetRenderDrawColor(renderer, colors.textInputBorderDark.r, colors.textInputBorderDark.g, 
+                              colors.textInputBorderDark.b, colors.textInputBorderDark.a);
+        SDL_Rect indicatorRect = {indicatorX, indicatorY, segmentWidth, indicatorHeight};
         SDL_RenderFillRect(renderer, &indicatorRect);
     }
     
