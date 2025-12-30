@@ -686,3 +686,36 @@ void UI::processRealtimeUpdates() {
         }
     }
 }
+
+// Bulk update methods implementation
+size_t UI::realtimeBulkSetText(const std::vector<std::string>& elementIds, 
+                              const std::vector<std::string>& textValues) {
+    if (!updateQueue) {
+        return 0;
+    }
+    return updateQueue->tryBulkSetText(elementIds, textValues);
+}
+
+size_t UI::realtimeBulkSetPosition(const std::vector<std::string>& elementIds,
+                                  const std::vector<std::pair<int, int>>& positions) {
+    if (!updateQueue) {
+        return 0;
+    }
+    return updateQueue->tryBulkSetPosition(elementIds, positions);
+}
+
+size_t UI::realtimeBulkSetValue(const std::vector<std::string>& elementIds,
+                               const std::vector<float>& values) {
+    if (!updateQueue) {
+        return 0;
+    }
+    return updateQueue->tryBulkSetValue(elementIds, values);
+}
+
+size_t UI::realtimeBulkSetVisibility(const std::vector<std::string>& elementIds,
+                                    const std::vector<bool>& visibility) {
+    if (!updateQueue) {
+        return 0;
+    }
+    return updateQueue->tryBulkSetVisibility(elementIds, visibility);
+}

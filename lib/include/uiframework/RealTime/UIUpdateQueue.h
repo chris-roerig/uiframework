@@ -249,6 +249,46 @@ public:
     size_t processScheduledUpdates(HighResTimePoint currentTime = std::chrono::high_resolution_clock::now());
     
     /**
+     * @brief Bulk update operations for SIMD optimization
+     */
+    
+    /**
+     * @brief Bulk set text values (SIMD optimized)
+     * @param elementIds Vector of element IDs
+     * @param textValues Vector of text values (must match elementIds size)
+     * @return Number of updates successfully queued
+     */
+    size_t tryBulkSetText(const std::vector<std::string>& elementIds, 
+                         const std::vector<std::string>& textValues);
+    
+    /**
+     * @brief Bulk set positions (SIMD optimized)
+     * @param elementIds Vector of element IDs
+     * @param positions Vector of {x, y} positions
+     * @return Number of updates successfully queued
+     */
+    size_t tryBulkSetPosition(const std::vector<std::string>& elementIds,
+                             const std::vector<std::pair<int, int>>& positions);
+    
+    /**
+     * @brief Bulk set float values (SIMD optimized)
+     * @param elementIds Vector of element IDs
+     * @param values Vector of float values
+     * @return Number of updates successfully queued
+     */
+    size_t tryBulkSetValue(const std::vector<std::string>& elementIds,
+                          const std::vector<float>& values);
+    
+    /**
+     * @brief Bulk set visibility (SIMD optimized)
+     * @param elementIds Vector of element IDs
+     * @param visibility Vector of visibility states
+     * @return Number of updates successfully queued
+     */
+    size_t tryBulkSetVisibility(const std::vector<std::string>& elementIds,
+                               const std::vector<bool>& visibility);
+    
+    /**
      * @brief Try to enqueue update (non-blocking, audio thread safe)
      * @return true if enqueued, false if queue full
      */

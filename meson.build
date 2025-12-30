@@ -116,6 +116,14 @@ executable('realtime_batching_demo',
   install : false
 )
 
+# Bulk operations demo (Phase 6)
+executable('bulk_operations_demo',
+  sources : ['examples/bulk_operations_demo.cpp'] + common_sources,
+  dependencies : [sdl2_dep, ttf_dep, sdl2_image_dep],
+  include_directories : ['lib/include'],
+  install : false
+)
+
 
 # Static analysis targets
 run_target('static-analysis',
@@ -163,7 +171,8 @@ if catch2_dep.found()
       'dev/tests/test_batching_system.cpp',  # Phase 2 audio-ready: batching system test
       'dev/tests/test_nonblocking_access.cpp',  # Phase 3 audio-ready: non-blocking access test
       'dev/tests/test_predictable_memory.cpp',  # Phase 4 audio-ready: memory-predictable test
-      'dev/tests/test_timing_support.cpp'  # Phase 5 audio-ready: high-resolution timing test
+      'dev/tests/test_timing_support.cpp',  # Phase 5 audio-ready: high-resolution timing test
+      'dev/tests/test_bulk_operations.cpp'  # Phase 6 bulk updates: SIMD-optimized bulk operations test
     ] + common_sources,
     dependencies : [sdl2_dep, ttf_dep, sdl2_image_dep, catch2_dep],
     include_directories : ['lib/include'],

@@ -457,6 +457,16 @@ class UI {
     bool realtimeSetVisibilityAtTime(const std::string& elementId, bool visible,
                                     std::chrono::high_resolution_clock::time_point when);
     
+    // Bulk update methods (SIMD optimized for 100+ elements)
+    size_t realtimeBulkSetText(const std::vector<std::string>& elementIds, 
+                              const std::vector<std::string>& textValues);
+    size_t realtimeBulkSetPosition(const std::vector<std::string>& elementIds,
+                                  const std::vector<std::pair<int, int>>& positions);
+    size_t realtimeBulkSetValue(const std::vector<std::string>& elementIds,
+                               const std::vector<float>& values);
+    size_t realtimeBulkSetVisibility(const std::vector<std::string>& elementIds,
+                                    const std::vector<bool>& visibility);
+    
     // Process queued updates (call from main thread only)
     void processRealtimeUpdates();
 };

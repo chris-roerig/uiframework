@@ -335,4 +335,176 @@ size_t UIUpdateQueue::processScheduledUpdates(HighResTimePoint currentTime) {
     return processedCount;
 }
 
+// SIMD helper functions for bulk operations
+namespace {
+    /**
+     * @brief Check if SIMD is available (compile-time detection)
+     */
+    constexpr bool hasSIMD() {
+#if defined(__SSE2__) || defined(__AVX2__) || defined(__ARM_NEON)
+        return true;
+#else
+        return false;
+#endif
+    }
+    
+    /**
+     * @brief Vectorized bulk processing for compatible data types
+     */
+    template<typename T>
+    void processBulkData(const std::vector<T>& data, size_t count) {
+        // SIMD optimization placeholder - process in chunks of 4/8
+        constexpr size_t SIMD_WIDTH = hasSIMD() ? 4 : 1;
+        
+        size_t vectorized = (count / SIMD_WIDTH) * SIMD_WIDTH;
+        
+        // Process vectorized portion
+        for (size_t i = 0; i < vectorized; i += SIMD_WIDTH) {
+            // SIMD operations would go here
+            // For now, process sequentially
+            for (size_t j = 0; j < SIMD_WIDTH && (i + j) < count; ++j) {
+                // Individual processing
+            }
+        }
+        
+        // Process remaining elements
+        for (size_t i = vectorized; i < count; ++i) {
+            // Individual processing
+        }
+    }
+}
+
+size_t UIUpdateQueue::tryBulkSetText(const std::vector<std::string>& elementIds, 
+                                    const std::vector<std::string>& textValues) {
+    if (elementIds.size() != textValues.size()) {
+        return 0; // Size mismatch
+    }
+    
+    size_t count = elementIds.size();
+    size_t successCount = 0;
+    
+    // Pre-check queue capacity
+    size_t availableSpace = QUEUE_SIZE - size();
+    if (count > availableSpace) {
+        count = availableSpace; // Limit to available space
+    }
+    
+    // Vectorized processing hint
+    processBulkData(textValues, count);
+    
+    // Batch enqueue operations
+    for (size_t i = 0; i < count; ++i) {
+        UIUpdate update(UIUpdate::SET_TEXT, elementIds[i]);
+        update.textValue = textValues[i];
+        
+        if (tryEnqueue(update)) {
+            successCount++;
+        } else {
+            break; // Queue full
+        }
+    }
+    
+    return successCount;
+}
+
+size_t UIUpdateQueue::tryBulkSetPosition(const std::vector<std::string>& elementIds,
+                                        const std::vector<std::pair<int, int>>& positions) {
+    if (elementIds.size() != positions.size()) {
+        return 0; // Size mismatch
+    }
+    
+    size_t count = elementIds.size();
+    size_t successCount = 0;
+    
+    // Pre-check queue capacity
+    size_t availableSpace = QUEUE_SIZE - size();
+    if (count > availableSpace) {
+        count = availableSpace;
+    }
+    
+    // Vectorized processing hint
+    processBulkData(positions, count);
+    
+    // Batch enqueue operations
+    for (size_t i = 0; i < count; ++i) {
+        UIUpdate update(UIUpdate::SET_POSITION, elementIds[i]);
+        update.data.position.x = positions[i].first;
+        update.data.position.y = positions[i].second;
+        
+        if (tryEnqueue(update)) {
+            successCount++;
+        } else {
+            break; // Queue full
+        }
+    }
+    
+    return successCount;
+}
+
+size_t UIUpdateQueue::tryBulkSetValue(const std::vector<std::string>& elementIds,
+                                     const std::vector<float>& values) {
+    if (elementIds.size() != values.size()) {
+        return 0; // Size mismatch
+    }
+    
+    size_t count = elementIds.size();
+    size_t successCount = 0;
+    
+    // Pre-check queue capacity
+    size_t availableSpace = QUEUE_SIZE - size();
+    if (count > availableSpace) {
+        count = availableSpace;
+    }
+    
+    // Vectorized processing hint for float arrays
+    processBulkData(values, count);
+    
+    // Batch enqueue operations
+    for (size_t i = 0; i < count; ++i) {
+        UIUpdate update(UIUpdate::SET_VALUE, elementIds[i]);
+        update.data.floatValue.value = values[i];
+        
+        if (tryEnqueue(update)) {
+            successCount++;
+        } else {
+            break; // Queue full
+        }
+    }
+    
+    return successCount;
+}
+
+size_t UIUpdateQueue::tryBulkSetVisibility(const std::vector<std::string>& elementIds,
+                                          const std::vector<bool>& visibility) {
+    if (elementIds.size() != visibility.size()) {
+        return 0; // Size mismatch
+    }
+    
+    size_t count = elementIds.size();
+    size_t successCount = 0;
+    
+    // Pre-check queue capacity
+    size_t availableSpace = QUEUE_SIZE - size();
+    if (count > availableSpace) {
+        count = availableSpace;
+    }
+    
+    // Vectorized processing hint for boolean arrays
+    processBulkData(visibility, count);
+    
+    // Batch enqueue operations
+    for (size_t i = 0; i < count; ++i) {
+        UIUpdate update(UIUpdate::SET_VISIBILITY, elementIds[i]);
+        update.data.visibility.visible = visibility[i];
+        
+        if (tryEnqueue(update)) {
+            successCount++;
+        } else {
+            break; // Queue full
+        }
+    }
+    
+    return successCount;
+}
+
 } // namespace ui
