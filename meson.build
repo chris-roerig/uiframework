@@ -110,6 +110,7 @@ if catch2_dep.found()
       'dev/tests/test_slider.cpp',
       'dev/tests/test_virtualkeyboard.cpp',
       'dev/tests/test_cyclelist.cpp',
+      'dev/tests/test_tabbedpanel.cpp',
       'dev/tests/test_layout.cpp',  # Layout tests re-enabled after fixes
       'dev/tests/test_threading_improvements.cpp',
       'dev/tests/test_performance_benchmarks.cpp',  # New threading and performance tests

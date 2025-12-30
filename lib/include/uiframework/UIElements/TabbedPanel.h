@@ -16,7 +16,7 @@ struct Tab {
 class TabbedPanel : public UIElement {
 private:
     std::vector<Tab> tabs;
-    int activeTabIndex = 0;
+    int activeTabIndex = -1;  // No active tab initially
     int tabHeight = 25;
     std::function<void(int)> onTabChange;
     

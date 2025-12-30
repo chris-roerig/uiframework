@@ -46,7 +46,7 @@ void TabbedPanel::renderTabs(SDL_Renderer* renderer, TTF_Font* font, std::shared
     
     for (size_t i = 0; i < tabs.size(); ++i) {
         int tabX = x + (i * tabWidth);
-        bool isActive = (i == activeTabIndex);
+        bool isActive = (activeTabIndex >= 0 && i == static_cast<size_t>(activeTabIndex));
         
         // Draw tab background
         if (isActive) {
@@ -103,11 +103,13 @@ void TabbedPanel::handleEvent(const SDL_Event &e) {
 int TabbedPanel::addTab(const std::string& title) {
     Tab newTab;
     newTab.title = title;
-    newTab.active = tabs.empty(); // First tab is active by default
+    newTab.active = false;
     tabs.push_back(newTab);
     
     if (tabs.size() == 1) {
-        activeTabIndex = 0;
+        activeTabIndex = 0;  // First tab becomes active
+        tabs[0].active = true;
+        updateChildVisibility();
     }
     
     return tabs.size() - 1;
@@ -140,7 +142,7 @@ void TabbedPanel::setActiveTab(int tabIndex) {
 
 void TabbedPanel::updateChildVisibility() {
     for (size_t i = 0; i < tabs.size(); ++i) {
-        bool shouldBeVisible = (i == activeTabIndex);
+        bool shouldBeVisible = (activeTabIndex >= 0 && i == static_cast<size_t>(activeTabIndex));
         for (auto& child : tabs[i].children) {
             child->setVisible(shouldBeVisible);
         }
