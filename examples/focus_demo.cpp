@@ -11,22 +11,9 @@ private:
     
 public:
     FocusDemo() : ui("Focus Cycling Demo", 800, 600) {
-        // Create a dummy element to assign global hotkeys to
-        auto dummyLabel = ui.createLabel("", 0, 0);
-        
-        // Use assignHotKey with custom callbacks for global focus cycling
-        ui.assignHotKey(dummyLabel, "Tab", [this]() {
-            focusNext();
-        });
-        
-        ui.assignHotKey(dummyLabel, "`", [this]() {
-            focusPrevious();
-        });
-        
-        ui.assignHotKey(dummyLabel, "Escape", []() {
-            std::cout << "ESC pressed - exiting demo" << std::endl;
-            exit(0);
-        });
+        // The assignHotKey API doesn't work well for Tab keys
+        // We'll need to handle this differently - let's create a simple demo first
+        // and then add custom event handling
     }
     
     void addFocusableElement(std::shared_ptr<ui::UIElement> element) {
@@ -34,6 +21,7 @@ public:
         if (currentFocusIndex == -1) {
             currentFocusIndex = 0;
             ui.setFocus(element);
+            std::cout << "Initial focus set to element 1" << std::endl;
         }
     }
     
@@ -64,6 +52,7 @@ public:
             for (size_t i = 0; i < focusableElements.size(); ++i) {
                 if (focusableElements[i]->getId() == focusedId) {
                     currentFocusIndex = static_cast<int>(i);
+                    std::cout << "Focus updated to element " << currentFocusIndex + 1 << " via mouse click" << std::endl;
                     break;
                 }
             }
@@ -71,62 +60,59 @@ public:
     }
     
     void setupElements() {
-        // Row 1: Buttons
-        auto button1 = ui.createButton("Button 1", 50, 50, []() {
-            std::cout << "Button 1 clicked!" << std::endl;
-        });
-        auto button2 = ui.createButton("Button 2", 200, 50, []() {
-            std::cout << "Button 2 clicked!" << std::endl;
-        });
-        auto button3 = ui.createButton("Button 3", 350, 50, []() {
-            std::cout << "Button 3 clicked!" << std::endl;
-        });
-        
-        // Row 2: Text inputs (correct API - no width/height parameters)
-        auto textbox1 = ui.createTextBox("Enter text 1", 50, 120);
+        // Row 1: TextBoxes (these auto-focus on click)
+        auto textbox1 = ui.createTextBox("Text 1", 50, 50);
         textbox1->setSize(140, 30);
-        auto textbox2 = ui.createTextBox("Enter text 2", 200, 120);
+        auto textbox2 = ui.createTextBox("Text 2", 200, 50);
         textbox2->setSize(140, 30);
-        auto textbox3 = ui.createTextBox("Enter text 3", 350, 120);
+        auto textbox3 = ui.createTextBox("Text 3", 350, 50);
         textbox3->setSize(140, 30);
         
-        // Row 3: Checkboxes (need callback functions)
-        auto checkbox1 = ui.createCheckBox(false, 50, 190, [](bool checked) {
+        // Row 2: More TextBoxes
+        auto textbox4 = ui.createTextBox("Text 4", 50, 100);
+        textbox4->setSize(140, 30);
+        auto textbox5 = ui.createTextBox("Text 5", 200, 100);
+        textbox5->setSize(140, 30);
+        auto textbox6 = ui.createTextBox("Text 6", 350, 100);
+        textbox6->setSize(140, 30);
+        
+        // Row 3: Checkboxes (these auto-focus on click)
+        auto checkbox1 = ui.createCheckBox(false, 50, 150, [](bool checked) {
             std::cout << "Option 1: " << (checked ? "checked" : "unchecked") << std::endl;
         });
-        auto checkbox2 = ui.createCheckBox(false, 200, 190, [](bool checked) {
+        auto checkbox2 = ui.createCheckBox(false, 200, 150, [](bool checked) {
             std::cout << "Option 2: " << (checked ? "checked" : "unchecked") << std::endl;
         });
-        auto checkbox3 = ui.createCheckBox(false, 350, 190, [](bool checked) {
+        auto checkbox3 = ui.createCheckBox(false, 350, 150, [](bool checked) {
             std::cout << "Option 3: " << (checked ? "checked" : "unchecked") << std::endl;
         });
         
-        // Row 4: Sliders (use HSlider)
-        auto slider1 = ui.createHSlider(50, 260, 140, 20, 0.0f, 100.0f, 25.0f);
-        auto slider2 = ui.createHSlider(200, 260, 140, 20, 0.0f, 100.0f, 50.0f);
-        auto slider3 = ui.createHSlider(350, 260, 140, 20, 0.0f, 100.0f, 75.0f);
+        // Row 4: Sliders (these auto-focus on click)
+        auto slider1 = ui.createHSlider(50, 200, 140, 20, 0.0f, 100.0f, 25.0f);
+        auto slider2 = ui.createHSlider(200, 200, 140, 20, 0.0f, 100.0f, 50.0f);
+        auto slider3 = ui.createHSlider(350, 200, 140, 20, 0.0f, 100.0f, 75.0f);
         
-        // Row 5: CycleList and TabbedPanel
+        // Row 5: CycleList and TabbedPanel (these auto-focus on click)
         std::vector<std::string> cycleItems = {"Item A", "Item B", "Item C", "Item D"};
-        auto cycleList = ui.createCycleList(50, 330, 140, 30, cycleItems);
+        auto cycleList = ui.createCycleList(50, 250, 140, 30, cycleItems);
         
-        auto tabbedPanel = ui.createTabbedPanel(200, 330, 300, 150);
-        int tab1 = tabbedPanel->addTab("Tab 1");
-        int tab2 = tabbedPanel->addTab("Tab 2");
-        int tab3 = tabbedPanel->addTab("Tab 3");
+        auto tabbedPanel = ui.createTabbedPanel(200, 250, 300, 150);
+        tabbedPanel->addTab("Tab 1");
+        tabbedPanel->addTab("Tab 2");
+        tabbedPanel->addTab("Tab 3");
         
         // Add labels for checkboxes
-        ui.createLabel("Option 1", 70, 190);
-        ui.createLabel("Option 2", 220, 190);
-        ui.createLabel("Option 3", 370, 190);
+        ui.createLabel("Option 1", 70, 150);
+        ui.createLabel("Option 2", 220, 150);
+        ui.createLabel("Option 3", 370, 150);
         
         // Add elements to focus order
-        addFocusableElement(button1);
-        addFocusableElement(button2);
-        addFocusableElement(button3);
         addFocusableElement(textbox1);
         addFocusableElement(textbox2);
         addFocusableElement(textbox3);
+        addFocusableElement(textbox4);
+        addFocusableElement(textbox5);
+        addFocusableElement(textbox6);
         addFocusableElement(checkbox1);
         addFocusableElement(checkbox2);
         addFocusableElement(checkbox3);
@@ -137,23 +123,31 @@ public:
         addFocusableElement(tabbedPanel);
         
         // Add instructions labels
-        ui.createLabel("=== FOCUS CYCLING DEMO ===", 50, 500);
-        ui.createLabel("TAB: Focus next element", 50, 520);
-        ui.createLabel("` (backtick): Focus previous element", 50, 540);
-        ui.createLabel("ESC: Exit demo", 50, 560);
-        ui.createLabel("Mouse click: Focus element directly", 400, 520);
-        ui.createLabel("Total focusable elements: " + std::to_string(focusableElements.size()), 400, 540);
+        ui.createLabel("=== FOCUS CYCLING DEMO ===", 50, 420);
+        ui.createLabel("Click elements to focus them (yellow border)", 50, 440);
+        ui.createLabel("Press 'n' for next element", 50, 460);
+        ui.createLabel("Press 'p' for previous element", 50, 480);
+        ui.createLabel("Total focusable elements: " + std::to_string(focusableElements.size()), 400, 460);
     }
     
     void run() {
         setupElements();
         
         std::cout << "=== Focus Cycling Demo ===" << std::endl;
-        std::cout << "TAB: Focus next element" << std::endl;
-        std::cout << "` (backtick): Focus previous element" << std::endl;
-        std::cout << "ESC: Exit demo" << std::endl;
-        std::cout << "Mouse click: Focus element directly" << std::endl;
+        std::cout << "Click elements to focus them (yellow border)" << std::endl;
+        std::cout << "Press 'n' for next element" << std::endl;
+        std::cout << "Press 'p' for previous element" << std::endl;
+        std::cout << "All elements auto-focus on click!" << std::endl;
         std::cout << "=========================" << std::endl;
+        
+        // Add simple hotkeys that work with the current system
+        auto dummyLabel = ui.createLabel("", 0, 0);
+        ui.assignHotKey(dummyLabel, "n", [this]() {
+            focusNext();
+        });
+        ui.assignHotKey(dummyLabel, "p", [this]() {
+            focusPrevious();
+        });
         
         // Use the framework's built-in event loop
         ui.run();
