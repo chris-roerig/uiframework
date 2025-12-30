@@ -23,6 +23,7 @@
 #include "uiframework/Layout/HBoxLayout.h"
 #include "uiframework/Layout/VBoxLayout.h"
 #include "uiframework/Resources/ElementPool.h"
+#include "uiframework/RealTime/UIUpdateQueue.h"
 
 /**
  * @class UI
@@ -84,6 +85,7 @@ class UI {
     std::unique_ptr<ui::UICore> core;
     std::unordered_map<std::string, int> focusOrderHints;
     std::unique_ptr<ui::ElementPool> elementPool;
+    std::unique_ptr<ui::UIUpdateQueue> updateQueue;
 
     // Helper method to register element and return shared_ptr
     template <typename T>
@@ -435,4 +437,15 @@ class UI {
     void releasePooledElement(const std::string& elementId);
     struct PoolStats { size_t labelsAvailable, buttonsAvailable, labelsInUse, buttonsInUse; };
     PoolStats getPoolStats() const;
+    
+    // Real-time safe update methods (lock-free, high-frequency safe)
+    bool realtimeSetText(const std::string& elementId, const std::string& text);
+    bool realtimeSetPosition(const std::string& elementId, int x, int y);
+    bool realtimeSetSize(const std::string& elementId, int width, int height);
+    bool realtimeSetValue(const std::string& elementId, float value);
+    bool realtimeSetVisibility(const std::string& elementId, bool visible);
+    bool realtimeCallback(std::function<void()> callback);
+    
+    // Process queued updates (call from main thread only)
+    void processRealtimeUpdates();
 };

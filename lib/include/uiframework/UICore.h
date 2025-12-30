@@ -81,6 +81,9 @@ namespace ui {
         // Focus management (delegated to FocusManager)
         std::unique_ptr<FocusManager> focusManager;
         
+        // Frame callback for external processing
+        std::function<void()> frameCallback;
+        
         bool modalActive = false;
         int width, height;
         
@@ -128,6 +131,9 @@ namespace ui {
         
         // Callback management
         void queueCallback(std::function<void()> callback);
+        
+        // Frame callback for external processing (e.g., audio updates)
+        void setFrameCallback(std::function<void()> callback);
         
         void showQuitConfirmation(bool &quit);
         void run();

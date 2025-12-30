@@ -330,7 +330,11 @@ void UICore::showQuitConfirmation(bool &quit) {
     quit = true; // Simplified for now
 }
 
-void UICore::run() {
+void ui::UICore::setFrameCallback(std::function<void()> callback) {
+    frameCallback = callback;
+}
+
+void ui::UICore::run() {
     if (!resources) {
         throw RenderException("Resources not initialized");
     }
@@ -339,6 +343,11 @@ void UICore::run() {
     SDL_Event e;
     
     while (!quit) {
+        // Call frame callback for external processing (e.g., audio updates)
+        if (frameCallback) {
+            frameCallback();
+        }
+        
         while (SDL_PollEvent(&e)) {
             if (e.type == SDL_QUIT) {
                 showQuitConfirmation(quit);

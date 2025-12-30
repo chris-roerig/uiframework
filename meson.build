@@ -44,6 +44,7 @@ common_sources = [
   'lib/src/HBoxLayout.cpp',
   'lib/src/GridLayout.cpp',
   'lib/src/ElementPool.cpp',
+  'lib/src/RealTime/UIUpdateQueue.cpp',
 ]
 
 # Build as shared library
@@ -99,6 +100,14 @@ executable('focus_groups_demo',
   install : false
 )
 
+# Real-time lock-free demo (Phase 1)
+executable('realtime_lockfree_demo',
+  sources : ['examples/realtime_lockfree_demo.cpp'] + common_sources,
+  dependencies : [sdl2_dep, ttf_dep, sdl2_image_dep],
+  include_directories : ['lib/include'],
+  install : false
+)
+
 
 # Static analysis targets
 run_target('static-analysis',
@@ -141,7 +150,8 @@ if catch2_dep.found()
       'dev/tests/test_memory_benchmarks.cpp',  # Phase 2 memory benchmarks
       'dev/tests/test_focus_hints_cleanup.cpp',  # Phase 2 focus hints cleanup test
       'dev/tests/test_coordinate_validation.cpp',  # Phase 3 coordinate validation test
-      'dev/tests/test_weakptr_cleanup.cpp'  # Phase 4 weak_ptr cleanup test
+      'dev/tests/test_weakptr_cleanup.cpp',  # Phase 4 weak_ptr cleanup test
+      'dev/tests/test_lockfree_queue.cpp'  # Phase 1 audio-ready: lock-free queue test
     ] + common_sources,
     dependencies : [sdl2_dep, ttf_dep, sdl2_image_dep, catch2_dep],
     include_directories : ['lib/include'],

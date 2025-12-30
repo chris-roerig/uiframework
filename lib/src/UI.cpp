@@ -12,6 +12,12 @@ UI::UI(const char* title, int width, int height) {
     try {
         auto defaultTheme = std::make_shared<ui::ThemeFrameworkDefault>();
         core = std::make_unique<ui::UICore>(title, width, height, defaultTheme);
+        updateQueue = std::make_unique<ui::UIUpdateQueue>();
+        
+        // Set up frame callback for realtime update processing
+        core->setFrameCallback([this]() {
+            processRealtimeUpdates();
+        });
     } catch (const ui::UIException& e) {
         std::cerr << "UI initialization failed: " << e.what() << std::endl;
         throw;
@@ -547,4 +553,90 @@ ui::Modal* UI::confirmModal(const std::string& message, std::function<void()> on
 ui::Modal* UI::infoModal(const std::string& message, std::function<void()> onCloseCallback) {
     auto modalPtr = createInfoModal(message, onCloseCallback);
     return modalPtr.get();
+}
+
+// --- Real-Time Safe Update Methods ---
+
+bool UI::realtimeSetText(const std::string& elementId, const std::string& text) {
+    ui::UIUpdate update(ui::UIUpdate::SET_TEXT, elementId);
+    update.textValue = text;
+    return updateQueue->tryEnqueue(update);
+}
+
+bool UI::realtimeSetPosition(const std::string& elementId, int x, int y) {
+    ui::UIUpdate update(ui::UIUpdate::SET_POSITION, elementId);
+    update.data.position = {x, y};
+    return updateQueue->tryEnqueue(update);
+}
+
+bool UI::realtimeSetSize(const std::string& elementId, int width, int height) {
+    ui::UIUpdate update(ui::UIUpdate::SET_SIZE, elementId);
+    update.data.size = {width, height};
+    return updateQueue->tryEnqueue(update);
+}
+
+bool UI::realtimeSetValue(const std::string& elementId, float value) {
+    ui::UIUpdate update(ui::UIUpdate::SET_VALUE, elementId);
+    update.data.floatValue = {value};
+    return updateQueue->tryEnqueue(update);
+}
+
+bool UI::realtimeSetVisibility(const std::string& elementId, bool visible) {
+    ui::UIUpdate update(ui::UIUpdate::SET_VISIBILITY, elementId);
+    update.data.visibility = {visible};
+    return updateQueue->tryEnqueue(update);
+}
+
+bool UI::realtimeCallback(std::function<void()> callback) {
+    ui::UIUpdate update(ui::UIUpdate::CUSTOM_CALLBACK, "");
+    update.callback = callback;
+    return updateQueue->tryEnqueue(update);
+}
+
+void UI::processRealtimeUpdates() {
+    ui::UIUpdate update;
+    while (updateQueue->tryDequeue(update)) {
+        auto element = getElement(update.elementId);
+        if (!element && update.type != ui::UIUpdate::CUSTOM_CALLBACK) {
+            continue; // Element not found
+        }
+        
+        switch (update.type) {
+            case ui::UIUpdate::SET_TEXT:
+                if (auto label = std::dynamic_pointer_cast<ui::Label>(element)) {
+                    label->setText(update.textValue);
+                } else if (auto button = std::dynamic_pointer_cast<ui::Button>(element)) {
+                    button->setText(update.textValue);
+                }
+                break;
+                
+            case ui::UIUpdate::SET_POSITION:
+                element->setPosition(update.data.position.x, update.data.position.y);
+                break;
+                
+            case ui::UIUpdate::SET_SIZE:
+                element->setSize(update.data.size.width, update.data.size.height);
+                break;
+                
+            case ui::UIUpdate::SET_VALUE:
+                if (auto slider = std::dynamic_pointer_cast<ui::HSlider>(element)) {
+                    slider->setValue(update.data.floatValue.value);
+                } else if (auto vslider = std::dynamic_pointer_cast<ui::VSlider>(element)) {
+                    vslider->setValue(update.data.floatValue.value);
+                } else if (auto progress = std::dynamic_pointer_cast<ui::ProgressBar>(element)) {
+                    progress->setProgress(update.data.floatValue.value);
+                }
+                break;
+                
+            case ui::UIUpdate::SET_VISIBILITY:
+                element->setVisible(update.data.visibility.visible);
+                break;
+                
+            case ui::UIUpdate::CUSTOM_CALLBACK:
+                if (update.callback) {
+                    update.callback();
+                }
+                break;
+        }
+    }
 }
