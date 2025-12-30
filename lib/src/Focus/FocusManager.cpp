@@ -178,7 +178,7 @@ bool FocusManager::isElementFocusable(const std::string& elementId) const {
     auto it = elementRegistry.find(elementId);
     if (it != elementRegistry.end()) {
         auto element = it->second.lock();
-        return element && element->isInteractive();
+        return element && element->isInteractive() && element->isVisible();
     }
     return false;
 }
@@ -188,7 +188,7 @@ std::vector<std::string> FocusManager::getFocusableElementIds() const {
     std::vector<std::string> focusableIds;
     for (const auto& pair : elementRegistry) {
         auto element = pair.second.lock();
-        if (element && element->isInteractive()) {
+        if (element && element->isInteractive() && element->isVisible()) {
             focusableIds.push_back(pair.first);
         }
     }
