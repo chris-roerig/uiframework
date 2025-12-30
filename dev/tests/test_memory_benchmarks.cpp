@@ -125,7 +125,7 @@ TEST_CASE("Memory Usage Benchmarks", "[benchmark][memory]") {
                     
                     if (i < 5) {
                         std::vector<std::string> options = {"Option1", "Option2"};
-                        widgets.push_back(ui.createOptionSelect(0, options, i * 40, 130, [](int){}));
+                        widgets.push_back(ui.createOptionSelect(options, 0, i * 40, 130, [](int){}));
                     }
                 }
                 

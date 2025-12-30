@@ -6,7 +6,7 @@ TEST_CASE("OptionSelect creation", "[optionselect]") {
     
     SECTION("OptionSelect creates successfully") {
         std::vector<std::string> options = {"Option 1", "Option 2", "Option 3"};
-        auto optionSelect = ui.createOptionSelect(1, options, 10, 20, [](int){});
+        auto optionSelect = ui.createOptionSelect(options, 1, 10, 20, [](int){});
         
         REQUIRE(optionSelect != nullptr);
         REQUIRE(optionSelect->getSelectedIndex() == 1);
@@ -15,7 +15,7 @@ TEST_CASE("OptionSelect creation", "[optionselect]") {
     
     SECTION("OptionSelect with empty options") {
         std::vector<std::string> options = {};
-        auto optionSelect = ui.createOptionSelect(0, options, 0, 0, [](int){});
+        auto optionSelect = ui.createOptionSelect(options, 0, 0, 0, [](int){});
         
         REQUIRE(optionSelect != nullptr);
         REQUIRE(optionSelect->getSelectedIndex() == -1);
@@ -24,7 +24,7 @@ TEST_CASE("OptionSelect creation", "[optionselect]") {
     
     SECTION("OptionSelect with invalid initial index") {
         std::vector<std::string> options = {"A", "B"};
-        auto optionSelect = ui.createOptionSelect(5, options, 0, 0, [](int){});
+        auto optionSelect = ui.createOptionSelect(options, 5, 0, 0, [](int){});
         
         REQUIRE(optionSelect != nullptr);
         REQUIRE(optionSelect->getSelectedIndex() == 0); // Should default to 0
@@ -36,7 +36,7 @@ TEST_CASE("OptionSelect selection operations", "[optionselect]") {
     
     SECTION("setSelectedIndex and getSelectedIndex") {
         std::vector<std::string> options = {"First", "Second", "Third"};
-        auto optionSelect = ui.createOptionSelect(0, options, 10, 10, [](int){});
+        auto optionSelect = ui.createOptionSelect(options, 0, 10, 10, [](int){});
         
         optionSelect->setSelectedIndex(2);
         REQUIRE(optionSelect->getSelectedIndex() == 2);
@@ -51,7 +51,7 @@ TEST_CASE("OptionSelect selection operations", "[optionselect]") {
         std::vector<std::string> options = {"A", "B", "C"};
         int callbackIndex = -1;
         
-        auto optionSelect = ui.createOptionSelect(0, options, 10, 10, [&callbackIndex](int index) {
+        auto optionSelect = ui.createOptionSelect(options, 0, 10, 10, [&callbackIndex](int index) {
             callbackIndex = index;
         });
         
@@ -65,7 +65,7 @@ TEST_CASE("OptionSelect option management", "[optionselect]") {
     
     SECTION("addOption") {
         std::vector<std::string> options = {"Initial"};
-        auto optionSelect = ui.createOptionSelect(0, options, 10, 10, [](int){});
+        auto optionSelect = ui.createOptionSelect(options, 0, 10, 10, [](int){});
         
         optionSelect->addOption("Added");
         REQUIRE(optionSelect->getSelectedIndex() == 0);
@@ -80,7 +80,7 @@ TEST_CASE("OptionSelect option management", "[optionselect]") {
     
     SECTION("removeOption") {
         std::vector<std::string> options = {"A", "B", "C", "D"};
-        auto optionSelect = ui.createOptionSelect(2, options, 10, 10, [](int){});
+        auto optionSelect = ui.createOptionSelect(options, 2, 10, 10, [](int){});
         
         // Remove option before current selection
         optionSelect->removeOption(0);
@@ -93,7 +93,7 @@ TEST_CASE("OptionSelect option management", "[optionselect]") {
     
     SECTION("setOptions") {
         std::vector<std::string> initial = {"Old1", "Old2"};
-        auto optionSelect = ui.createOptionSelect(1, initial, 10, 10, [](int){});
+        auto optionSelect = ui.createOptionSelect(initial, 1, 10, 10, [](int){});
         
         std::vector<std::string> newOptions = {"New1", "New2", "New3"};
         optionSelect->setOptions(newOptions);
@@ -109,7 +109,7 @@ TEST_CASE("OptionSelect option management", "[optionselect]") {
     
     SECTION("clearOptions") {
         std::vector<std::string> options = {"A", "B"};
-        auto optionSelect = ui.createOptionSelect(1, options, 10, 10, [](int){});
+        auto optionSelect = ui.createOptionSelect(options, 1, 10, 10, [](int){});
         
         optionSelect->clearOptions();
         REQUIRE(optionSelect->getSelectedIndex() == -1);
@@ -122,7 +122,7 @@ TEST_CASE("OptionSelect state management", "[optionselect]") {
     
     SECTION("Expand and collapse") {
         std::vector<std::string> options = {"A", "B"};
-        auto optionSelect = ui.createOptionSelect(0, options, 10, 10, [](int){});
+        auto optionSelect = ui.createOptionSelect(options, 0, 10, 10, [](int){});
         
         REQUIRE_FALSE(optionSelect->isExpanded());
         
@@ -135,7 +135,7 @@ TEST_CASE("OptionSelect state management", "[optionselect]") {
     
     SECTION("Focus loss collapses dropdown") {
         std::vector<std::string> options = {"A", "B"};
-        auto optionSelect = ui.createOptionSelect(0, options, 10, 10, [](int){});
+        auto optionSelect = ui.createOptionSelect(options, 0, 10, 10, [](int){});
         
         optionSelect->expand();
         REQUIRE(optionSelect->isExpanded());

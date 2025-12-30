@@ -250,8 +250,8 @@ class UI {
      * Creates a dropdown menu for selecting from multiple options. Supports
      * keyboard navigation, search, and dynamic option updates.
      *
-     * @param current Index of initially selected option
      * @param options Vector of option strings to display
+     * @param current Index of initially selected option
      * @param x X coordinate in pixels
      * @param y Y coordinate in pixels
      * @param callback Function called when selection changes (receives new index)
@@ -263,34 +263,33 @@ class UI {
      * @example
      * @code
      * std::vector<std::string> themes = {"Dark", "Light", "Auto"};
-     * auto themeSelect = ui.createOptionSelect(0, themes, 10, 170, [&](int index){
+     * auto themeSelect = ui.createOptionSelect(themes, 0, 10, 170, [&](int index){
      *     applyTheme(themes[index]);
      * });
      * @endcode
      */
-    std::shared_ptr<ui::OptionSelect> createOptionSelect(int current,
-                                                         const std::vector<std::string>& options,
-                                                         int x, int y,
+    std::shared_ptr<ui::OptionSelect> createOptionSelect(const std::vector<std::string>& options,
+                                                         int current, int x, int y,
                                                          std::function<void(int)> callback);
     std::shared_ptr<ui::Canvas> createCanvas(int x, int y, int width, int height);
     std::shared_ptr<ui::ContextMenu> createContextMenu(const std::vector<ui::TopMenuItem>& menus);
     std::shared_ptr<ui::ListView> createListView(const std::vector<std::string>& items, int x,
-                                                 int y, int w, int h, int itemHeight = 30);
-    std::shared_ptr<ui::Image> createImage(const std::string& path, int x, int y, int w, int h,
+                                                 int y, int width, int height, int itemHeight = 30);
+    std::shared_ptr<ui::Image> createImage(const std::string& path, int x, int y, int width, int height,
                                            bool stretch = false);
     std::shared_ptr<ui::Image> createImage(const unsigned char* data, size_t dataSize, int x, int y,
-                                           int w, int h, bool stretch = false);
-    std::shared_ptr<ui::Sprite> createSprite(const std::string& path, int x, int y, int w, int h,
+                                           int width, int height, bool stretch = false);
+    std::shared_ptr<ui::Sprite> createSprite(const std::string& path, int x, int y, int width, int height,
                                              bool stretch);
     std::shared_ptr<ui::Sprite> createSprite(const unsigned char* data, size_t dataSize, int x,
-                                             int y, int w, int h, bool stretch);
+                                             int y, int width, int height, bool stretch);
     std::shared_ptr<ui::AnimatedSprite> createAnimatedSprite(const std::string& path, int x, int y,
-                                                             int w, int h, int frameCount,
+                                                             int width, int height, int frameCount,
                                                              Uint32 frameDelay,
                                                              bool stretch = false);
     std::shared_ptr<ui::AnimatedSprite> createAnimatedSprite(const unsigned char* data,
-                                                             size_t dataSize, int x, int y, int w,
-                                                             int h, int frameCount,
+                                                             size_t dataSize, int x, int y, int width,
+                                                             int height, int frameCount,
                                                              Uint32 frameDelay,
                                                              bool stretch = false);
     std::shared_ptr<ui::ProgressBar> createProgressBar(int x, int y, int width, int height,

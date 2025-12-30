@@ -68,9 +68,8 @@ std::shared_ptr<ui::CheckBox> UI::createCheckBox(bool state, int x, int y,
     return registerElement(checkBox);
 }
 
-std::shared_ptr<ui::OptionSelect> UI::createOptionSelect(int current,
-                                                         const std::vector<std::string>& options,
-                                                         int x, int y,
+std::shared_ptr<ui::OptionSelect> UI::createOptionSelect(const std::vector<std::string>& options,
+                                                         int current, int x, int y,
                                                          std::function<void(int)> callback) {
     auto optionSelect = std::make_shared<ui::OptionSelect>(
         x, y, ui::Constants::DEFAULT_OPTIONSELECT_WIDTH, ui::Constants::DEFAULT_OPTIONSELECT_HEIGHT,
@@ -90,48 +89,48 @@ std::shared_ptr<ui::ContextMenu> UI::createContextMenu(const std::vector<ui::Top
 }
 
 std::shared_ptr<ui::ListView> UI::createListView(const std::vector<std::string>& items, int x,
-                                                 int y, int w, int h, int itemHeight) {
-    auto listView = std::make_shared<ui::ListView>(x, y, w, h, items, itemHeight);
+                                                 int y, int width, int height, int itemHeight) {
+    auto listView = std::make_shared<ui::ListView>(x, y, width, height, items, itemHeight);
     return registerElement(listView);
 }
 
-std::shared_ptr<ui::Image> UI::createImage(const std::string& path, int x, int y, int w, int h,
+std::shared_ptr<ui::Image> UI::createImage(const std::string& path, int x, int y, int width, int height,
                                            bool stretch) {
-    auto image = std::make_shared<ui::Image>(x, y, w, h, path, stretch);
+    auto image = std::make_shared<ui::Image>(x, y, width, height, path, stretch);
     return registerElement(image);
 }
 
 std::shared_ptr<ui::Image> UI::createImage(const unsigned char* data, size_t dataSize, int x, int y,
-                                           int w, int h, bool stretch) {
-    auto image = std::make_shared<ui::Image>(x, y, w, h, data, dataSize, stretch);
+                                           int width, int height, bool stretch) {
+    auto image = std::make_shared<ui::Image>(x, y, width, height, data, dataSize, stretch);
     return registerElement(image);
 }
 
-std::shared_ptr<ui::Sprite> UI::createSprite(const std::string& path, int x, int y, int w, int h,
+std::shared_ptr<ui::Sprite> UI::createSprite(const std::string& path, int x, int y, int width, int height,
                                              bool stretch) {
-    auto sprite = std::make_shared<ui::Sprite>(x, y, w, h, path, stretch);
+    auto sprite = std::make_shared<ui::Sprite>(x, y, width, height, path, stretch);
     return registerElement(sprite);
 }
 
 std::shared_ptr<ui::Sprite> UI::createSprite(const unsigned char* data, size_t dataSize, int x,
-                                             int y, int w, int h, bool stretch) {
-    auto sprite = std::make_shared<ui::Sprite>(x, y, w, h, data, dataSize, stretch);
+                                             int y, int width, int height, bool stretch) {
+    auto sprite = std::make_shared<ui::Sprite>(x, y, width, height, data, dataSize, stretch);
     return registerElement(sprite);
 }
 
 std::shared_ptr<ui::AnimatedSprite> UI::createAnimatedSprite(const std::string& path, int x, int y,
-                                                             int w, int h, int frameCount,
+                                                             int width, int height, int frameCount,
                                                              Uint32 frameDelay, bool stretch) {
     auto animatedSprite =
-        std::make_shared<ui::AnimatedSprite>(x, y, w, h, path, frameCount, frameDelay, stretch);
+        std::make_shared<ui::AnimatedSprite>(x, y, width, height, path, frameCount, frameDelay, stretch);
     return registerElement(animatedSprite);
 }
 
 std::shared_ptr<ui::AnimatedSprite> UI::createAnimatedSprite(const unsigned char* data,
-                                                             size_t dataSize, int x, int y, int w,
-                                                             int h, int frameCount,
+                                                             size_t dataSize, int x, int y, int width,
+                                                             int height, int frameCount,
                                                              Uint32 frameDelay, bool stretch) {
-    auto animatedSprite = std::make_shared<ui::AnimatedSprite>(x, y, w, h, data, dataSize,
+    auto animatedSprite = std::make_shared<ui::AnimatedSprite>(x, y, width, height, data, dataSize,
                                                                frameCount, frameDelay, stretch);
     return registerElement(animatedSprite);
 }
@@ -415,7 +414,7 @@ ui::CheckBox* UI::checkBox(bool state, int x, int y, std::function<void(bool)> c
 
 ui::OptionSelect* UI::optionSelect(int current, const std::vector<std::string>& options, int x,
                                    int y, std::function<void(int)> callback) {
-    auto optionSelectPtr = createOptionSelect(current, options, x, y, callback);
+    auto optionSelectPtr = createOptionSelect(options, current, x, y, callback);
     return optionSelectPtr.get();
 }
 
