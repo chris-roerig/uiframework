@@ -5,11 +5,74 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include <array>
+#include <string_view>
 
 namespace ui {
 
 // Forward declarations
 class UIElement;
+
+/**
+ * @brief Memory pool for predictable string allocations
+ */
+class StringPool {
+private:
+    static constexpr size_t POOL_SIZE = 16384; // 16KB string pool
+    static constexpr size_t MAX_STRINGS = 512;
+    
+    char pool[POOL_SIZE];
+    size_t poolOffset = 0;
+    std::array<std::string_view, MAX_STRINGS> strings;
+    size_t stringCount = 0;
+    
+public:
+    /**
+     * @brief Allocate string from pool (real-time safe)
+     */
+    std::string_view allocateString(const std::string& str);
+    
+    /**
+     * @brief Reset pool for next frame
+     */
+    void reset();
+    
+    /**
+     * @brief Check if pool has capacity
+     */
+    bool hasCapacity(size_t length) const;
+};
+
+/**
+ * @brief Pre-allocated update structure for deterministic memory usage
+ */
+struct PredictableUpdate {
+    enum Type {
+        SET_TEXT,
+        SET_POSITION,
+        SET_SIZE,
+        SET_VALUE,
+        SET_VISIBILITY,
+        CUSTOM_CALLBACK
+    };
+    
+    Type type;
+    std::string_view elementId; // Points to string pool
+    
+    // Union for different update data
+    union {
+        struct { int x, y; } position;
+        struct { int width, height; } size;
+        struct { float value; } floatValue;
+        struct { bool visible; } visibility;
+    } data;
+    
+    std::string_view textValue; // Points to string pool
+    std::function<void()> callback;
+    
+    PredictableUpdate() = default;
+    PredictableUpdate(Type t, std::string_view id) : type(t), elementId(id) {}
+};
 
 /**
  * @brief Non-blocking element cache for real-time access
@@ -39,6 +102,27 @@ struct ElementCache {
     // Delete copy operations for performance
     ElementCache(const ElementCache&) = delete;
     ElementCache& operator=(const ElementCache&) = delete;
+};
+
+/**
+ * @brief Memory-predictable batched update state
+ */
+struct PredictableBatch {
+    std::string_view elementId; // Points to string pool
+    
+    // Track which updates are pending
+    bool hasText = false;
+    bool hasPosition = false;
+    bool hasSize = false;
+    bool hasValue = false;
+    bool hasVisibility = false;
+    
+    // Latest values (only most recent matters)
+    std::string_view textValue; // Points to string pool
+    struct { int x, y; } position;
+    struct { int width, height; } size;
+    float value;
+    bool visible;
 };
 
 /**
@@ -111,6 +195,11 @@ private:
     alignas(64) std::atomic<size_t> readIndex{0};
     alignas(64) UIUpdate queue[QUEUE_SIZE];
     
+    // Memory-predictable processing structures
+    StringPool stringPool;
+    std::array<PredictableBatch, 128> predictableBatches; // Pre-allocated batches
+    size_t activeBatches = 0;
+    
 public:
     /**
      * @brief Try to enqueue update (non-blocking, audio thread safe)
@@ -128,6 +217,23 @@ public:
      * @brief Check if queue is empty
      */
     bool empty() const;
+    
+    /**
+     * @brief Process updates with memory-predictable operations
+     * @param elementCache Cache for non-blocking element access
+     * @return Number of updates processed
+     */
+    size_t processPredictable(std::vector<ElementCache>& elementCache);
+    
+    /**
+     * @brief Get predictable batches for processing
+     */
+    const std::array<PredictableBatch, 128>& getPredictableBatches() const { return predictableBatches; }
+    
+    /**
+     * @brief Get number of active batches
+     */
+    size_t getActiveBatches() const { return activeBatches; }
     
     /**
      * @brief Process all queued updates with batching and element caching

@@ -594,9 +594,8 @@ bool UI::realtimeCallback(std::function<void()> callback) {
 }
 
 void UI::processRealtimeUpdates() {
-    // Use batching with element caching for efficient processing
-    std::unordered_map<std::string, ui::BatchedUpdate> batchMap;
-    size_t processedCount = updateQueue->processBatchWithCache(batchMap, elementCache);
+    // Use memory-predictable processing for deterministic performance
+    size_t processedCount = updateQueue->processPredictable(elementCache);
     
     if (processedCount == 0) {
         return; // No updates to process
@@ -608,22 +607,26 @@ void UI::processRealtimeUpdates() {
         cache.valid = (cache.element != nullptr);
     }
     
-    // Apply batched updates using cached elements (no additional locks)
-    for (size_t i = 0; i < elementCache.size(); ++i) {
+    // Apply predictable batches using cached elements (no additional locks)
+    const auto& batches = updateQueue->getPredictableBatches();
+    size_t activeBatches = updateQueue->getActiveBatches();
+    
+    for (size_t i = 0; i < activeBatches && i < elementCache.size(); ++i) {
         const auto& cache = elementCache[i];
         if (!cache.valid || !cache.element) {
             continue; // Element not found
         }
         
-        const auto& batch = batchMap[cache.elementId];
+        const auto& batch = batches[i];
         auto element = cache.element;
         
         // Apply all pending updates for this element
-        if (batch.hasText) {
+        if (batch.hasText && !batch.textValue.empty()) {
+            std::string textStr(batch.textValue);
             if (auto label = std::dynamic_pointer_cast<ui::Label>(element)) {
-                label->setText(batch.textValue);
+                label->setText(textStr);
             } else if (auto button = std::dynamic_pointer_cast<ui::Button>(element)) {
-                button->setText(batch.textValue);
+                button->setText(textStr);
             }
         }
         

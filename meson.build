@@ -161,7 +161,8 @@ if catch2_dep.found()
       'dev/tests/test_weakptr_cleanup.cpp',  # Phase 4 weak_ptr cleanup test
       'dev/tests/test_lockfree_queue.cpp',  # Phase 1 audio-ready: lock-free queue test
       'dev/tests/test_batching_system.cpp',  # Phase 2 audio-ready: batching system test
-      'dev/tests/test_nonblocking_access.cpp'  # Phase 3 audio-ready: non-blocking access test
+      'dev/tests/test_nonblocking_access.cpp',  # Phase 3 audio-ready: non-blocking access test
+      'dev/tests/test_predictable_memory.cpp'  # Phase 4 audio-ready: memory-predictable test
     ] + common_sources,
     dependencies : [sdl2_dep, ttf_dep, sdl2_image_dep, catch2_dep],
     include_directories : ['lib/include'],

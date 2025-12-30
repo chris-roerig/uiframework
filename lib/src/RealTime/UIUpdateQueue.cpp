@@ -1,8 +1,35 @@
 #include "uiframework/RealTime/UIUpdateQueue.h"
 #include <cstring>
 #include <vector>
+#include <algorithm>
 
 namespace ui {
+
+std::string_view StringPool::allocateString(const std::string& str) {
+    if (!hasCapacity(str.length() + 1) || stringCount >= MAX_STRINGS) {
+        return {}; // Pool exhausted
+    }
+    
+    // Copy string to pool
+    std::memcpy(pool + poolOffset, str.c_str(), str.length());
+    pool[poolOffset + str.length()] = '\0';
+    
+    // Create string_view
+    std::string_view result(pool + poolOffset, str.length());
+    strings[stringCount++] = result;
+    
+    poolOffset += str.length() + 1;
+    return result;
+}
+
+void StringPool::reset() {
+    poolOffset = 0;
+    stringCount = 0;
+}
+
+bool StringPool::hasCapacity(size_t length) const {
+    return (poolOffset + length) < POOL_SIZE;
+}
 
 bool UIUpdateQueue::tryEnqueue(const UIUpdate& update) {
     const size_t currentWrite = writeIndex.load(std::memory_order_relaxed);
@@ -168,6 +195,103 @@ size_t UIUpdateQueue::processBatchWithCache(std::unordered_map<std::string, Batc
     for (const auto& [elementId, batch] : batchMap) {
         // Cache will be populated by UI thread with actual elements
         elementCache.emplace_back(elementId, nullptr);
+    }
+    
+    return processedCount;
+}
+
+size_t UIUpdateQueue::processPredictable(std::vector<ElementCache>& elementCache) {
+    // Reset string pool for this frame
+    stringPool.reset();
+    activeBatches = 0;
+    
+    UIUpdate update;
+    size_t processedCount = 0;
+    
+    // Process all queued updates into predictable batches
+    while (tryDequeue(update) && activeBatches < predictableBatches.size()) {
+        processedCount++;
+        
+        if (update.type == UIUpdate::CUSTOM_CALLBACK) {
+            // Callbacks must be processed immediately in order
+            if (update.callback) {
+                update.callback();
+            }
+            continue;
+        }
+        
+        // Allocate element ID in string pool
+        std::string_view elementId = stringPool.allocateString(update.elementId);
+        if (elementId.empty()) {
+            // Pool exhausted, fall back to regular processing
+            break;
+        }
+        
+        // Find or create predictable batch
+        PredictableBatch* batch = nullptr;
+        for (size_t i = 0; i < activeBatches; ++i) {
+            if (predictableBatches[i].elementId == elementId) {
+                batch = &predictableBatches[i];
+                break;
+            }
+        }
+        
+        if (!batch && activeBatches < predictableBatches.size()) {
+            batch = &predictableBatches[activeBatches++];
+            batch->elementId = elementId;
+            // Reset batch state
+            batch->hasText = batch->hasPosition = batch->hasSize = 
+            batch->hasValue = batch->hasVisibility = false;
+        }
+        
+        if (!batch) {
+            // No more batch slots available
+            break;
+        }
+        
+        // Coalesce updates (latest value wins)
+        switch (update.type) {
+            case UIUpdate::SET_TEXT:
+                batch->hasText = true;
+                batch->textValue = stringPool.allocateString(update.textValue);
+                break;
+                
+            case UIUpdate::SET_POSITION:
+                batch->hasPosition = true;
+                batch->position.x = update.data.position.x;
+                batch->position.y = update.data.position.y;
+                break;
+                
+            case UIUpdate::SET_SIZE:
+                batch->hasSize = true;
+                batch->size.width = update.data.size.width;
+                batch->size.height = update.data.size.height;
+                break;
+                
+            case UIUpdate::SET_VALUE:
+                batch->hasValue = true;
+                batch->value = update.data.floatValue.value;
+                break;
+                
+            case UIUpdate::SET_VISIBILITY:
+                batch->hasVisibility = true;
+                batch->visible = update.data.visibility.visible;
+                break;
+                
+            default:
+                break;
+        }
+    }
+    
+    // Pre-populate element cache for non-blocking access
+    elementCache.clear();
+    elementCache.reserve(activeBatches);
+    
+    for (size_t i = 0; i < activeBatches; ++i) {
+        const auto& batch = predictableBatches[i];
+        // Convert string_view back to string for element lookup
+        std::string elementIdStr(batch.elementId);
+        elementCache.emplace_back(elementIdStr, nullptr);
     }
     
     return processedCount;
