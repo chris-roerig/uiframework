@@ -14,15 +14,15 @@ void TabbedPanel::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr
     if (!visible) return;
     
     // Draw panel background
-    auto colors = theme->buttonColors();
-    SDL_SetRenderDrawColor(renderer, colors.buttonBackground.r, colors.buttonBackground.g, 
-                          colors.buttonBackground.b, colors.buttonBackground.a);
+    auto colors = theme->tabbedPanelColors();
+    SDL_SetRenderDrawColor(renderer, colors.tabbedPanelBackground.r, colors.tabbedPanelBackground.g, 
+                          colors.tabbedPanelBackground.b, colors.tabbedPanelBackground.a);
     SDL_Rect panelRect = {x, y + tabHeight, width, height - tabHeight};
     SDL_RenderFillRect(renderer, &panelRect);
     
     // Draw panel border
-    SDL_SetRenderDrawColor(renderer, colors.buttonBorderDark.r, colors.buttonBorderDark.g, 
-                          colors.buttonBorderDark.b, colors.buttonBorderDark.a);
+    SDL_SetRenderDrawColor(renderer, colors.tabbedPanelBorder.r, colors.tabbedPanelBorder.g, 
+                          colors.tabbedPanelBorder.b, colors.tabbedPanelBorder.a);
     SDL_RenderDrawRect(renderer, &panelRect);
     
     renderTabs(renderer, font, theme);
@@ -41,7 +41,7 @@ void TabbedPanel::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr
 void TabbedPanel::renderTabs(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<Theme> theme) {
     if (tabs.empty()) return;
     
-    auto colors = theme->buttonColors();
+    auto colors = theme->tabbedPanelColors();
     int tabWidth = width / tabs.size();
     
     for (size_t i = 0; i < tabs.size(); ++i) {
@@ -50,25 +50,23 @@ void TabbedPanel::renderTabs(SDL_Renderer* renderer, TTF_Font* font, std::shared
         
         // Draw tab background
         if (isActive) {
-            SDL_SetRenderDrawColor(renderer, colors.buttonForeground.r, colors.buttonForeground.g, 
-                                  colors.buttonForeground.b, colors.buttonForeground.a);
+            SDL_SetRenderDrawColor(renderer, colors.tabbedPanelTabActive.r, colors.tabbedPanelTabActive.g, 
+                                  colors.tabbedPanelTabActive.b, colors.tabbedPanelTabActive.a);
         } else {
-            SDL_SetRenderDrawColor(renderer, colors.buttonBackground.r, colors.buttonBackground.g, 
-                                  colors.buttonBackground.b, colors.buttonBackground.a);
+            SDL_SetRenderDrawColor(renderer, colors.tabbedPanelTabInactive.r, colors.tabbedPanelTabInactive.g, 
+                                  colors.tabbedPanelTabInactive.b, colors.tabbedPanelTabInactive.a);
         }
         
         SDL_Rect tabRect = {tabX, y, tabWidth, tabHeight};
         SDL_RenderFillRect(renderer, &tabRect);
         
         // Draw tab border
-        SDL_SetRenderDrawColor(renderer, colors.buttonBorderDark.r, colors.buttonBorderDark.g, 
-                              colors.buttonBorderDark.b, colors.buttonBorderDark.a);
+        SDL_SetRenderDrawColor(renderer, colors.tabbedPanelBorder.r, colors.tabbedPanelBorder.g, 
+                              colors.tabbedPanelBorder.b, colors.tabbedPanelBorder.a);
         SDL_RenderDrawRect(renderer, &tabRect);
         
         // Draw tab text
-        SDL_Color textColor = isActive ? 
-            SDL_Color{colors.buttonBackground.r, colors.buttonBackground.g, colors.buttonBackground.b, colors.buttonBackground.a} :
-            SDL_Color{colors.buttonText.r, colors.buttonText.g, colors.buttonText.b, colors.buttonText.a};
+        SDL_Color textColor = {colors.tabbedPanelTabText.r, colors.tabbedPanelTabText.g, colors.tabbedPanelTabText.b, colors.tabbedPanelTabText.a};
             
         auto* textEntry = getCachedText("tab_" + std::to_string(i), tabs[i].title, textColor, renderer, font);
         if (textEntry && textEntry->texture) {

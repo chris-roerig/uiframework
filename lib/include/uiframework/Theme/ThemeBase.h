@@ -64,6 +64,15 @@ struct ThemeableElementColors {
     Color canvasBackground;
     Color canvasGrid;
     Color canvasBorder;
+    Color cycleListBackground;
+    Color cycleListText;
+    Color cycleListBorder;
+    Color cycleListIndicator;
+    Color tabbedPanelBackground;
+    Color tabbedPanelTabActive;
+    Color tabbedPanelTabInactive;
+    Color tabbedPanelTabText;
+    Color tabbedPanelBorder;
 };
 
 class Theme {
@@ -82,6 +91,8 @@ public:
     virtual ThemeableElementColors sliderColors() const = 0;
     virtual ThemeableElementColors canvasColors() const = 0;
     virtual ThemeableElementColors gridColors() const = 0;
+    virtual ThemeableElementColors cycleListColors() const = 0;
+    virtual ThemeableElementColors tabbedPanelColors() const = 0;
     virtual Color highlightColor() const = 0;
     virtual Color backgroundColor() const = 0;
     virtual Color foregroundColor() const = 0;
@@ -149,6 +160,15 @@ protected:
     Color defaultCanvasBackground;
     Color defaultCanvasGrid;
     Color defaultCanvasBorder;
+    Color defaultCycleListBackground;
+    Color defaultCycleListText;
+    Color defaultCycleListBorder;
+    Color defaultCycleListIndicator;
+    Color defaultTabbedPanelBackground;
+    Color defaultTabbedPanelTabActive;
+    Color defaultTabbedPanelTabInactive;
+    Color defaultTabbedPanelTabText;
+    Color defaultTabbedPanelBorder;
 
 public:
     ThemeBase()
@@ -210,7 +230,16 @@ public:
         defaultSliderBorder(128,128,128),
         defaultCanvasBackground(255,255,255),
         defaultCanvasGrid(240,240,240),
-        defaultCanvasBorder(200,200,200)
+        defaultCanvasBorder(200,200,200),
+        defaultCycleListBackground(255,255,255),
+        defaultCycleListText(0,0,0),
+        defaultCycleListBorder(128,128,128),
+        defaultCycleListIndicator(100,100,100),
+        defaultTabbedPanelBackground(240,240,240),
+        defaultTabbedPanelTabActive(255,255,255),
+        defaultTabbedPanelTabInactive(200,200,200),
+        defaultTabbedPanelTabText(0,0,0),
+        defaultTabbedPanelBorder(128,128,128)
     {}
 
     ThemeableElementColors labelColors() const override {
@@ -331,6 +360,25 @@ public:
     ThemeableElementColors gridColors() const override {
         ThemeableElementColors c;
         c.gridBorder = defaultGridBorder;
+        return c;
+    }
+    
+    ThemeableElementColors cycleListColors() const override {
+        ThemeableElementColors c;
+        c.cycleListBackground = defaultCycleListBackground;
+        c.cycleListText = defaultCycleListText;
+        c.cycleListBorder = defaultCycleListBorder;
+        c.cycleListIndicator = defaultCycleListIndicator;
+        return c;
+    }
+    
+    ThemeableElementColors tabbedPanelColors() const override {
+        ThemeableElementColors c;
+        c.tabbedPanelBackground = defaultTabbedPanelBackground;
+        c.tabbedPanelTabActive = defaultTabbedPanelTabActive;
+        c.tabbedPanelTabInactive = defaultTabbedPanelTabInactive;
+        c.tabbedPanelTabText = defaultTabbedPanelTabText;
+        c.tabbedPanelBorder = defaultTabbedPanelBorder;
         return c;
     }
     

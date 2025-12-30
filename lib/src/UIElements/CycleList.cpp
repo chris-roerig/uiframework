@@ -16,17 +16,17 @@ CycleList::CycleList(int x, int y, int w, int h, const std::vector<std::string>&
 void CycleList::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<Theme> theme) {
     if (!visible) return;
     
-    auto colors = theme->textInputColors(); // Reuse text input styling
+    auto colors = theme->cycleListColors();
     
     // Draw main background
-    SDL_SetRenderDrawColor(renderer, colors.textInputBackground.r, colors.textInputBackground.g, 
-                          colors.textInputBackground.b, colors.textInputBackground.a);
+    SDL_SetRenderDrawColor(renderer, colors.cycleListBackground.r, colors.cycleListBackground.g, 
+                          colors.cycleListBackground.b, colors.cycleListBackground.a);
     SDL_Rect bgRect = {x, y, width, height};
     SDL_RenderFillRect(renderer, &bgRect);
     
     // Draw borders (top, left, right normal thickness)
-    SDL_SetRenderDrawColor(renderer, colors.textInputBorderDark.r, colors.textInputBorderDark.g, 
-                          colors.textInputBorderDark.b, colors.textInputBorderDark.a);
+    SDL_SetRenderDrawColor(renderer, colors.cycleListBorder.r, colors.cycleListBorder.g, 
+                          colors.cycleListBorder.b, colors.cycleListBorder.a);
     
     // Top border
     SDL_RenderDrawLine(renderer, x, y, x + width - 1, y);
@@ -48,7 +48,7 @@ void CycleList::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<T
         int indicatorHeight = 4;
         
         auto* textEntry = getCachedText("current_value", items[selectedIndex], 
-                                       {colors.textInputText.r, colors.textInputText.g, colors.textInputText.b, colors.textInputText.a}, 
+                                       {colors.cycleListText.r, colors.cycleListText.g, colors.cycleListText.b, colors.cycleListText.a}, 
                                        renderer, font);
         if (textEntry && textEntry->texture) {
             int textX = x + 5; // Small padding
@@ -61,7 +61,7 @@ void CycleList::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<T
                 textY < indicatorY + indicatorHeight && textY + textEntry->height > indicatorY) {
                 
                 auto* invertedTextEntry = getCachedText("inverted_value", items[selectedIndex], 
-                                                       {colors.textInputBackground.r, colors.textInputBackground.g, colors.textInputBackground.b, colors.textInputBackground.a}, 
+                                                       {colors.cycleListBackground.r, colors.cycleListBackground.g, colors.cycleListBackground.b, colors.cycleListBackground.a}, 
                                                        renderer, font);
                 if (invertedTextEntry && invertedTextEntry->texture) {
                     // Calculate intersection area
@@ -88,8 +88,8 @@ void CycleList::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<T
         int indicatorHeight = 4;
         
         // Draw indicator background with border color
-        SDL_SetRenderDrawColor(renderer, colors.textInputBorderDark.r, colors.textInputBorderDark.g, 
-                              colors.textInputBorderDark.b, colors.textInputBorderDark.a);
+        SDL_SetRenderDrawColor(renderer, colors.cycleListIndicator.r, colors.cycleListIndicator.g, 
+                              colors.cycleListIndicator.b, colors.cycleListIndicator.a);
         SDL_Rect indicatorRect = {indicatorX, indicatorY, segmentWidth, indicatorHeight};
         SDL_RenderFillRect(renderer, &indicatorRect);
     }
