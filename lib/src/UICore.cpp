@@ -237,6 +237,27 @@ void UICore::setFocusOrder(const std::vector<std::string>& elementIds) {
     focusManager->setFocusOrder(elementIds);
 }
 
+// Focus groups and trapping (Phase 4)
+void UICore::createFocusGroup(const std::string& groupName, const std::vector<std::string>& elementIds) {
+    focusManager->createFocusGroup(groupName, elementIds);
+}
+
+void UICore::setActiveFocusGroup(const std::string& groupName) {
+    focusManager->setActiveFocusGroup(groupName);
+}
+
+void UICore::clearActiveFocusGroup() {
+    focusManager->clearActiveFocusGroup();
+}
+
+void UICore::trapFocus(const std::string& groupName) {
+    focusManager->trapFocus(groupName);
+}
+
+void UICore::releaseFocusTrap() {
+    focusManager->releaseFocusTrap();
+}
+
 void UICore::queueCallback(std::function<void()> callback) {
     focusManager->queueCallback(callback);
 }

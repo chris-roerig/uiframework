@@ -31,6 +31,11 @@ private:
     // Custom focus order (empty = use default registration order)
     std::vector<std::string> focusOrder;
     
+    // Focus groups and trapping (Phase 4)
+    std::unordered_map<std::string, std::vector<std::string>> focusGroups;
+    std::string activeFocusGroup;
+    bool focusTrapActive = false;
+    
     // Thread safety
     mutable std::mutex focusMutex;
     
@@ -77,12 +82,23 @@ public:
     bool isElementFocusable(const std::string& elementId) const;
     std::vector<std::string> getFocusableElementIds() const;
     
+    // Focus groups and trapping (Phase 4)
+    void createFocusGroup(const std::string& groupName, const std::vector<std::string>& elementIds);
+    void setActiveFocusGroup(const std::string& groupName);
+    void clearActiveFocusGroup();
+    void trapFocus(const std::string& groupName);
+    void releaseFocusTrap();
+    
 private:
     // Internal helper methods
     void setFocusInternal(const std::string& elementId);
     int findElementInFocusOrder(const std::string& elementId) const;
     std::string getNextFocusableElement(const std::string& currentId) const;
     std::string getPreviousFocusableElement(const std::string& currentId) const;
+    
+    // Focus group helpers (Phase 4)
+    std::vector<std::string> getActiveGroupElements() const;
+    bool isElementInActiveGroup(const std::string& elementId) const;
 };
 
 } // namespace ui

@@ -350,6 +350,13 @@ class UI {
     void focusPrevious();
     void setFocusOrder(const std::vector<std::string>& elementIds);
     
+    // Focus groups and trapping (Phase 4)
+    void createFocusGroup(const std::string& groupName, const std::vector<std::string>& elementIds);
+    void setActiveFocusGroup(const std::string& groupName);
+    void clearActiveFocusGroup();
+    void trapFocus(const std::string& groupName);
+    void releaseFocusTrap();
+    
     /**
      * @brief Apply focus order based on hints provided during element creation
      * Automatically sorts elements by their focus order hints and applies the order

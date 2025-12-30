@@ -90,6 +90,14 @@ executable('focus_demo',
   install : false
 )
 
+# Focus groups demo (Phase 4)
+executable('focus_groups_demo',
+  sources : ['examples/focus_groups_demo.cpp'] + common_sources,
+  dependencies : [sdl2_dep, ttf_dep, sdl2_image_dep],
+  include_directories : ['lib/include'],
+  install : false
+)
+
 
 # Static analysis targets
 run_target('static-analysis',
@@ -123,6 +131,7 @@ if catch2_dep.found()
       'dev/tests/test_focusmanager.cpp',
       'dev/tests/test_focus_visibility.cpp',
       'dev/tests/test_tab_navigation.cpp',
+      'dev/tests/test_focus_groups.cpp',
       'dev/tests/test_layout.cpp',  # Layout tests re-enabled after fixes
       'dev/tests/test_threading_improvements.cpp',
       'dev/tests/test_performance_benchmarks.cpp',  # New threading and performance tests

@@ -88,6 +88,13 @@ namespace ui {
         void focusPrevious();
         void setFocusOrder(const std::vector<std::string>& elementIds);
         
+        // Focus groups and trapping (Phase 4)
+        void createFocusGroup(const std::string& groupName, const std::vector<std::string>& elementIds);
+        void setActiveFocusGroup(const std::string& groupName);
+        void clearActiveFocusGroup();
+        void trapFocus(const std::string& groupName);
+        void releaseFocusTrap();
+        
         // Callback management
         void queueCallback(std::function<void()> callback);
         

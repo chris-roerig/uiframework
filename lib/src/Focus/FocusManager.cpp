@@ -201,89 +201,115 @@ int FocusManager::findElementInFocusOrder(const std::string& elementId) const {
 }
 
 std::string FocusManager::getNextFocusableElement(const std::string& currentId) const {
-    if (!focusOrder.empty()) {
-        // Use custom focus order
-        int currentIndex = findElementInFocusOrder(currentId);
-        if (currentIndex >= 0) {
-            // Find next focusable element in order
-            for (size_t i = 1; i < focusOrder.size(); ++i) {
-                int nextIndex = (currentIndex + i) % focusOrder.size();
-                const std::string& nextId = focusOrder[nextIndex];
-                if (isElementFocusable(nextId)) {
-                    return nextId;
-                }
-            }
-        } else {
-            // Current element not in focus order, start from beginning
-            for (const std::string& elementId : focusOrder) {
-                if (isElementFocusable(elementId)) {
-                    return elementId;
-                }
-            }
-        }
-    } else {
-        // Use registration order (default behavior)
-        auto focusableIds = getFocusableElementIds();
-        if (focusableIds.empty()) return "";
-        
-        if (currentId.empty()) {
-            return focusableIds[0];
-        }
-        
-        auto it = std::find(focusableIds.begin(), focusableIds.end(), currentId);
-        if (it != focusableIds.end()) {
-            ++it;
-            if (it != focusableIds.end()) {
-                return *it;
-            }
-        }
-        // Wrap around to first element
-        return focusableIds[0];
+    // Get elements to cycle through (group or all)
+    auto elementsToSearch = getActiveGroupElements();
+    
+    if (elementsToSearch.empty()) return "";
+    
+    if (currentId.empty()) {
+        return elementsToSearch[0];
     }
     
-    return "";
+    auto it = std::find(elementsToSearch.begin(), elementsToSearch.end(), currentId);
+    if (it != elementsToSearch.end()) {
+        ++it;
+        if (it != elementsToSearch.end()) {
+            return *it;
+        }
+    }
+    // Wrap around to first element
+    return elementsToSearch[0];
 }
 
 std::string FocusManager::getPreviousFocusableElement(const std::string& currentId) const {
-    if (!focusOrder.empty()) {
-        // Use custom focus order
-        int currentIndex = findElementInFocusOrder(currentId);
-        if (currentIndex >= 0) {
-            // Find previous focusable element in order
-            for (size_t i = 1; i < focusOrder.size(); ++i) {
-                int prevIndex = (currentIndex - i + focusOrder.size()) % focusOrder.size();
-                const std::string& prevId = focusOrder[prevIndex];
-                if (isElementFocusable(prevId)) {
-                    return prevId;
-                }
-            }
-        } else {
-            // Current element not in focus order, start from end
-            for (auto it = focusOrder.rbegin(); it != focusOrder.rend(); ++it) {
-                if (isElementFocusable(*it)) {
-                    return *it;
-                }
-            }
-        }
-    } else {
-        // Use registration order (default behavior)
-        auto focusableIds = getFocusableElementIds();
-        if (focusableIds.empty()) return "";
-        
-        if (currentId.empty()) {
-            return focusableIds.back();
-        }
-        
-        auto it = std::find(focusableIds.begin(), focusableIds.end(), currentId);
-        if (it != focusableIds.end() && it != focusableIds.begin()) {
-            --it;
-            return *it;
-        }
-        // Wrap around to last element
-        return focusableIds.back();
+    // Get elements to cycle through (group or all)
+    auto elementsToSearch = getActiveGroupElements();
+    
+    if (elementsToSearch.empty()) return "";
+    
+    if (currentId.empty()) {
+        return elementsToSearch.back();
     }
     
-    return "";
+    auto it = std::find(elementsToSearch.begin(), elementsToSearch.end(), currentId);
+    if (it != elementsToSearch.end() && it != elementsToSearch.begin()) {
+        --it;
+        return *it;
+    }
+    // Wrap around to last element
+    return elementsToSearch.back();
+}
+
+// Focus Groups and Trapping (Phase 4)
+void FocusManager::createFocusGroup(const std::string& groupName, const std::vector<std::string>& elementIds) {
+    std::lock_guard<std::mutex> lock(focusMutex);
+    focusGroups[groupName] = elementIds;
+}
+
+void FocusManager::setActiveFocusGroup(const std::string& groupName) {
+    std::lock_guard<std::mutex> lock(focusMutex);
+    if (focusGroups.find(groupName) != focusGroups.end()) {
+        activeFocusGroup = groupName;
+    }
+}
+
+void FocusManager::clearActiveFocusGroup() {
+    std::lock_guard<std::mutex> lock(focusMutex);
+    activeFocusGroup.clear();
+}
+
+void FocusManager::trapFocus(const std::string& groupName) {
+    std::lock_guard<std::mutex> lock(focusMutex);
+    if (focusGroups.find(groupName) != focusGroups.end()) {
+        activeFocusGroup = groupName;
+        focusTrapActive = true;
+    }
+}
+
+void FocusManager::releaseFocusTrap() {
+    std::lock_guard<std::mutex> lock(focusMutex);
+    focusTrapActive = false;
+    activeFocusGroup.clear();
+}
+
+std::vector<std::string> FocusManager::getActiveGroupElements() const {
+    if (!activeFocusGroup.empty()) {
+        auto it = focusGroups.find(activeFocusGroup);
+        if (it != focusGroups.end()) {
+            // Filter for focusable elements in group
+            std::vector<std::string> focusableInGroup;
+            for (const std::string& elementId : it->second) {
+                if (isElementFocusable(elementId)) {
+                    focusableInGroup.push_back(elementId);
+                }
+            }
+            return focusableInGroup;
+        }
+    }
+    
+    // No active group, use normal focus order or registration order
+    if (!focusOrder.empty()) {
+        std::vector<std::string> focusableInOrder;
+        for (const std::string& elementId : focusOrder) {
+            if (isElementFocusable(elementId)) {
+                focusableInOrder.push_back(elementId);
+            }
+        }
+        return focusableInOrder;
+    }
+    
+    return getFocusableElementIds();
+}
+
+bool FocusManager::isElementInActiveGroup(const std::string& elementId) const {
+    if (activeFocusGroup.empty()) return true;
+    
+    auto it = focusGroups.find(activeFocusGroup);
+    if (it != focusGroups.end()) {
+        return std::find(it->second.begin(), it->second.end(), elementId) != it->second.end();
+    }
+    
+    return true;
 }
 
 } // namespace ui

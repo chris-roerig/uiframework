@@ -276,6 +276,27 @@ void UI::setFocusOrder(const std::vector<std::string>& elementIds) {
     core->setFocusOrder(elementIds);
 }
 
+// Focus groups and trapping (Phase 4)
+void UI::createFocusGroup(const std::string& groupName, const std::vector<std::string>& elementIds) {
+    core->createFocusGroup(groupName, elementIds);
+}
+
+void UI::setActiveFocusGroup(const std::string& groupName) {
+    core->setActiveFocusGroup(groupName);
+}
+
+void UI::clearActiveFocusGroup() {
+    core->clearActiveFocusGroup();
+}
+
+void UI::trapFocus(const std::string& groupName) {
+    core->trapFocus(groupName);
+}
+
+void UI::releaseFocusTrap() {
+    core->releaseFocusTrap();
+}
+
 void UI::applyFocusOrderHints() {
     if (focusOrderHints.empty()) return;
     
