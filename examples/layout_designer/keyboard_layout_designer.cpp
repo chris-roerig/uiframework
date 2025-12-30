@@ -60,6 +60,7 @@ private:
         {"Sprite", {80, 60}},
         {"AnimatedSprite", {80, 60}},
         {"VirtualKeyboard", {300, 200}},
+        {"CycleList", {150, 30}},
         {"ContextMenu", {150, 100}},
         {"VBoxLayout", {100, 150}},
         {"HBoxLayout", {150, 100}},
@@ -84,6 +85,7 @@ private:
         {"Sprite", {255, 180, 100, 255}},
         {"AnimatedSprite", {255, 120, 100, 255}},
         {"VirtualKeyboard", {180, 180, 180, 255}},
+        {"CycleList", {100, 200, 255, 255}},
         {"ContextMenu", {220, 220, 220, 255}},
         {"VBoxLayout", {100, 100, 255, 255}},
         {"HBoxLayout", {100, 255, 100, 255}},
@@ -183,7 +185,7 @@ public:
         std::cout << "  O=OptionSelect P=Image        A=HSlider      S=VSlider\n";
         std::cout << "  D=KnobSlider   F=Sprite       G=AnimatedSprite\n";
         std::cout << "  H=VirtualKeyboard  J=ContextMenu  K=VBoxLayout\n";
-        std::cout << "  L=HBoxLayout   Z=GridLayout   X=Modal\n\n";
+        std::cout << "  L=HBoxLayout   Z=GridLayout   X=Modal   C=CycleList\n\n";
         std::cout << "Actions:\n";
         std::cout << "  SPACE = Export layout to console\n";
         std::cout << "  C = Clear all elements\n";
@@ -248,6 +250,7 @@ public:
             case SDLK_h: addElement("VirtualKeyboard"); break;
             case SDLK_j: addElement("ContextMenu"); break;
             case SDLK_k: addElement("VBoxLayout"); break;
+            case SDLK_c: addElement("CycleList"); break;
             case SDLK_l: addElement("HBoxLayout"); break;
             case SDLK_z: addElement("GridLayout"); break;
             case SDLK_x: addElement("Modal"); break;

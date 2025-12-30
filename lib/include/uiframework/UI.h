@@ -258,6 +258,8 @@ class UI {
                                                      float max = 100.0f, float initial = 0.0f);
     std::shared_ptr<ui::VirtualKeyboard> createVirtualKeyboard(int x, int y, int width, int height,
                                                                std::function<void(char)> callback);
+    std::shared_ptr<ui::CycleList> createCycleList(int x, int y, int width, int height,
+                                                   const std::vector<std::string>& items);
 
     // Backward compatibility methods (deprecated - will be removed in future versions)
     [[deprecated("Use createLabel instead")]]

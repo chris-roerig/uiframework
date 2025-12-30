@@ -149,6 +149,12 @@ std::shared_ptr<ui::VirtualKeyboard> UI::createVirtualKeyboard(int x, int y, int
     return registerElement(keyboard);
 }
 
+std::shared_ptr<ui::CycleList> UI::createCycleList(int x, int y, int width, int height,
+                                                   const std::vector<std::string>& items) {
+    auto cycleList = std::make_shared<ui::CycleList>(x, y, width, height, items);
+    return registerElement(cycleList);
+}
+
 // --- Modal Methods ---
 
 std::shared_ptr<ui::Modal> UI::createModal(const std::string& message,

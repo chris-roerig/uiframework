@@ -18,3 +18,4 @@
 #include "uiframework/UIElements/LayoutContainer.h"
 #include "uiframework/UIElements/Slider.h"
 #include "uiframework/UIElements/VirtualKeyboard.h"
+#include "uiframework/UIElements/CycleList.h"
