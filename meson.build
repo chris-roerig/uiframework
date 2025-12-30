@@ -121,6 +121,8 @@ if catch2_dep.found()
       'dev/tests/test_cyclelist.cpp',
       'dev/tests/test_tabbedpanel.cpp',
       'dev/tests/test_focusmanager.cpp',
+      'dev/tests/test_focus_visibility.cpp',
+      'dev/tests/test_tab_navigation.cpp',
       'dev/tests/test_layout.cpp',  # Layout tests re-enabled after fixes
       'dev/tests/test_threading_improvements.cpp',
       'dev/tests/test_performance_benchmarks.cpp',  # New threading and performance tests

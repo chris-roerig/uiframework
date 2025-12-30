@@ -66,7 +66,7 @@ void FocusManager::setFocusInternal(const std::string& elementId) {
     auto it = elementRegistry.find(elementId);
     if (it != elementRegistry.end()) {
         auto newFocused = it->second.lock();
-        if (newFocused && newFocused->isInteractive()) {
+        if (newFocused && newFocused->isInteractive() && newFocused->isVisible()) {
             focusedElementId = elementId;
             newFocused->hasFocus = true;
             newFocused->onFocusGained();
