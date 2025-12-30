@@ -1,5 +1,6 @@
 #include "uiframework/UIElements/CycleList.h"
 #include "uiframework/Theme/ThemeBase.h"
+#include "uiframework/UICore.h"
 #include "uiframework/Helpers.h"
 #include <algorithm>
 
@@ -77,7 +78,17 @@ void CycleList::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<T
 }
 
 void CycleList::handleEvent(const SDL_Event &e) {
-    if (!visible || !hasFocus) return;
+    if (!visible) return;
+    
+    if (e.type == SDL_MOUSEBUTTONDOWN) {
+        if (e.button.button == SDL_BUTTON_LEFT && containsPoint(e.button.x, e.button.y)) {
+            if (coreRef) {
+                coreRef->setFocus(getId());
+            }
+        }
+    }
+    
+    if (!hasFocus) return;
     
     if (e.type == SDL_KEYDOWN) {
         switch (e.key.keysym.sym) {
