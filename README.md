@@ -48,21 +48,16 @@ meson compile -C build
 
 ## Documentation
 
-📖 **[PROJECT OVERVIEW](docs/PROJECT_OVERVIEW.md)** - **MASTER DOCUMENT** for all developers  
-Complete guide covering architecture, real-time features, design principles, and development guidelines
-
-📖 **[Complete Documentation](docs/UI_FRAMEWORK_DOCUMENTATION.md)** - Comprehensive API reference  
-All 17+ UI elements, performance optimizations, thread safety, and examples
-
-📖 **[Thread Safety Guide](docs/THREAD_SAFETY.md)** - Thread safety guarantees and guidelines
-
-### Real-Time Optimization Documentation
-- **[Phase 1: Lock-Free Queue](docs/PHASE1_REALTIME_QUEUE_COMPLETE.md)** - Zero-blocking audio thread communication
-- **[Phase 2: Update Batching](docs/PHASE2_BATCHING_COMPLETE.md)** - High-frequency update optimization  
-- **[Phase 3: Non-Blocking Access](docs/PHASE3_NONBLOCKING_COMPLETE.md)** - Mutex contention elimination
-- **[Phase 4: Memory Predictable](docs/PHASE4_PREDICTABLE_COMPLETE.md)** - Deterministic memory usage
-- **[Phase 5: High-Resolution Timing](docs/PHASE5_TIMING_COMPLETE.md)** - Microsecond precision scheduling
-- **[Phase 6: Bulk Operations](docs/PHASE6_BULK_COMPLETE.md)** - SIMD-optimized bulk updates
+📖 **[PROJECT_OVERVIEW.md](docs/PROJECT_OVERVIEW.md)** - **COMPLETE DEVELOPER GUIDE**  
+**Single comprehensive document containing everything you need:**
+- Complete real-time optimization suite (6 phases) with detailed implementation
+- Thread safety guide with all rules and examples
+- Performance characteristics and benchmarks
+- When to use each feature (standard vs real-time operations)
+- Critical rules that must never be broken
+- Development guidelines and testing requirements
+- Build system and integration instructions
+- Target applications and use cases
 
 ## Dependencies
 
