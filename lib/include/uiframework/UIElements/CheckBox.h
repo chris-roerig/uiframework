@@ -19,6 +19,11 @@ public:
     bool isInteractive() const override { return true; }
     void activate() override;
     
+    // Sizing API implementation
+    std::pair<int, int> getPreferredSize(TTF_Font* font) const override;
+    std::pair<int, int> getMinimumSize() const override;
+    bool hasFixedSize() const override { return true; }
+    
     // CheckBox-specific methods
     void setChecked(bool state);
     bool isChecked() const { return checked; }

@@ -78,20 +78,23 @@ void OptionSelect::renderCollapsed(SDL_Renderer* renderer, TTF_Font* font, std::
     
     ThemeableElementColors tc = theme->optionSelectColors();
     
+    // Determine colors based on enabled state
+    Color bgColor = enabled ? tc.selectOptionUnselected : tc.selectOptionDisabled;
+    Color textColor = enabled ? tc.selectOptionTextUnselected : tc.selectOptionTextDisabled;
+    Color borderColor = enabled ? tc.selectOptionSelected : tc.selectOptionDisabled;
+    
     // Draw selection box
     SDL_Rect cellRect = { x, y, width, height };
-    drawFilledRect(renderer, cellRect, tc.selectOptionUnselected);
+    drawFilledRect(renderer, cellRect, bgColor);
     
     // Draw border
-    SDL_SetRenderDrawColor(renderer, tc.selectOptionSelected.r, tc.selectOptionSelected.g, 
-                           tc.selectOptionSelected.b, tc.selectOptionSelected.a);
+    SDL_SetRenderDrawColor(renderer, borderColor.r, borderColor.g, borderColor.b, borderColor.a);
     SDL_RenderDrawRect(renderer, &cellRect);
     
-    // Draw focus indicator
-    if (hasFocus) {
+    // Draw focus indicator (only when enabled)
+    if (hasFocus && enabled) {
         SDL_Rect focusRect = getFocusRect();
-        SDL_SetRenderDrawColor(renderer, tc.selectOptionSelected.r, tc.selectOptionSelected.g, 
-                               tc.selectOptionSelected.b, tc.selectOptionSelected.a);
+        SDL_SetRenderDrawColor(renderer, borderColor.r, borderColor.g, borderColor.b, borderColor.a);
         SDL_RenderDrawRect(renderer, &focusRect);
     }
     
@@ -101,11 +104,10 @@ void OptionSelect::renderCollapsed(SDL_Renderer* renderer, TTF_Font* font, std::
         std::string displayText = getCachedTruncatedText(options[currentIndex], font, availableWidth, displayCache);
         
         if (!displayText.empty()) {
-            SDL_Color textColor = { tc.selectOptionTextUnselected.r, tc.selectOptionTextUnselected.g, 
-                                    tc.selectOptionTextUnselected.b, tc.selectOptionTextUnselected.a };
+            SDL_Color sdlTextColor = { textColor.r, textColor.g, textColor.b, textColor.a };
             
             std::string cacheKey = "option_" + std::to_string(currentIndex);
-            TextCacheEntry* cached = getCachedText(cacheKey, displayText, textColor, renderer, font);
+            TextCacheEntry* cached = getCachedText(cacheKey, displayText, sdlTextColor, renderer, font);
             if (cached && cached->texture) {
                 SDL_Rect dst = { 
                     x + padding, 
@@ -121,8 +123,7 @@ void OptionSelect::renderCollapsed(SDL_Renderer* renderer, TTF_Font* font, std::
     // Draw dropdown arrow
     int arrowX = x + width - arrowWidth + 2;
     int arrowY = y + height / 2;
-    SDL_SetRenderDrawColor(renderer, tc.selectOptionSelected.r, tc.selectOptionSelected.g, 
-                           tc.selectOptionSelected.b, tc.selectOptionSelected.a);
+    SDL_SetRenderDrawColor(renderer, borderColor.r, borderColor.g, borderColor.b, borderColor.a);
     // Simple triangle pointing down
     for (int i = 0; i < 5; i++) {
         SDL_RenderDrawLine(renderer, 
@@ -224,7 +225,7 @@ void OptionSelect::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_pt
 }
 
 void OptionSelect::handleEvent(const SDL_Event &e) {
-    if (!visible || options.empty()) return;
+    if (!visible || !enabled || options.empty()) return;
     
     if (e.type == SDL_MOUSEBUTTONDOWN) {
         if (e.button.button == SDL_BUTTON_LEFT) {

@@ -18,8 +18,12 @@ void CheckBox::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<Th
     SDL_Rect rect = { x, y, width, height };
     ThemeableElementColors tc = theme->checkboxColors();
     
+    // Determine colors based on enabled state
+    Color bgColor = enabled ? tc.checkboxEnabled : tc.checkboxDisabled;
+    Color checkColor = enabled ? tc.checkboxChecked : tc.checkboxDisabled;
+    
     // Draw checkbox background
-    drawFilledRect(renderer, rect, tc.checkboxEnabled);
+    drawFilledRect(renderer, rect, bgColor);
     
     // Draw 3D border for the checkbox
     SDL_SetRenderDrawColor(renderer, tc.checkboxBorderLight.r, tc.checkboxBorderLight.g, tc.checkboxBorderLight.b, tc.checkboxBorderLight.a);
@@ -30,10 +34,10 @@ void CheckBox::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<Th
     SDL_RenderDrawLine(renderer, rect.x, rect.y + rect.h, rect.x + rect.w, rect.y + rect.h); // Bottom edge
     SDL_RenderDrawLine(renderer, rect.x + rect.w, rect.y, rect.x + rect.w, rect.y + rect.h); // Right edge
     
-    // Draw focus indicator
-    if (hasFocus) {
+    // Draw focus indicator (only when enabled)
+    if (hasFocus && enabled) {
         SDL_Rect focusRect = getFocusRect();
-        SDL_SetRenderDrawColor(renderer, tc.checkboxChecked.r, tc.checkboxChecked.g, tc.checkboxChecked.b, tc.checkboxChecked.a);
+        SDL_SetRenderDrawColor(renderer, checkColor.r, checkColor.g, checkColor.b, checkColor.a);
         SDL_RenderDrawRect(renderer, &focusRect);
     }
     
@@ -45,12 +49,12 @@ void CheckBox::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<Th
             width - 2 * (ui::Constants::BORDER_OFFSET + 2),
             height - 2 * (ui::Constants::BORDER_OFFSET + 2)
         };
-        drawFilledRect(renderer, checkRect, tc.checkboxChecked);
+        drawFilledRect(renderer, checkRect, checkColor);
     }
 }
 
 void CheckBox::handleEvent(const SDL_Event &e) {
-    if (!visible) {
+    if (!visible || !enabled) {
         return;
     }
     
@@ -89,6 +93,14 @@ void CheckBox::setChecked(bool state) {
             });
         }
     }
+}
+
+std::pair<int, int> CheckBox::getPreferredSize(TTF_Font* font) const {
+    return {20, 20}; // Fixed checkbox size
+}
+
+std::pair<int, int> CheckBox::getMinimumSize() const {
+    return {20, 20}; // Same as preferred - fixed size
 }
 
 } // namespace ui

@@ -100,4 +100,12 @@ void ProgressBar::reset(float initValue) {
     setProgress(initValue);
 }
 
+std::pair<int, int> ProgressBar::getPreferredSize(TTF_Font* font) const {
+    return {200, 20}; // Standard progress bar size
+}
+
+std::pair<int, int> ProgressBar::getMinimumSize() const {
+    return {50, 10}; // Minimum visible progress bar
+}
+
 } // namespace ui

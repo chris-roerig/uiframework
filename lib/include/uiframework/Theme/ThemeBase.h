@@ -14,6 +14,8 @@ struct ThemeableElementColors {
     Color buttonForeground;
     Color buttonBorderLight;
     Color buttonBorderDark;
+    Color buttonDisabled;
+    Color buttonTextDisabled;
     Color checkboxEnabled;
     Color checkboxDisabled;
     Color checkboxChecked;
@@ -24,12 +26,16 @@ struct ThemeableElementColors {
     Color textInputText;
     Color textInputBorderLight;
     Color textInputBorderDark;
+    Color textInputDisabled;
+    Color textInputTextDisabled;
     Color selectOptionUnselected;
     Color selectOptionSelected;
     Color selectOptionBorderLight;
     Color selectOptionBorderDark;
     Color selectOptionTextSelected;
     Color selectOptionTextUnselected;
+    Color selectOptionDisabled;
+    Color selectOptionTextDisabled;
     Color labelText;
     Color labelBackground;
     Color contextMenuBackground;
@@ -110,6 +116,8 @@ protected:
     Color defaultButtonForeground;
     Color defaultButtonBorderLight;
     Color defaultButtonBorderDark;
+    Color defaultButtonDisabled;
+    Color defaultButtonTextDisabled;
     Color defaultCheckboxBorderLight;
     Color defaultCheckboxBorderDark;
     Color defaultCheckboxEnabled;
@@ -122,10 +130,14 @@ protected:
     Color defaultSelectOptionBorderDark;
     Color defaultSelectOptionTextSelected;
     Color defaultSelectOptionTextUnselected;
+    Color defaultSelectOptionDisabled;
+    Color defaultSelectOptionTextDisabled;
     Color defaultTextInputBackground;
     Color defaultTextInputText;
     Color defaultTextInputBorderLight;
     Color defaultTextInputBorderDark;
+    Color defaultTextInputDisabled;
+    Color defaultTextInputTextDisabled;
     Color defaultLabelText;
     Color defaultLabelBackground;
     Color defaultContextMenuBackground;
@@ -182,6 +194,8 @@ public:
         defaultButtonForeground(255,255,255),
         defaultButtonBorderLight(200,200,200),
         defaultButtonBorderDark(100,100,100),
+        defaultButtonDisabled(180,180,180),
+        defaultButtonTextDisabled(120,120,120),
         defaultCheckboxBorderLight(200,200,200),
         defaultCheckboxBorderDark(100,100,100),
         defaultCheckboxEnabled(255,255,255),
@@ -194,10 +208,14 @@ public:
         defaultSelectOptionBorderDark(100,100,100),
         defaultSelectOptionTextSelected(255,255,255),
         defaultSelectOptionTextUnselected(0,0,0),
+        defaultSelectOptionDisabled(220,220,220),
+        defaultSelectOptionTextDisabled(140,140,140),
         defaultTextInputBackground(255,255,255),
         defaultTextInputText(0,0,0),
         defaultTextInputBorderLight(200,200,200),
         defaultTextInputBorderDark(100,100,100),
+        defaultTextInputDisabled(240,240,240),
+        defaultTextInputTextDisabled(150,150,150),
         defaultLabelText(255,255,255),
         defaultLabelBackground(0,0,0),
         defaultContextMenuBackground(240,240,240),
@@ -256,6 +274,8 @@ public:
         c.buttonForeground = defaultButtonForeground;
         c.buttonBorderLight = defaultButtonBorderLight;
         c.buttonBorderDark  = defaultButtonBorderDark;
+        c.buttonDisabled = defaultButtonDisabled;
+        c.buttonTextDisabled = defaultButtonTextDisabled;
         return c;
     }
     
@@ -278,6 +298,8 @@ public:
         c.selectOptionBorderDark = defaultSelectOptionBorderDark;
         c.selectOptionTextSelected = defaultSelectOptionTextSelected;
         c.selectOptionTextUnselected = defaultSelectOptionTextUnselected;
+        c.selectOptionDisabled = defaultSelectOptionDisabled;
+        c.selectOptionTextDisabled = defaultSelectOptionTextDisabled;
         return c;
     }
     
@@ -287,6 +309,8 @@ public:
         c.textInputText = defaultTextInputText;
         c.textInputBorderLight = defaultTextInputBorderLight;
         c.textInputBorderDark  = defaultTextInputBorderDark;
+        c.textInputDisabled = defaultTextInputDisabled;
+        c.textInputTextDisabled = defaultTextInputTextDisabled;
         return c;
     }
     

@@ -23,6 +23,11 @@ public:
 
     void render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<class Theme> theme) override;
     
+    // Sizing API implementation
+    std::pair<int, int> getPreferredSize(TTF_Font* font) const override;
+    std::pair<int, int> getMinimumSize() const override;
+    void autoSize(TTF_Font* font) override;
+    
     // Button-specific methods
     void setText(const std::string& newText) { 
         if (text != newText) {

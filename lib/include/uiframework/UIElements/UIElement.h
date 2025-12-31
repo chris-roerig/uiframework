@@ -45,6 +45,7 @@ public:
     int x, y, width, height;
     bool hasFocus = false;
     bool visible = true;
+    bool enabled = true;
     
     UIElement(int x_, int y_, int w_, int h_)
       : x(x_), y(y_), width(w_), height(h_) {}
@@ -68,6 +69,12 @@ public:
                         width + 2 * Constants::FOCUS_BORDER_WIDTH, height + 2 * Constants::FOCUS_BORDER_WIDTH }; 
     }
     virtual void activate() { /* default does nothing */ }
+    
+    // Sizing API - consistent across all elements
+    virtual std::pair<int, int> getPreferredSize(TTF_Font* font) const { return {width, height}; }
+    virtual std::pair<int, int> getMinimumSize() const { return {0, 0}; }
+    virtual void autoSize(TTF_Font* font) { /* default does nothing */ }
+    virtual bool hasFixedSize() const { return false; }
     
     // Focus event callbacks
     virtual void onFocusGained() { /* default does nothing */ }
@@ -101,6 +108,14 @@ public:
     
     bool isVisible() const {
         return visible;
+    }
+    
+    void setEnabled(bool isEnabled) {
+        enabled = isEnabled;
+    }
+    
+    bool isEnabled() const {
+        return enabled;
     }
 };
 

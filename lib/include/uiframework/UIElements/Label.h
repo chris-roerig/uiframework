@@ -18,8 +18,10 @@ public:
     void setText(const std::string &text);
     const std::string& getText() const { return text; }
     
-    // Auto-size the label based on text content
-    void autoSize(TTF_Font* font);
+    // Sizing API implementation
+    std::pair<int, int> getPreferredSize(TTF_Font* font) const override;
+    std::pair<int, int> getMinimumSize() const override;
+    void autoSize(TTF_Font* font) override;
 };
 
 } // namespace ui

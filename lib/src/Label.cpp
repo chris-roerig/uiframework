@@ -38,4 +38,18 @@ void Label::autoSize(TTF_Font* font) {
     }
 }
 
+std::pair<int, int> Label::getPreferredSize(TTF_Font* font) const {
+    if (!font || text.empty()) {
+        return {width, height};
+    }
+    
+    int textW = 0, textH = 0;
+    TTF_SizeText(font, text.c_str(), &textW, &textH);
+    return {textW, textH};
+}
+
+std::pair<int, int> Label::getMinimumSize() const {
+    return {0, 0}; // Labels can be any size
+}
+
 } // namespace ui

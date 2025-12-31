@@ -19,6 +19,10 @@ public:
     virtual ~ProgressBar() override = default;
 
     void render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<class Theme> theme) override;
+    
+    // Sizing API implementation
+    std::pair<int, int> getPreferredSize(TTF_Font* font) const override;
+    std::pair<int, int> getMinimumSize() const override;
 
     // Progress-related methods
     void setProgress(float value);

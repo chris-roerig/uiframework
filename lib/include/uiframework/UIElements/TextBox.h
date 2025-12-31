@@ -39,6 +39,11 @@ public:
     SDL_Rect getFocusRect() const override;
     void activate() override;
     
+    // Sizing API implementation
+    std::pair<int, int> getPreferredSize(TTF_Font* font) const override;
+    std::pair<int, int> getMinimumSize() const override;
+    void autoSize(TTF_Font* font) override;
+    
     // Focus management
     void onFocusGained() override;
     void onFocusLost() override;

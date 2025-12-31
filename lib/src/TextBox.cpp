@@ -52,8 +52,12 @@ void TextBox::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<The
     SDL_Rect rect = { x, y, width, boxHeight };
     ThemeableElementColors tc = theme->textInputColors();
     
+    // Determine colors based on enabled state
+    Color bgColor = enabled ? tc.textInputBackground : tc.textInputDisabled;
+    Color textColor = enabled ? tc.textInputText : tc.textInputTextDisabled;
+    
     // Draw background
-    drawFilledRect(renderer, rect, tc.textInputBackground);
+    drawFilledRect(renderer, rect, bgColor);
     
     // Draw 3D border
     SDL_SetRenderDrawColor(renderer, tc.textInputBorderLight.r, tc.textInputBorderLight.g,
@@ -66,10 +70,10 @@ void TextBox::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<The
     SDL_RenderDrawLine(renderer, x, y + boxHeight, x + width, y + boxHeight);
     SDL_RenderDrawLine(renderer, x + width, y, x + width, y + boxHeight);
     
-    // Draw focus indicator
-    if (hasFocus) {
+    // Draw focus indicator (only when enabled)
+    if (hasFocus && enabled) {
         SDL_Rect focusRect = getFocusRect();
-        SDL_SetRenderDrawColor(renderer, tc.textInputText.r, tc.textInputText.g, tc.textInputText.b, tc.textInputText.a);
+        SDL_SetRenderDrawColor(renderer, textColor.r, textColor.g, textColor.b, textColor.a);
         SDL_RenderDrawRect(renderer, &focusRect);
     }
     
@@ -81,16 +85,16 @@ void TextBox::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<The
         std::string displayText = getCachedTruncatedText(content, font, availableWidth);
         
         if (!displayText.empty()) {
-            SDL_Color textColor = { tc.textInputText.r, tc.textInputText.g, tc.textInputText.b, tc.textInputText.a };
+            SDL_Color sdlTextColor = { textColor.r, textColor.g, textColor.b, textColor.a };
             SDL_Surface* surface = nullptr;
             
-            if (textSelected) {
-                // Render selected text with highlighted background
-                SDL_Color bgColor = { tc.textInputText.r, tc.textInputText.g, tc.textInputText.b, tc.textInputText.a };
-                SDL_Color selTextColor = { tc.textInputBackground.r, tc.textInputBackground.g, tc.textInputBackground.b, tc.textInputBackground.a };
+            if (textSelected && enabled) {
+                // Render selected text with highlighted background (only when enabled)
+                SDL_Color bgColor = { textColor.r, textColor.g, textColor.b, textColor.a };
+                SDL_Color selTextColor = { bgColor.r, bgColor.g, bgColor.b, bgColor.a };
                 surface = TTF_RenderText_Shaded(font, displayText.c_str(), selTextColor, bgColor);
             } else {
-                surface = TTF_RenderText_Solid(font, displayText.c_str(), textColor);
+                surface = TTF_RenderText_Solid(font, displayText.c_str(), sdlTextColor);
             }
             
             if (surface) {
@@ -125,7 +129,7 @@ void TextBox::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<The
 }
 
 void TextBox::handleEvent(const SDL_Event &e) {
-    if (!visible) return;
+    if (!visible || !enabled) return;
     
     if (e.type == SDL_MOUSEBUTTONDOWN) {
         if (e.button.button == SDL_BUTTON_LEFT) {
@@ -249,6 +253,27 @@ void TextBox::selectAll() {
 
 void TextBox::clearSelection() {
     textSelected = false;
+}
+
+std::pair<int, int> TextBox::getPreferredSize(TTF_Font* font) const {
+    if (!font) {
+        return {width, height};
+    }
+    
+    // Base size on content or placeholder
+    std::string sampleText = content.empty() ? "Sample Text" : content;
+    auto [textW, textH] = TextUtils::getTextSize(sampleText, font);
+    return {textW + 20, textH + 8}; // Add padding for cursor and borders
+}
+
+std::pair<int, int> TextBox::getMinimumSize() const {
+    return {60, 20}; // Minimum for cursor visibility and usability
+}
+
+void TextBox::autoSize(TTF_Font* font) {
+    auto [prefW, prefH] = getPreferredSize(font);
+    width = prefW;
+    height = prefH;
 }
 
 } // namespace ui
