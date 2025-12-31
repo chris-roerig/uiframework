@@ -87,6 +87,11 @@ namespace ui {
         bool modalActive = false;
         int width, height;
         
+        // Tooltip tracking
+        mutable std::mutex tooltipMutex;
+        std::shared_ptr<UIElement> hoveredElement = nullptr;
+        int mouseX = 0, mouseY = 0;
+        
         // Helper methods
         std::string generateElementId();
         uint64_t generateNumericId();

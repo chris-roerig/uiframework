@@ -35,7 +35,7 @@ public:
     bool isInteractive() const override { return true; }
 
     // Helper method for activation (space/enter key or mouse click)
-    virtual void activate() {}
+    virtual void activate() override {}
 
     // State accessors
     bool getIsDragging() const { return isDragging; }

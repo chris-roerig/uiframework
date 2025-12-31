@@ -79,6 +79,11 @@ struct ThemeableElementColors {
     Color tabbedPanelTabInactive;
     Color tabbedPanelTabText;
     Color tabbedPanelBorder;
+    
+    // Tooltip colors
+    Color tooltipBackground;
+    Color tooltipText;
+    Color tooltipBorder;
 };
 
 class Theme {
@@ -99,6 +104,7 @@ public:
     virtual ThemeableElementColors gridColors() const = 0;
     virtual ThemeableElementColors cycleListColors() const = 0;
     virtual ThemeableElementColors tabbedPanelColors() const = 0;
+    virtual ThemeableElementColors tooltipColors() const = 0;
     virtual Color highlightColor() const = 0;
     virtual Color backgroundColor() const = 0;
     virtual Color foregroundColor() const = 0;
@@ -181,6 +187,11 @@ protected:
     Color defaultTabbedPanelTabInactive;
     Color defaultTabbedPanelTabText;
     Color defaultTabbedPanelBorder;
+    
+    // Tooltip colors
+    Color defaultTooltipBackground;
+    Color defaultTooltipText;
+    Color defaultTooltipBorder;
 
 public:
     ThemeBase()
@@ -403,6 +414,14 @@ public:
         c.tabbedPanelTabInactive = defaultTabbedPanelTabInactive;
         c.tabbedPanelTabText = defaultTabbedPanelTabText;
         c.tabbedPanelBorder = defaultTabbedPanelBorder;
+        return c;
+    }
+    
+    ThemeableElementColors tooltipColors() const override {
+        ThemeableElementColors c;
+        c.tooltipBackground = defaultTooltipBackground;
+        c.tooltipText = defaultTooltipText;
+        c.tooltipBorder = defaultTooltipBorder;
         return c;
     }
     

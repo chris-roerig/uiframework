@@ -279,36 +279,43 @@ void Element::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<The
 
 ## 🔧 Phase 2: Medium Impact Improvements (Week 3) - IN PROGRESS
 
-### **🚧 2.1 BorderRenderer Utility - STARTING**
+### **✅ 2.1 BorderRenderer Utility - COMPLETED**
 **Priority**: MEDIUM | **Effort**: 1 day | **Impact**: Eliminates border drawing duplication**
 
 **Problem**: 3D border effects repeated in CheckBox, TextBox, OptionSelect with identical SDL line drawing patterns (~45 lines duplicated).
 
 **Solution**: Create `BorderRenderer` utility class for consistent border rendering.
 
-**Implementation Steps**:
-1. **Create utility class** `lib/include/uiframework/Utils/BorderRenderer.h`:
-   ```cpp
-   class BorderRenderer {
-   public:
-       static void draw3DBorder(SDL_Renderer* renderer, const SDL_Rect& rect, 
-                              const Color& light, const Color& dark, int thickness = 1);
-       static void drawFlatBorder(SDL_Renderer* renderer, const SDL_Rect& rect, 
-                                const Color& color, int thickness = 1);
-       static void drawFocusBorder(SDL_Renderer* renderer, const SDL_Rect& rect, 
-                                 const Color& color, int thickness = 2);
-   };
-   ```
+**✅ Implementation Completed**:
+1. **✅ Created `BorderRenderer` utility class** in `lib/include/uiframework/Utils/BorderRenderer.h`:
+   - `draw3DBorder()` - Light/dark edge 3D effect with configurable thickness
+   - `drawFlatBorder()` - Simple rectangular borders using SDL_RenderDrawRect
+   - `drawFocusBorder()` - Distinctive focus borders with offset positioning
+   - `drawThickLine()` - Helper for multi-pixel line rendering
 
-2. **Refactor existing border code**:
-   - Replace manual border drawing in CheckBox, TextBox, OptionSelect
-   - Standardize border thickness and style
-   - Add focus border support to all elements
+2. **✅ Implemented in `lib/src/Utils/BorderRenderer.cpp`**:
+   - Optimized single-pixel vs multi-pixel border rendering
+   - Proper edge handling for 3D effects (light top/left, dark bottom/right)
+   - Focus border offset positioning to avoid overlap with element borders
 
-**Files to Modify**:
-- Create: `BorderRenderer.h/cpp`
-- Modify: `CheckBox.cpp`, `TextBox.cpp`, `OptionSelect.cpp`
-- Update: `meson.build`
+3. **✅ Refactored existing elements**:
+   - **CheckBox**: Replaced 8 lines of manual 3D border drawing with `BorderRenderer::draw3DBorder()`
+   - **TextBox**: Replaced 10 lines of manual 3D border drawing with `BorderRenderer::draw3DBorder()`
+   - **OptionSelect**: Replaced 6 lines of manual border drawing with `BorderRenderer::drawFlatBorder()` and `drawFocusBorder()`
+
+**✅ Results**:
+- **-24 lines** of duplicated border drawing code eliminated
+- **Consistent border styling** across all elements using borders
+- **Standardized border thickness** and 3D effect rendering
+- **Focus border consistency** with proper offset positioning
+- **All functionality preserved** - zero regression in visual appearance
+- **Reusable border utilities** available for future elements
+
+**Files Modified**:
+- ✅ Created: `BorderRenderer.h/cpp`
+- ✅ Updated: `meson.build` to include BorderRenderer.cpp
+- ✅ Refactored: `CheckBox.cpp`, `TextBox.cpp`, `OptionSelect.cpp`
+- ✅ Fixed: VirtualKeyboard method visibility for test compatibility
 
 ---
 **Priority**: MEDIUM | **Effort**: 1 day | **Impact**: Eliminates border drawing duplication**
@@ -342,7 +349,7 @@ void Element::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<The
 
 ---
 
-### **2.2 Tooltip Support**
+### **🚧 2.2 Tooltip Support - STARTING**
 **Priority**: MEDIUM | **Effort**: 2 days | **Impact**: Adds missing standard UI feature**
 
 **Problem**: No hover text support - common UI pattern missing from framework.
@@ -816,9 +823,8 @@ lib/include/uiframework/
 - **Render Boilerplate**: -108 lines (Phase 1.1 RenderContext - COMPLETED)
 - **Interactive Event Handling**: -150+ lines (Phase 1.2 InteractiveElement - COMPLETED)  
 - **Text Truncation**: -65 lines (Phase 1.3 TextUtils - COMPLETED)
-- **Border Drawing**: -45 lines (Phase 2.1 BorderRenderer - PLANNED)
-- **Total Achieved**: 323+ lines of duplicated code eliminated
-- **Total Planned**: 368+ lines when Phase 2.1 completes
+- **Border Drawing**: -24 lines (Phase 2.1 BorderRenderer - COMPLETED)
+- **Total Achieved**: 347+ lines of duplicated code eliminated
 
 ### **New Functionality Added** (Phases 1-4):
 - ✅ Consistent sizing API across all elements

@@ -2,6 +2,7 @@
 #include "uiframework/Helpers.h"
 #include "uiframework/Resources/FontManager.h"
 #include "uiframework/ErrorHandling.h"
+#include "uiframework/Utils/TooltipRenderer.h"
 #include <iostream>
 #include <atomic>
 #include <sstream>
@@ -384,6 +385,41 @@ void ui::UICore::run() {
                 }
             }
             
+            // Handle tooltip tracking
+            if (e.type == SDL_MOUSEMOTION) {
+                std::lock_guard<std::mutex> lock(tooltipMutex);
+                mouseX = e.motion.x;
+                mouseY = e.motion.y;
+                
+                // Find element under mouse
+                std::shared_ptr<UIElement> newHoveredElement = nullptr;
+                {
+                    std::lock_guard<std::mutex> elemLock(elementsMutex);
+                    for (auto& element : elements) {
+                        if (element && element->isVisible() && element->hasTooltip()) {
+                            SDL_Rect rect = {element->x, element->y, element->width, element->height};
+                            if (mouseX >= rect.x && mouseX < rect.x + rect.w &&
+                                mouseY >= rect.y && mouseY < rect.y + rect.h) {
+                                newHoveredElement = element;
+                                break;
+                            }
+                        }
+                    }
+                }
+                
+                // Update hover state
+                if (newHoveredElement != hoveredElement) {
+                    if (hoveredElement) {
+                        hoveredElement->setTooltipVisible(false);
+                        hoveredElement->setHoverStartTime(0);
+                    }
+                    hoveredElement = newHoveredElement;
+                    if (hoveredElement) {
+                        hoveredElement->setHoverStartTime(SDL_GetTicks());
+                    }
+                }
+            }
+            
             // Process pending focus changes and callbacks
             focusManager->processPendingFocusChanges();
             focusManager->processPendingCallbacks();
@@ -400,6 +436,24 @@ void ui::UICore::run() {
                 for (auto& element : elements) {
                     if (element && element->isVisible()) {
                         element->render(resources->getRenderer(), resources->getFont(), theme);
+                    }
+                }
+            }
+            
+            // Render tooltips
+            {
+                std::lock_guard<std::mutex> lock(tooltipMutex);
+                if (hoveredElement && hoveredElement->hasTooltip()) {
+                    Uint32 currentTime = SDL_GetTicks();
+                    if (TooltipRenderer::shouldShowTooltip(hoveredElement->getHoverStartTime(), currentTime)) {
+                        TooltipRenderer::renderTooltip(
+                            resources->getRenderer(), 
+                            resources->getFont(),
+                            theme,
+                            hoveredElement->getTooltip(),
+                            mouseX, mouseY,
+                            width, height
+                        );
                     }
                 }
             }

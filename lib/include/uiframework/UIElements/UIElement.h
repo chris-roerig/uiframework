@@ -47,6 +47,11 @@ public:
     bool visible = true;
     bool enabled = true;
     
+    // Tooltip support
+    std::string tooltip;
+    mutable bool showTooltip = false;
+    mutable Uint32 hoverStartTime = 0;
+    
     UIElement(int x_, int y_, int w_, int h_)
       : x(x_), y(y_), width(w_), height(h_) {}
     
@@ -128,6 +133,17 @@ public:
     bool isEnabled() const {
         return enabled;
     }
+    
+    // Tooltip support
+    void setTooltip(const std::string& text) { tooltip = text; }
+    const std::string& getTooltip() const { return tooltip; }
+    bool hasTooltip() const { return !tooltip.empty(); }
+    
+    // Tooltip state management (used by UICore)
+    void setTooltipVisible(bool visible) const { showTooltip = visible; }
+    bool isTooltipVisible() const { return showTooltip; }
+    void setHoverStartTime(Uint32 time) const { hoverStartTime = time; }
+    Uint32 getHoverStartTime() const { return hoverStartTime; }
 };
 
 } // namespace ui

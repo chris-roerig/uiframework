@@ -97,6 +97,11 @@ public:
         defaultCanvasBackground = Color(0, 43, 54);       // base03
         defaultCanvasGrid = Color(7, 54, 66);             // base02
         defaultCanvasBorder = Color(88, 110, 117);        // base01
+        
+        // Tooltip Colors
+        defaultTooltipBackground = Color(7, 54, 66);      // base02 - dark background
+        defaultTooltipText = Color(147, 161, 161);        // base0 - light text
+        defaultTooltipBorder = Color(88, 110, 117);       // base01 - medium border
     }
 };
 

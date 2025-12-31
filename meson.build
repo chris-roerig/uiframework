@@ -49,6 +49,7 @@ common_sources = [
   'lib/src/ElementPool.cpp',
   'lib/src/RealTime/UIUpdateQueue.cpp',
   'lib/src/Utils/BorderRenderer.cpp',
+  'lib/src/Utils/TooltipRenderer.cpp',
 ]
 
 # Build as shared library
@@ -115,6 +116,14 @@ executable('realtime_lockfree_demo',
 # Real-time batching demo (Phase 2)
 executable('realtime_batching_demo',
   sources : ['examples/realtime_batching_demo.cpp'] + common_sources,
+  dependencies : [sdl2_dep, ttf_dep, sdl2_image_dep],
+  include_directories : ['lib/include'],
+  install : false
+)
+
+# Tooltip demo (Phase 2.2)
+executable('tooltip_demo',
+  sources : ['examples/tooltip_demo.cpp'] + common_sources,
   dependencies : [sdl2_dep, ttf_dep, sdl2_image_dep],
   include_directories : ['lib/include'],
   install : false

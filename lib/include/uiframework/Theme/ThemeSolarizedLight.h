@@ -88,6 +88,11 @@ public:
         defaultCanvasBackground = Color(253, 246, 227);
         defaultCanvasGrid = Color(240, 230, 200);
         defaultCanvasBorder = Color(150, 150, 150);
+        
+        // Tooltip Colors
+        defaultTooltipBackground = Color(238, 232, 213);   // Light cream background
+        defaultTooltipText = Color(101, 123, 131);         // Dark blue-gray text
+        defaultTooltipBorder = Color(147, 161, 161);       // Medium gray border
     }
 };
 
