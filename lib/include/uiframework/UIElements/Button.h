@@ -21,8 +21,10 @@ public:
     bool isInteractive() const override { return true; }
     void activate() override;
 
-    void render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<class Theme> theme) override;
+protected:
+    void renderImpl(const RenderContext& ctx) override;
     
+public:
     // Sizing API implementation
     std::pair<int, int> getPreferredSize(TTF_Font* font) const override;
     std::pair<int, int> getMinimumSize() const override;

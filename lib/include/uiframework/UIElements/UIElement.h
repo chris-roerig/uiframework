@@ -61,7 +61,13 @@ public:
     UIElement& operator=(UIElement&&) = default;
     
     // Core interface methods
-    virtual void render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<class Theme> theme) = 0;
+    virtual void render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<class Theme> theme) final {
+        RenderContext ctx = RenderContext::create(renderer, font, theme);
+        if (ctx.isValid()) {
+            renderImpl(ctx);
+        }
+    }
+    
     virtual void handleEvent(const SDL_Event &e) {}
     virtual bool isInteractive() const { return false; }
     virtual SDL_Rect getFocusRect() const { 
@@ -69,6 +75,11 @@ public:
                         width + 2 * Constants::FOCUS_BORDER_WIDTH, height + 2 * Constants::FOCUS_BORDER_WIDTH }; 
     }
     virtual void activate() { /* default does nothing */ }
+
+protected:
+    virtual void renderImpl(const RenderContext& ctx) = 0;
+    
+public:
     
     // Sizing API - consistent across all elements
     virtual std::pair<int, int> getPreferredSize(TTF_Font* font) const { return {width, height}; }

@@ -3,17 +3,17 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include <memory>
+#include "uiframework/Theme/ThemeBase.h"
 
 namespace ui {
 
-// Forward declaration
-class Theme;
+class UIElement;
 
 /**
- * @brief Unified rendering context for all UI elements
+ * @brief Unified rendering context that eliminates boilerplate from render methods
  * 
- * Eliminates boilerplate code by providing validated rendering parameters
- * in a single structure passed to all render methods.
+ * Consolidates renderer, font, theme, and validation into a single context object
+ * that can be passed to element render implementations.
  */
 struct RenderContext {
     SDL_Renderer* renderer;
@@ -21,27 +21,79 @@ struct RenderContext {
     std::shared_ptr<Theme> theme;
     
     /**
-     * @brief Check if all rendering parameters are valid
-     * @return true if renderer, font, and theme are all non-null
+     * @brief Check if the render context is valid for rendering
+     * @return true if all required parameters are non-null
      */
-    bool isValid() const {
-        return renderer != nullptr && font != nullptr && theme != nullptr;
-    }
+    bool isValid() const;
     
     /**
-     * @brief Create a validated RenderContext
-     * @param r SDL renderer
-     * @param f TTF font
-     * @param t Theme instance
-     * @return RenderContext with validated parameters
+     * @brief Create a validated render context
+     * @param renderer SDL renderer
+     * @param font TTF font
+     * @param theme Theme instance
+     * @return RenderContext instance, check isValid() before use
      */
-    static RenderContext create(SDL_Renderer* r, TTF_Font* f, std::shared_ptr<Theme> t) {
-        RenderContext ctx;
-        ctx.renderer = r;
-        ctx.font = f;
-        ctx.theme = t;
-        return ctx;
-    }
+    static RenderContext create(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<Theme> theme);
+    
+    /**
+     * @brief Get theme colors for buttons
+     */
+    ThemeableElementColors buttonColors() const;
+    
+    /**
+     * @brief Get theme colors for checkboxes
+     */
+    ThemeableElementColors checkboxColors() const;
+    
+    /**
+     * @brief Get theme colors for text inputs
+     */
+    ThemeableElementColors textInputColors() const;
+    
+    /**
+     * @brief Get theme colors for option selects
+     */
+    ThemeableElementColors optionSelectColors() const;
+    
+    /**
+     * @brief Get theme colors for labels
+     */
+    ThemeableElementColors labelColors() const;
+    
+    /**
+     * @brief Get theme colors for progress bars
+     */
+    ThemeableElementColors progressBarColors() const;
+    
+    /**
+     * @brief Get theme colors for sliders
+     */
+    ThemeableElementColors sliderColors() const;
+    
+    /**
+     * @brief Get theme colors for list views
+     */
+    ThemeableElementColors listViewColors() const;
+    
+    /**
+     * @brief Get theme colors for modals
+     */
+    ThemeableElementColors modalColors() const;
+    
+    /**
+     * @brief Get theme colors for context menus
+     */
+    ThemeableElementColors contextMenuColors() const;
+    
+    /**
+     * @brief Get theme colors for tabbed panels
+     */
+    ThemeableElementColors tabbedPanelColors() const;
+    
+    /**
+     * @brief Get theme colors for cycle lists
+     */
+    ThemeableElementColors cycleListColors() const;
 };
 
 } // namespace ui

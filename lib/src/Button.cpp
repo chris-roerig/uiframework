@@ -10,13 +10,9 @@
 
 namespace ui {
 
-void Button::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<Theme> theme) {
-    if (!ErrorHandling::validateRenderParams(renderer, theme)) {
-        return;
-    }
-    
+void Button::renderImpl(const RenderContext& ctx) {
     // Retrieve button colors from the theme
-    auto colors = theme->buttonColors();
+    auto colors = ctx.buttonColors();
     SDL_Rect rect = { x, y, width, height };
 
     // Determine background and text colors based on enabled state
@@ -37,19 +33,19 @@ void Button::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<Them
     }
     
     // Draw button background
-    drawFilledRect(renderer, rect, bg);
+    drawFilledRect(ctx.renderer, rect, bg);
     
     // Draw button border if focused (only when enabled)
     if (hasFocus && enabled) {
         SDL_Rect focusRect = getFocusRect();
-        SDL_SetRenderDrawColor(renderer, textColor.r, textColor.g, textColor.b, textColor.a);
-        SDL_RenderDrawRect(renderer, &focusRect);
+        SDL_SetRenderDrawColor(ctx.renderer, textColor.r, textColor.g, textColor.b, textColor.a);
+        SDL_RenderDrawRect(ctx.renderer, &focusRect);
     }
     
     // Draw the button text
-    if (font && !text.empty()) {
+    if (ctx.font && !text.empty()) {
         SDL_Color sdlColor = { textColor.r, textColor.g, textColor.b, textColor.a };
-        TextCacheEntry* cached = getCachedText("main", text, sdlColor, renderer, font);
+        TextCacheEntry* cached = getCachedText("main", text, sdlColor, ctx.renderer, ctx.font);
         if (cached && cached->texture) {
             SDL_Rect dst;
             dst.w = cached->width;
@@ -57,7 +53,7 @@ void Button::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<Them
             dst.x = x + (width - dst.w) / 2;
             dst.y = y + (height - dst.h) / 2;
             
-            SDL_RenderCopy(renderer, cached->texture, nullptr, &dst);
+            SDL_RenderCopy(ctx.renderer, cached->texture, nullptr, &dst);
         }
     }
 }

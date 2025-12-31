@@ -8,19 +8,15 @@
 
 namespace ui {
 
-void Label::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<Theme> theme) {
-    if (!ErrorHandling::validateTextRenderParams(renderer, theme, font, text)) {
-        return;
-    }
-    
-    ThemeableElementColors tc = theme->labelColors();
+void Label::renderImpl(const RenderContext& ctx) {
+    ThemeableElementColors tc = ctx.labelColors();
     SDL_Color sdlColor = { tc.labelText.r, tc.labelText.g, tc.labelText.b, tc.labelText.a };
     
-    if (font) {
-        TextCacheEntry* cached = getCachedText("main", text, sdlColor, renderer, font);
+    if (ctx.font) {
+        TextCacheEntry* cached = getCachedText("main", text, sdlColor, ctx.renderer, ctx.font);
         if (cached && cached->texture) {
             SDL_Rect dst = { x, y, cached->width, cached->height };
-            SDL_RenderCopy(renderer, cached->texture, nullptr, &dst);
+            SDL_RenderCopy(ctx.renderer, cached->texture, nullptr, &dst);
         }
     }
 }

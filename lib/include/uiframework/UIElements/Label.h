@@ -14,10 +14,13 @@ public:
     Label(int x_, int y_, int w_, int h_, const std::string &text_)
       : UIElement(x_, y_, w_, h_), text(text_) {}
     
-    void render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<class Theme> theme) override;
     void setText(const std::string &text);
     const std::string& getText() const { return text; }
     
+protected:
+    void renderImpl(const RenderContext& ctx) override;
+    
+public:
     // Sizing API implementation
     std::pair<int, int> getPreferredSize(TTF_Font* font) const override;
     std::pair<int, int> getMinimumSize() const override;

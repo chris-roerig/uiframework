@@ -21,6 +21,7 @@ common_sources = [
   'lib/src/TTFManager.cpp',
   'lib/src/UIElement.cpp',
   'lib/src/Utils/TextUtils.cpp',
+  'lib/src/Rendering/RenderContext.cpp',
   'lib/src/Focus/FocusManager.cpp',
   'lib/src/ContextMenu.cpp',
   'lib/src/Modal.cpp',
