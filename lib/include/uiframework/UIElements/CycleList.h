@@ -1,12 +1,12 @@
 #pragma once
-#include "UIElement.h"
+#include "InteractiveElement.h"
 #include <vector>
 #include <string>
 #include <functional>
 
 namespace ui {
 
-class CycleList : public UIElement {
+class CycleList : public InteractiveElement {
 private:
     std::vector<std::string> items;
     int selectedIndex = 0;
@@ -18,9 +18,13 @@ public:
 protected:
     void renderImpl(const RenderContext& ctx) override;
 public:
-    void handleEvent(const SDL_Event &e) override;
-    bool isInteractive() const override { return true; }
-    
+    void activate() override;
+
+protected:
+    void onMouseDown(int x, int y) override;
+    void onKeyDown(const SDL_Keycode& key) override;
+
+public:
     // CycleList-specific methods
     void setItems(const std::vector<std::string>& newItems);
     void setSelectedIndex(int index);

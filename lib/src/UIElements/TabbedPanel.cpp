@@ -7,7 +7,7 @@
 namespace ui {
 
 TabbedPanel::TabbedPanel(int x, int y, int w, int h)
-    : UIElement(x, y, w, h) {
+    : InteractiveElement(x, y, w, h) {
 }
 
 void TabbedPanel::renderImpl(const RenderContext& ctx) {
@@ -84,19 +84,34 @@ void TabbedPanel::renderTabContent(SDL_Renderer* renderer, TTF_Font* font, std::
     updateChildVisibility();
 }
 
-void TabbedPanel::handleEvent(const SDL_Event &e) {
-    if (!visible) return;
-    
-    if (e.type == SDL_MOUSEBUTTONDOWN) {
-        if (e.button.button == SDL_BUTTON_LEFT) {
-            int tabIndex = getTabAtPosition(e.button.x, e.button.y);
-            if (tabIndex >= 0) {
-                setActiveTab(tabIndex);
-                if (coreRef) {
-                    coreRef->setFocus(getId());
-                }
+void TabbedPanel::onMouseDown(int x, int y) {
+    int tabIndex = getTabAtPosition(x, y);
+    if (tabIndex >= 0) {
+        setActiveTab(tabIndex);
+    }
+}
+
+void TabbedPanel::onKeyDown(const SDL_Keycode& key) {
+    switch (key) {
+        case SDLK_LEFT:
+            if (activeTabIndex > 0) {
+                setActiveTab(activeTabIndex - 1);
             }
-        }
+            break;
+        case SDLK_RIGHT:
+            if (activeTabIndex < static_cast<int>(tabs.size()) - 1) {
+                setActiveTab(activeTabIndex + 1);
+            }
+            break;
+    }
+}
+
+void TabbedPanel::activate() {
+    // TabbedPanel activates by cycling to next tab
+    if (activeTabIndex < static_cast<int>(tabs.size()) - 1) {
+        setActiveTab(activeTabIndex + 1);
+    } else {
+        setActiveTab(0);
     }
 }
 

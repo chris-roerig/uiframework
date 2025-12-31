@@ -41,7 +41,7 @@ const std::vector<std::string> VirtualKeyboard::SPECIAL_CHARS = [](){
 }();
 
 VirtualKeyboard::VirtualKeyboard(int x_, int y_, int w_, int h_, std::function<void(char)> callback)
-    : UIElement(x_, y_, w_, h_), onCharInput(callback) {
+    : InteractiveElement(x_, y_, w_, h_), onCharInput(callback) {
     updateCharacterSet();
 }
 
@@ -199,7 +199,9 @@ void VirtualKeyboard::renderImpl(const RenderContext& ctx) {
     }
 }
 
-void VirtualKeyboard::handleEvent(const SDL_Event &e) {
+// VirtualKeyboard event handling moved to InteractiveElement base class
+
+void VirtualKeyboard::onMouseDown(int x, int y) {
     if (e.type == SDL_KEYDOWN) {
         SDL_Keymod mods = SDL_GetModState();
         bool shiftPressed = (mods & KMOD_SHIFT) != 0;
@@ -250,6 +252,10 @@ void VirtualKeyboard::handleEvent(const SDL_Event &e) {
                 break;
         }
     }
+}
+
+void VirtualKeyboard::onMouseDown(int x, int y) {
+    // VirtualKeyboard primarily uses keyboard input
 }
 
 void VirtualKeyboard::setMode(KeyboardMode newMode) {

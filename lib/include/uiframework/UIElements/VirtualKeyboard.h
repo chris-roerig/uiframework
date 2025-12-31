@@ -1,5 +1,5 @@
 #pragma once
-#include "UIElement.h"
+#include "InteractiveElement.h"
 #include <vector>
 #include <string>
 #include <functional>
@@ -14,7 +14,7 @@ enum class KeyboardMode {
     SPECIAL
 };
 
-class VirtualKeyboard : public UIElement {
+class VirtualKeyboard : public InteractiveElement {
 private:
     // Pre-built static character sets for performance
     static const std::vector<std::string> LOWERCASE_CHARS;
@@ -41,13 +41,9 @@ private:
 public:
     VirtualKeyboard(int x_, int y_, int w_, int h_, std::function<void(char)> callback);
     
-    void handleEvent(const SDL_Event &e) override;
-    bool isInteractive() const override { return true; }
-
 protected:
+    void onMouseDown(int x, int y) override;
     void renderImpl(const RenderContext& ctx) override;
-    
-public:
     void setMode(KeyboardMode newMode);
     KeyboardMode getMode() const { return mode; }
     void setSelectedIndex(int index);

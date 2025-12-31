@@ -1,12 +1,12 @@
 #pragma once
-#include "UIElement.h"
+#include "InteractiveElement.h"
 #include <string>
 #include <functional>
 #include <vector>
 
 namespace ui {
 
-class Modal : public UIElement {
+class Modal : public InteractiveElement {
 private:
     int buttonFocusIndex = 0;
     bool dismissed = false;
@@ -21,12 +21,12 @@ public:
     Modal(int x_, int y_, int w_, int h_, const std::string &msg, const std::string &buttonText, 
           bool hasCancel = false, std::function<void()> onCloseCallback = nullptr);
     
-    void handleEvent(const SDL_Event &e) override;
     SDL_Rect getFocusRect() const override;
-    bool isInteractive() const override { return true; }
     void activate() override;
 
 protected:
+    void onMouseDown(int x, int y) override;
+    void onKeyDown(const SDL_Keycode& key) override;
     void renderImpl(const RenderContext& ctx) override;
     
 public:

@@ -12,7 +12,7 @@ namespace ui {
 
 Modal::Modal(int x_, int y_, int w_, int h_, const std::string &msg, const std::string &buttonText, 
              bool hasCancel, std::function<void()> onCloseCallback)
-    : UIElement(x_, y_, w_, h_), message(msg), onDismiss(onCloseCallback) {
+    : InteractiveElement(x_, y_, w_, h_), message(msg), onDismiss(onCloseCallback) {
     
     // Add primary button
     addButton(buttonText, [this, onCloseCallback]() {
@@ -225,47 +225,40 @@ void Modal::renderImpl(const RenderContext& ctx) {
     }
 }
 
-void Modal::handleEvent(const SDL_Event &e) {
-    if (!visible || dismissed) return;
-    
-    if (e.type == SDL_KEYDOWN) {
-        switch (e.key.keysym.sym) {
-            case SDLK_ESCAPE:
-                dismiss();
-                break;
-            case SDLK_RETURN:
-                activate();
-                break;
-            case SDLK_TAB:
-                if (!buttonLabels.empty()) {
-                    buttonFocusIndex = (buttonFocusIndex + 1) % buttonLabels.size();
-                }
-                break;
-            case SDLK_LEFT:
-                if (buttonFocusIndex > 0) {
-                    buttonFocusIndex--;
-                }
-                break;
-            case SDLK_RIGHT:
-                if (buttonFocusIndex < static_cast<int>(buttonLabels.size()) - 1) {
-                    buttonFocusIndex++;
-                }
-                break;
-        }
-    } else if (e.type == SDL_MOUSEBUTTONDOWN) {
-        if (e.button.button == SDL_BUTTON_LEFT) {
-            int mouseX = e.button.x;
-            int mouseY = e.button.y;
-            
-            int clickedButton = getButtonAt(mouseX, mouseY);
-            if (clickedButton >= 0) {
-                buttonFocusIndex = clickedButton;
-                activate();
-            } else if (!containsPoint(mouseX, mouseY)) {
-                // Click outside modal - dismiss if allowed
-                dismiss();
+void Modal::onMouseDown(int x, int y) {
+    int clickedButton = getButtonAt(x, y);
+    if (clickedButton >= 0) {
+        buttonFocusIndex = clickedButton;
+        activate();
+    } else if (!containsPoint(x, y)) {
+        // Click outside modal - dismiss if allowed
+        dismiss();
+    }
+}
+
+void Modal::onKeyDown(const SDL_Keycode& key) {
+    switch (key) {
+        case SDLK_ESCAPE:
+            dismiss();
+            break;
+        case SDLK_RETURN:
+            activate();
+            break;
+        case SDLK_TAB:
+            if (!buttonLabels.empty()) {
+                buttonFocusIndex = (buttonFocusIndex + 1) % buttonLabels.size();
             }
-        }
+            break;
+        case SDLK_LEFT:
+            if (buttonFocusIndex > 0) {
+                buttonFocusIndex--;
+            }
+            break;
+        case SDLK_RIGHT:
+            if (buttonFocusIndex < static_cast<int>(buttonLabels.size()) - 1) {
+                buttonFocusIndex++;
+            }
+            break;
     }
 }
 

@@ -1,5 +1,5 @@
 #pragma once
-#include "UIElement.h"
+#include "InteractiveElement.h"
 #include <vector>
 #include <string>
 #include <memory>
@@ -13,7 +13,7 @@ struct Tab {
     bool active = false;
 };
 
-class TabbedPanel : public UIElement {
+class TabbedPanel : public InteractiveElement {
 private:
     std::vector<Tab> tabs;
     int activeTabIndex = -1;  // No active tab initially
@@ -25,9 +25,11 @@ public:
     
 protected:
     void renderImpl(const RenderContext& ctx) override;
+    void onMouseDown(int x, int y) override;
+    void onKeyDown(const SDL_Keycode& key) override;
+
 public:
-    void handleEvent(const SDL_Event &e) override;
-    bool isInteractive() const override { return true; }
+    void activate() override;
     
     // Tab management
     int addTab(const std::string& title);

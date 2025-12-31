@@ -7,7 +7,7 @@
 namespace ui {
 
 CycleList::CycleList(int x, int y, int w, int h, const std::vector<std::string>& items_)
-    : UIElement(x, y, w, h), items(items_) {
+    : InteractiveElement(x, y, w, h), items(items_) {
     if (items.empty()) {
         items.push_back(""); // Ensure at least one empty item
     }
@@ -104,29 +104,24 @@ void CycleList::renderImpl(const RenderContext& ctx) {
     }
 }
 
-void CycleList::handleEvent(const SDL_Event &e) {
-    if (!visible) return;
-    
-    if (e.type == SDL_MOUSEBUTTONDOWN) {
-        if (e.button.button == SDL_BUTTON_LEFT && containsPoint(e.button.x, e.button.y)) {
-            if (coreRef) {
-                coreRef->setFocus(getId());
-            }
-        }
+void CycleList::onMouseDown(int x, int y) {
+    // Focus handled automatically by InteractiveElement
+}
+
+void CycleList::onKeyDown(const SDL_Keycode& key) {
+    switch (key) {
+        case SDLK_UP:
+            selectPrevious();
+            break;
+        case SDLK_DOWN:
+            selectNext();
+            break;
     }
-    
-    if (!hasFocus) return;
-    
-    if (e.type == SDL_KEYDOWN) {
-        switch (e.key.keysym.sym) {
-            case SDLK_UP:
-                selectPrevious();
-                break;
-            case SDLK_DOWN:
-                selectNext();
-                break;
-        }
-    }
+}
+
+void CycleList::activate() {
+    // CycleList activates by cycling to next item
+    selectNext();
 }
 
 void CycleList::setItems(const std::vector<std::string>& newItems) {
