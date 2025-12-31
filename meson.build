@@ -137,6 +137,14 @@ executable('spacing_demo',
   install : false
 )
 
+# Feature showcase demo (All Phases 1-2)
+executable('feature_showcase',
+  sources : ['examples/feature_showcase.cpp'] + common_sources,
+  dependencies : [sdl2_dep, ttf_dep, sdl2_image_dep],
+  include_directories : ['lib/include'],
+  install : false
+)
+
 # Bulk operations demo (Phase 6)
 executable('bulk_operations_demo',
   sources : ['examples/bulk_operations_demo.cpp'] + common_sources,
