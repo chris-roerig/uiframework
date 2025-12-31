@@ -5,6 +5,7 @@
 #include "uiframework/Constants.h"
 #include "uiframework/ErrorHandling.h"
 #include "uiframework/Utils/TextUtils.h"
+#include "uiframework/Utils/BorderRenderer.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include <iostream>
@@ -56,15 +57,7 @@ void TextBox::renderImpl(const RenderContext& ctx) {
     drawFilledRect(ctx.renderer, rect, bgColor);
     
     // Draw 3D border
-    SDL_SetRenderDrawColor(ctx.renderer, tc.textInputBorderLight.r, tc.textInputBorderLight.g,
-                           tc.textInputBorderLight.b, tc.textInputBorderLight.a);
-    SDL_RenderDrawLine(ctx.renderer, x, y, x + width, y);
-    SDL_RenderDrawLine(ctx.renderer, x, y, x, y + boxHeight);
-    
-    SDL_SetRenderDrawColor(ctx.renderer, tc.textInputBorderDark.r, tc.textInputBorderDark.g,
-                           tc.textInputBorderDark.b, tc.textInputBorderDark.a);
-    SDL_RenderDrawLine(ctx.renderer, x, y + boxHeight, x + width, y + boxHeight);
-    SDL_RenderDrawLine(ctx.renderer, x + width, y, x + width, y + boxHeight);
+    ui::BorderRenderer::draw3DBorder(ctx.renderer, rect, tc.textInputBorderLight, tc.textInputBorderDark);
     
     // Draw focus indicator (only when enabled)
     if (hasFocus && enabled) {

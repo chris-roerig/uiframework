@@ -201,56 +201,54 @@ void VirtualKeyboard::renderImpl(const RenderContext& ctx) {
 
 // VirtualKeyboard event handling moved to InteractiveElement base class
 
-void VirtualKeyboard::onMouseDown(int x, int y) {
-    if (e.type == SDL_KEYDOWN) {
-        SDL_Keymod mods = SDL_GetModState();
-        bool shiftPressed = (mods & KMOD_SHIFT) != 0;
-        
-        switch (e.key.keysym.sym) {
-            case SDLK_LSHIFT:
-            case SDLK_RSHIFT:
-                cycleMode();
-                break;
-                
-            case SDLK_RETURN:
-            case SDLK_KP_ENTER: {
-                if (shiftPressed) {
-                    // Shift + Enter = backspace
-                    handleBackspace();
-                } else {
-                    auto now = std::chrono::steady_clock::now();
-                    auto timeSinceLastEnter = std::chrono::duration_cast<std::chrono::milliseconds>(
-                        now - lastEnterTime).count();
-                    
-                    if (timeSinceLastEnter < DOUBLE_PRESS_MS) {
-                        // Double press - send space
-                        if (onCharInput) onCharInput(' ');
-                    } else {
-                        // Single press - input current character
-                        inputCurrentChar();
-                    }
-                    lastEnterTime = now;
-                }
-                break;
-            }
+void VirtualKeyboard::onKeyDown(const SDL_Keycode& key) {
+    SDL_Keymod mods = SDL_GetModState();
+    bool shiftPressed = (mods & KMOD_SHIFT) != 0;
+    
+    switch (key) {
+        case SDLK_LSHIFT:
+        case SDLK_RSHIFT:
+            cycleMode();
+            break;
             
-            case SDLK_LEFT:
-            case SDLK_RIGHT:
-                if (mods & KMOD_CTRL) {
-                    // Ctrl + Left/Right = move cursor
-                    int direction = (e.key.keysym.sym == SDLK_LEFT) ? -1 : 1;
-                    handleCursorMove(direction);
-                } else {
-                    // Regular navigation
-                    handleNavigation(e.key.keysym.sym);
-                }
-                break;
+        case SDLK_RETURN:
+        case SDLK_KP_ENTER: {
+            if (shiftPressed) {
+                // Shift + Enter = backspace
+                handleBackspace();
+            } else {
+                auto now = std::chrono::steady_clock::now();
+                auto timeSinceLastEnter = std::chrono::duration_cast<std::chrono::milliseconds>(
+                    now - lastEnterTime).count();
                 
-            case SDLK_UP:
-            case SDLK_DOWN:
-                handleNavigation(e.key.keysym.sym);
-                break;
+                if (timeSinceLastEnter < DOUBLE_PRESS_MS) {
+                    // Double press - send space
+                    if (onCharInput) onCharInput(' ');
+                } else {
+                    // Single press - input current character
+                    inputCurrentChar();
+                }
+                lastEnterTime = now;
+            }
+            break;
         }
+        
+        case SDLK_LEFT:
+        case SDLK_RIGHT:
+            if (mods & KMOD_CTRL) {
+                // Ctrl + Left/Right = move cursor
+                int direction = (key == SDLK_LEFT) ? -1 : 1;
+                handleCursorMove(direction);
+            } else {
+                // Regular navigation
+                handleNavigation(key);
+            }
+            break;
+            
+        case SDLK_UP:
+        case SDLK_DOWN:
+            handleNavigation(key);
+            break;
     }
 }
 

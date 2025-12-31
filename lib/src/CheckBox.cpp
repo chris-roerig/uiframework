@@ -4,6 +4,7 @@
 #include "uiframework/UICore.h"
 #include "uiframework/Constants.h"
 #include "uiframework/ErrorHandling.h"
+#include "uiframework/Utils/BorderRenderer.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include <iostream>
@@ -22,13 +23,7 @@ void CheckBox::renderImpl(const RenderContext& ctx) {
     drawFilledRect(ctx.renderer, rect, bgColor);
     
     // Draw 3D border for the checkbox
-    SDL_SetRenderDrawColor(ctx.renderer, tc.checkboxBorderLight.r, tc.checkboxBorderLight.g, tc.checkboxBorderLight.b, tc.checkboxBorderLight.a);
-    SDL_RenderDrawLine(ctx.renderer, rect.x, rect.y, rect.x + rect.w, rect.y);         // Top edge
-    SDL_RenderDrawLine(ctx.renderer, rect.x, rect.y, rect.x, rect.y + rect.h);         // Left edge
-    
-    SDL_SetRenderDrawColor(ctx.renderer, tc.checkboxBorderDark.r, tc.checkboxBorderDark.g, tc.checkboxBorderDark.b, tc.checkboxBorderDark.a);
-    SDL_RenderDrawLine(ctx.renderer, rect.x, rect.y + rect.h, rect.x + rect.w, rect.y + rect.h); // Bottom edge
-    SDL_RenderDrawLine(ctx.renderer, rect.x + rect.w, rect.y, rect.x + rect.w, rect.y + rect.h); // Right edge
+    ui::BorderRenderer::draw3DBorder(ctx.renderer, rect, tc.checkboxBorderLight, tc.checkboxBorderDark);
     
     // Draw focus indicator (only when enabled)
     if (hasFocus && enabled) {

@@ -48,6 +48,7 @@ common_sources = [
   'lib/src/GridLayout.cpp',
   'lib/src/ElementPool.cpp',
   'lib/src/RealTime/UIUpdateQueue.cpp',
+  'lib/src/Utils/BorderRenderer.cpp',
 ]
 
 # Build as shared library

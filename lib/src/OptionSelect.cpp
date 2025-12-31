@@ -4,6 +4,7 @@
 #include "uiframework/UICore.h"
 #include "uiframework/Constants.h"
 #include "uiframework/Utils/TextUtils.h"
+#include "uiframework/Utils/BorderRenderer.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include <algorithm>
@@ -88,14 +89,12 @@ void OptionSelect::renderCollapsed(SDL_Renderer* renderer, TTF_Font* font, std::
     drawFilledRect(renderer, cellRect, bgColor);
     
     // Draw border
-    SDL_SetRenderDrawColor(renderer, borderColor.r, borderColor.g, borderColor.b, borderColor.a);
-    SDL_RenderDrawRect(renderer, &cellRect);
+    ui::BorderRenderer::drawFlatBorder(renderer, cellRect, borderColor);
     
     // Draw focus indicator (only when enabled)
     if (hasFocus && enabled) {
         SDL_Rect focusRect = getFocusRect();
-        SDL_SetRenderDrawColor(renderer, borderColor.r, borderColor.g, borderColor.b, borderColor.a);
-        SDL_RenderDrawRect(renderer, &focusRect);
+        ui::BorderRenderer::drawFocusBorder(renderer, focusRect, borderColor);
     }
     
     // Render current selection text

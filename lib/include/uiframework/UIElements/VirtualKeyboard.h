@@ -41,13 +41,15 @@ private:
 public:
     VirtualKeyboard(int x_, int y_, int w_, int h_, std::function<void(char)> callback);
     
-protected:
-    void onMouseDown(int x, int y) override;
-    void renderImpl(const RenderContext& ctx) override;
     void setMode(KeyboardMode newMode);
     KeyboardMode getMode() const { return mode; }
     void setSelectedIndex(int index);
     int getSelectedIndex() const { return selectedIndex; }
+    
+protected:
+    void onMouseDown(int x, int y) override;
+    void onKeyDown(const SDL_Keycode& key) override;
+    void renderImpl(const RenderContext& ctx) override;
     
     // Set callbacks for text editing
     void setOnBackspace(std::function<void()> callback) { onBackspace = callback; }
