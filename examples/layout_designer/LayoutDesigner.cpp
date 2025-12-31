@@ -3,41 +3,76 @@
 #include <sstream>
 #include <random>
 
-LayoutDesigner::LayoutDesigner() : ui("Layout Designer - All Elements", 1200, 800) {
+LayoutDesigner::LayoutDesigner() : ui("Layout Designer - All Elements + New Features", 1200, 800) {
     setupToolbar();
 }
 
 void LayoutDesigner::setupToolbar() {
-    // Row 1 - Basic elements
+    // Row 1 - Basic elements with new features
     addButtonBtn = ui.createButton("Button", 10, 10, [this]() { addButton(); });
+    addButtonBtn->setTooltip("Add a button with padding and tooltip");
+    
     addLabelBtn = ui.createButton("Label", 80, 10, [this]() { addLabel(); });
+    addLabelBtn->setTooltip("Add an auto-sized label");
+    
     addTextBoxBtn = ui.createButton("TextBox", 140, 10, [this]() { addTextBox(); });
+    addTextBoxBtn->setTooltip("Add a text input with padding");
+    
     addCheckBoxBtn = ui.createButton("CheckBox", 210, 10, [this]() { addCheckBox(); });
+    addCheckBoxBtn->setTooltip("Add a checkbox (enabled/disabled demo)");
+    
     addCanvasBtn = ui.createButton("Canvas", 290, 10, [this]() { addCanvas(); });
+    addCanvasBtn->setTooltip("Add a drawing canvas");
     
     // Row 2 - Advanced elements
     addSliderBtn = ui.createButton("Slider", 10, 40, [this]() { addSlider(); });
+    addSliderBtn->setTooltip("Add a value slider");
+    
     addProgressBarBtn = ui.createButton("ProgressBar", 80, 40, [this]() { addProgressBar(); });
+    addProgressBarBtn->setTooltip("Add a progress indicator");
+    
     addListViewBtn = ui.createButton("ListView", 170, 40, [this]() { addListView(); });
+    addListViewBtn->setTooltip("Add a scrollable list");
+    
     addOptionSelectBtn = ui.createButton("OptionSelect", 260, 40, [this]() { addOptionSelect(); });
+    addOptionSelectBtn->setTooltip("Add a dropdown selector");
+    
     addImageBtn = ui.createButton("Image", 360, 40, [this]() { addImage(); });
+    addImageBtn->setTooltip("Add an image placeholder");
     
-    // Row 3 - Actions
+    // Row 3 - Actions and theme switching
     showLayoutBtn = ui.createButton("Show Layout", 10, 70, [this]() { showLayout(); });
-    clearAllBtn = ui.createButton("Clear All", 110, 70, [this]() { clearAll(); });
-    randomizeBtn = ui.createButton("Randomize", 190, 70, [this]() { randomizePositions(); });
+    showLayoutBtn->setTooltip("Print all element positions to console");
     
-    // Instructions and stats
-    instructionsLabel = ui.createLabel("Click buttons to add elements. Use 'Randomize' to reposition elements.", 10, 95);
+    clearAllBtn = ui.createButton("Clear All", 110, 70, [this]() { clearAll(); });
+    clearAllBtn->setTooltip("Remove all design elements");
+    
+    randomizeBtn = ui.createButton("Randomize", 190, 70, [this]() { randomizePositions(); });
+    randomizeBtn->setTooltip("Randomly reposition all elements");
+    
+    // 🆕 Theme switching buttons
+    themeBtn1 = ui.createButton("Framework", 290, 70, [this]() { ui.setTheme("Framework"); });
+    themeBtn1->setTooltip("Switch to Framework (dark) theme");
+    
+    themeBtn2 = ui.createButton("Solarized", 380, 70, [this]() { ui.setTheme("SolarizedLight"); });
+    themeBtn2->setTooltip("Switch to Solarized Light theme");
+    
+    // Instructions and stats with tooltips
+    instructionsLabel = ui.createLabel("🆕 Layout Designer with Tooltips, Padding, Disabled States & Theme Switching", 10, 95);
+    instructionsLabel->setTooltip("This designer showcases all new UI framework features");
+    
     statsLabel = ui.createLabel("Elements: 0", 600, 95);
+    statsLabel->setTooltip("Live count of design elements");
     
     // Design area background
     designArea = ui.createCanvas(0, DESIGN_AREA_Y, 1200, 800 - DESIGN_AREA_Y);
     designArea->filledRect({0, 0, 1200, 800 - DESIGN_AREA_Y}, {245, 245, 245, 255});
     designArea->rect({0, 0, 1200, 800 - DESIGN_AREA_Y}, {100, 100, 100, 255});
+    designArea->setTooltip("Design area - elements will appear here");
     
     updateStats();
 }
+
 void LayoutDesigner::addButton() {
     static int count = 0;
     std::string text = "Button " + std::to_string(++count);
@@ -49,6 +84,17 @@ void LayoutDesigner::addButton() {
     auto button = ui.createButton(text, x, y, [currentCount]() {
         std::cout << "Design Button " << currentCount << " clicked!" << std::endl;
     });
+    
+    // 🆕 Add new features to buttons
+    button->setTooltip("Design button #" + std::to_string(currentCount) + " - click to test");
+    if (count % 3 == 0) {
+        button->setPadding(8); // Every 3rd button gets padding
+    }
+    if (count % 5 == 0) {
+        button->setEnabled(false); // Every 5th button is disabled
+        button->setTooltip("Disabled button #" + std::to_string(currentCount) + " - demonstrates disabled state");
+    }
+    
     designElements.emplace_back(button, "Button", x, y, 100, 30);
     updateStats();
 }
@@ -61,6 +107,12 @@ void LayoutDesigner::addLabel() {
     int y = DESIGN_AREA_Y + 80 + (count * 20) % 400;
     
     auto label = ui.createLabel(text, x, y);
+    // 🆕 Add new features to labels
+    label->setTooltip("Auto-sized label #" + std::to_string(count));
+    if (count % 2 == 0) {
+        label->setPadding(4); // Every other label gets padding
+    }
+    
     designElements.emplace_back(label, "Label", x, y, 80, 25);
     updateStats();
 }
@@ -73,6 +125,14 @@ void LayoutDesigner::addTextBox() {
     int y = DESIGN_AREA_Y + 130 + (count * 25) % 400;
     
     auto textBox = ui.createTextBox(text, x, y);
+    // 🆕 Add new features to textboxes
+    textBox->setTooltip("Text input #" + std::to_string(count) + " - type here");
+    textBox->setPadding(6); // All textboxes get padding for better text positioning
+    if (count % 4 == 0) {
+        textBox->setEnabled(false); // Every 4th textbox is disabled
+        textBox->setTooltip("Disabled text input #" + std::to_string(count));
+    }
+    
     designElements.emplace_back(textBox, "TextBox", x, y, 120, 25);
     updateStats();
 }
@@ -152,9 +212,12 @@ void LayoutDesigner::addOptionSelect() {
     
     std::vector<std::string> options = {"Option A", "Option B", "Option C"};
     int currentCount = count + 1; // Copy for lambda capture
-    auto optionSelect = ui.createOptionSelect(0, options, x, y, [currentCount](int index) {
+    auto optionSelect = ui.createOptionSelect(options, 0, x, y, [currentCount](int index) {
         std::cout << "OptionSelect " << currentCount << " selected: " << index << std::endl;
     });
+    // 🆕 Add new features to option select
+    optionSelect->setTooltip("Dropdown selector #" + std::to_string(currentCount));
+    
     designElements.emplace_back(optionSelect, "OptionSelect", x, y, 100, 25);
     count++;
     updateStats();

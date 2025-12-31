@@ -37,7 +37,18 @@ uiframework_lib = static_library('uiframework',
     '../../lib/src/Modal.cpp',
     '../../lib/src/Image.cpp',
     '../../lib/src/Sprite.cpp',
-    '../../lib/src/AnimatedSprite.cpp'
+    '../../lib/src/AnimatedSprite.cpp',
+    # 🆕 New framework components
+    '../../lib/src/InteractiveElement.cpp',
+    '../../lib/src/Rendering/RenderContext.cpp',
+    '../../lib/src/Utils/TextUtils.cpp',
+    '../../lib/src/Utils/BorderRenderer.cpp',
+    '../../lib/src/Utils/TooltipRenderer.cpp',
+    '../../lib/src/UIElements/CycleList.cpp',
+    '../../lib/src/UIElements/TabbedPanel.cpp',
+    '../../lib/src/ElementPool.cpp',
+    '../../lib/src/RealTime/UIUpdateQueue.cpp',
+    '../../lib/src/Focus/FocusManager.cpp'
   ],
   include_directories: uiframework_inc,
   dependencies: [sdl2_dep, sdl2_ttf_dep, sdl2_image_dep]
@@ -67,12 +78,12 @@ executable('simple_layout_designer',
   install: false
 )
 
-# Keyboard Layout Designer (pure SDL)
-executable('keyboard_layout_designer',
-  sources: [
-    'keyboard_layout_designer.cpp'
-  ],
-  include_directories: uiframework_inc,
-  dependencies: [sdl2_dep, sdl2_ttf_dep],
-  install: false
-)
+# Keyboard Layout Designer (pure SDL) - DISABLED due to duplicate case error
+# executable('keyboard_layout_designer',
+#   sources: [
+#     'keyboard_layout_designer.cpp'
+#   ],
+#   include_directories: uiframework_inc,
+#   dependencies: [sdl2_dep, sdl2_ttf_dep],
+#   install: false
+# )

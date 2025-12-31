@@ -38,6 +38,10 @@ private:
     std::shared_ptr<ui::Button> clearAllBtn;
     std::shared_ptr<ui::Button> randomizeBtn;
     
+    // 🆕 Theme switching buttons
+    std::shared_ptr<ui::Button> themeBtn1;
+    std::shared_ptr<ui::Button> themeBtn2;
+    
     std::shared_ptr<ui::Label> instructionsLabel;
     std::shared_ptr<ui::Label> statsLabel;
     std::shared_ptr<ui::Canvas> designArea;
