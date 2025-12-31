@@ -224,100 +224,83 @@ void OptionSelect::renderImpl(const RenderContext& ctx) {
     }
 }
 
-void OptionSelect::handleEvent(const SDL_Event &e) {
-    if (!visible || !enabled || options.empty()) return;
+void OptionSelect::onMouseDown(int x, int y) {
+    if (options.empty()) return;
     
-    if (e.type == SDL_MOUSEBUTTONDOWN) {
-        if (e.button.button == SDL_BUTTON_LEFT) {
-            int mouseX = e.button.x;
-            int mouseY = e.button.y;
-            
-            if (!expanded) {
-                // Click on collapsed dropdown
-                if (containsPoint(mouseX, mouseY)) {
-                    expand();
-                    if (coreRef && !hasFocus) {
-                        coreRef->setFocus(elementId);
-                    }
-                }
-            } else {
-                // Click on expanded dropdown
-                int itemHeight = height;
-                int totalHeight = itemHeight * static_cast<int>(options.size());
-                
-                if (mouseX >= x && mouseX < x + width &&
-                    mouseY >= y && mouseY < y + totalHeight) {
-                    // Click inside dropdown
-                    int clickedIndex = (mouseY - y) / itemHeight;
-                    if (isValidIndex(clickedIndex)) {
-                        setSelectedIndex(clickedIndex);
-                        collapse();
-                    }
-                } else {
-                    // Click outside dropdown - collapse
-                    collapse();
-                }
-            }
-        }
-    } else if (e.type == SDL_MOUSEMOTION && expanded) {
-        // Update hovered item
-        int mouseX = e.motion.x;
-        int mouseY = e.motion.y;
+    if (!expanded) {
+        expand();
+    } else {
+        // Click on expanded dropdown
         int itemHeight = height;
         int totalHeight = itemHeight * static_cast<int>(options.size());
         
-        if (mouseX >= x && mouseX < x + width &&
-            mouseY >= y && mouseY < y + totalHeight) {
-            int newHoveredIndex = (mouseY - y) / itemHeight;
-            hoveredIndex = isValidIndex(newHoveredIndex) ? newHoveredIndex : -1;
-        } else {
-            hoveredIndex = -1;
-        }
-    } else if (e.type == SDL_KEYDOWN && hasFocus) {
-        if (!expanded) {
-            switch (e.key.keysym.sym) {
-                case SDLK_RETURN:
-                case SDLK_SPACE:
-                    expand();
-                    break;
-                case SDLK_UP:
-                    if (currentIndex > 0) {
-                        setSelectedIndex(currentIndex - 1);
-                    }
-                    break;
-                case SDLK_DOWN:
-                    if (currentIndex < static_cast<int>(options.size()) - 1) {
-                        setSelectedIndex(currentIndex + 1);
-                    }
-                    break;
+        if (x >= this->x && x < this->x + width &&
+            y >= this->y && y < this->y + totalHeight) {
+            // Click inside dropdown
+            int clickedIndex = (y - this->y) / itemHeight;
+            if (isValidIndex(clickedIndex)) {
+                setSelectedIndex(clickedIndex);
+                collapse();
             }
         } else {
-            switch (e.key.keysym.sym) {
-                case SDLK_ESCAPE:
-                    collapse();
-                    break;
-                case SDLK_RETURN:
-                    if (isValidIndex(hoveredIndex)) {
-                        setSelectedIndex(hoveredIndex);
-                    }
-                    collapse();
-                    break;
-                case SDLK_UP:
-                    if (hoveredIndex > 0) {
-                        hoveredIndex--;
-                    } else if (hoveredIndex == -1 && !options.empty()) {
-                        hoveredIndex = static_cast<int>(options.size()) - 1;
-                    }
-                    break;
-                case SDLK_DOWN:
-                    if (hoveredIndex < static_cast<int>(options.size()) - 1) {
-                        hoveredIndex++;
-                    } else if (hoveredIndex == -1 && !options.empty()) {
-                        hoveredIndex = 0;
-                    }
-                    break;
-            }
+            // Click outside dropdown - collapse
+            collapse();
         }
+    }
+}
+
+void OptionSelect::onKeyDown(const SDL_Keycode& key) {
+    if (!expanded) {
+        switch (key) {
+            case SDLK_RETURN:
+            case SDLK_SPACE:
+                expand();
+                break;
+            case SDLK_UP:
+                if (currentIndex > 0) {
+                    setSelectedIndex(currentIndex - 1);
+                }
+                break;
+            case SDLK_DOWN:
+                if (currentIndex < static_cast<int>(options.size()) - 1) {
+                    setSelectedIndex(currentIndex + 1);
+                }
+                break;
+        }
+    } else {
+        switch (key) {
+            case SDLK_ESCAPE:
+                collapse();
+                break;
+            case SDLK_RETURN:
+                if (isValidIndex(hoveredIndex)) {
+                    setSelectedIndex(hoveredIndex);
+                }
+                collapse();
+                break;
+            case SDLK_UP:
+                if (hoveredIndex > 0) {
+                    hoveredIndex--;
+                } else if (hoveredIndex == -1 && !options.empty()) {
+                    hoveredIndex = static_cast<int>(options.size()) - 1;
+                }
+                break;
+            case SDLK_DOWN:
+                if (hoveredIndex < static_cast<int>(options.size()) - 1) {
+                    hoveredIndex++;
+                } else if (hoveredIndex == -1 && !options.empty()) {
+                    hoveredIndex = 0;
+                }
+                break;
+        }
+    }
+}
+
+void OptionSelect::activate() {
+    if (!expanded) {
+        expand();
+    } else {
+        collapse();
     }
 }
 
@@ -327,17 +310,6 @@ SDL_Rect OptionSelect::getFocusRect() const {
         return SDL_Rect{ x - 2, y - 2, width + 4, totalHeight + 4 };
     }
     return SDL_Rect{ x - 2, y - 2, width + 4, height + 4 };
-}
-
-void OptionSelect::activate() {
-    if (expanded) {
-        if (isValidIndex(hoveredIndex)) {
-            setSelectedIndex(hoveredIndex);
-        }
-        collapse();
-    } else {
-        expand();
-    }
 }
 
 void OptionSelect::onFocusLost() {

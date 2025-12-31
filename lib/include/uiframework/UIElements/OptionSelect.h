@@ -1,12 +1,12 @@
 #pragma once
-#include "UIElement.h"
+#include "InteractiveElement.h"
 #include <vector>
 #include <string>
 #include <functional>
 
 namespace ui {
 
-class OptionSelect : public UIElement {
+class OptionSelect : public InteractiveElement {
 private:
     bool expanded = false;     // whether drop-down is open
     int hoveredIndex = -1;     // index being hovered over in dropdown
@@ -34,18 +34,18 @@ public:
     std::function<void(int)> onSelect;
     
     OptionSelect(int x_, int y_, int w_, int h_, int current, const std::vector<std::string>& opts, std::function<void(int)> callback = nullptr)
-      : UIElement(x_, y_, w_, h_), currentIndex(current), options(opts), onSelect(callback) {
+      : InteractiveElement(x_, y_, w_, h_), currentIndex(current), options(opts), onSelect(callback) {
         if (!isValidIndex(currentIndex)) {
             currentIndex = options.empty() ? -1 : 0;
         }
     }
     
-    void handleEvent(const SDL_Event &e) override;
-    bool isInteractive() const override { return true; }
     SDL_Rect getFocusRect() const override;
     void activate() override;
 
 protected:
+    void onMouseDown(int x, int y) override;
+    void onKeyDown(const SDL_Keycode& key) override;
     void renderImpl(const RenderContext& ctx) override;
     
 public:

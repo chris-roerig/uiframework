@@ -11,7 +11,7 @@
 namespace ui {
 
 ListView::ListView(int x_, int y_, int w_, int h_, const std::vector<std::string>& items_, int itemHeight_)
-    : UIElement(x_, y_, w_, h_), items(items_), itemHeight(itemHeight_) {
+    : InteractiveElement(x_, y_, w_, h_), items(items_), itemHeight(itemHeight_) {
     filteredItems = items; // Initially show all items
 }
 
@@ -116,110 +116,67 @@ void ListView::renderImpl(const RenderContext& ctx) {
     }
 }
 
-void ListView::handleEvent(const SDL_Event &e) {
-    if (!visible) return;
-    
+void ListView::onMouseDown(int x, int y) {
     const auto& currentItems = getCurrentItems();
     
-    if (e.type == SDL_MOUSEBUTTONDOWN) {
-        if (e.button.button == SDL_BUTTON_LEFT) {
-            int mouseX = e.button.x;
-            int mouseY = e.button.y;
-            
-            if (containsPoint(mouseX, mouseY)) {
-                if (coreRef) {
-                    std::string elementIdCopy = elementId;
-                    coreRef->queueCallback([this, elementIdCopy]() {
-                        if (coreRef) {
-                            coreRef->setFocus(elementIdCopy);
-                        }
-                    });
-                }
-                
-                int clickedItem = getItemAt(mouseX, mouseY);
-                if (clickedItem >= 0 && clickedItem < static_cast<int>(currentItems.size())) {
-                    if (multiSelect && (e.button.clicks == 1)) {
-                        // Toggle selection in multi-select mode
-                        auto it = std::find(selectedIndices.begin(), selectedIndices.end(), clickedItem);
-                        if (it != selectedIndices.end()) {
-                            selectedIndices.erase(it);
-                        } else {
-                            selectedIndices.push_back(clickedItem);
-                        }
-                        if (onSelectionChange && coreRef) {
-                            std::vector<int> currentSelection = selectedIndices;
-                            coreRef->queueCallback([this, currentSelection]() {
-                                if (onSelectionChange) {
-                                    onSelectionChange(currentSelection);
-                                }
-                            });
-                        }
-                    } else {
-                        // Single selection
-                        setSelectedIndex(clickedItem);
-                        if (e.button.clicks == 2 && onItemActivated && coreRef) {
-                            int activatedItem = clickedItem;
-                            coreRef->queueCallback([this, activatedItem]() {
-                                if (onItemActivated) {
-                                    onItemActivated(activatedItem);
-                                }
-                            });
-                        }
+    int clickedItem = getItemAt(x, y);
+    if (clickedItem >= 0 && clickedItem < static_cast<int>(currentItems.size())) {
+        if (multiSelect) {
+            // Toggle selection in multi-select mode
+            auto it = std::find(selectedIndices.begin(), selectedIndices.end(), clickedItem);
+            if (it != selectedIndices.end()) {
+                selectedIndices.erase(it);
+            } else {
+                selectedIndices.push_back(clickedItem);
+            }
+            if (onSelectionChange && coreRef) {
+                std::vector<int> currentSelection = selectedIndices;
+                coreRef->queueCallback([this, currentSelection]() {
+                    if (onSelectionChange) {
+                        onSelectionChange(currentSelection);
                     }
-                }
+                });
             }
-        }
-    } else if (e.type == SDL_MOUSEMOTION) {
-        int mouseX = e.motion.x;
-        int mouseY = e.motion.y;
-        
-        if (containsPoint(mouseX, mouseY)) {
-            hoveredIndex = getItemAt(mouseX, mouseY);
         } else {
-            hoveredIndex = -1;
+            // Single selection
+            setSelectedIndex(clickedItem);
         }
-    } else if (e.type == SDL_KEYDOWN && hasFocus) {
-        switch (e.key.keysym.sym) {
-            case SDLK_UP:
-                if (selectedIndex > 0) {
-                    setSelectedIndex(selectedIndex - 1);
-                    scrollToItem(selectedIndex);
-                }
-                break;
-            case SDLK_DOWN:
-                if (selectedIndex < static_cast<int>(currentItems.size()) - 1) {
-                    setSelectedIndex(selectedIndex + 1);
-                    scrollToItem(selectedIndex);
-                }
-                break;
-            case SDLK_PAGEUP:
-                scrollUp();
-                break;
-            case SDLK_PAGEDOWN:
-                scrollDown();
-                break;
-            case SDLK_HOME:
-                setSelectedIndex(0);
-                scrollToItem(0);
-                break;
-            case SDLK_END:
-                setSelectedIndex(static_cast<int>(currentItems.size()) - 1);
+    }
+}
+
+void ListView::onKeyDown(const SDL_Keycode& key) {
+    const auto& currentItems = getCurrentItems();
+    
+    switch (key) {
+        case SDLK_UP:
+            if (selectedIndex > 0) {
+                setSelectedIndex(selectedIndex - 1);
                 scrollToItem(selectedIndex);
-                break;
-            case SDLK_RETURN:
-                activate();
-                break;
-        }
-    } else if (e.type == SDL_MOUSEWHEEL) {
-        int mouseX, mouseY;
-        SDL_GetMouseState(&mouseX, &mouseY);
-        if (containsPoint(mouseX, mouseY)) {
-            if (e.wheel.y > 0) {
-                scrollUp();
-            } else if (e.wheel.y < 0) {
-                scrollDown();
             }
-        }
+            break;
+        case SDLK_DOWN:
+            if (selectedIndex < static_cast<int>(currentItems.size()) - 1) {
+                setSelectedIndex(selectedIndex + 1);
+                scrollToItem(selectedIndex);
+            }
+            break;
+        case SDLK_PAGEUP:
+            scrollUp();
+            break;
+        case SDLK_PAGEDOWN:
+            scrollDown();
+            break;
+        case SDLK_HOME:
+            setSelectedIndex(0);
+            scrollToItem(0);
+            break;
+        case SDLK_END:
+            setSelectedIndex(static_cast<int>(currentItems.size()) - 1);
+            scrollToItem(selectedIndex);
+            break;
+        case SDLK_RETURN:
+            activate();
+            break;
     }
 }
 

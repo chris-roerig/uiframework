@@ -12,7 +12,7 @@
 namespace ui {
 
 ContextMenu::ContextMenu(int x_, int y_, int w_, int h_, const std::vector<TopMenuItem>& menus)
-    : UIElement(x_, y_, w_, h_) {
+    : InteractiveElement(x_, y_, w_, h_) {
     setMenuItems(menus);
 }
 
@@ -180,98 +180,76 @@ void ContextMenu::renderImpl(const RenderContext& ctx) {
     }
 }
 
-void ContextMenu::handleEvent(const SDL_Event &e) {
-    if (!visible) return;
+void ContextMenu::onMouseDown(int x, int y) {
+    if (expanded) {
+        // Check if clicking on submenu
+        int subItem = getSubItemAt(x, y);
+        if (subItem >= 0) {
+            selectSubItem(subItem);
+            activate();
+            return;
+        }
+    }
     
-    if (e.type == SDL_MOUSEBUTTONDOWN) {
-        if (e.button.button == SDL_BUTTON_LEFT) {
-            int mouseX = e.button.x;
-            int mouseY = e.button.y;
-            
+    // Check if clicking on top-level menu
+    int topItem = getItemAt(x, y);
+    if (topItem >= 0) {
+        if (topItem == activeItemIndex && expanded) {
+            collapseMenu();
+        } else {
+            setActiveItem(topItem);
+            expandMenu();
+        }
+    } else {
+        collapseMenu();
+    }
+}
+
+void ContextMenu::onKeyDown(const SDL_Keycode& key) {
+    switch (key) {
+        case SDLK_ESCAPE:
+            collapseMenu();
+            break;
+        case SDLK_RETURN:
             if (expanded) {
-                // Check if clicking on submenu
-                int subItem = getSubItemAt(mouseX, mouseY);
-                if (subItem >= 0) {
-                    selectSubItem(subItem);
-                    activate();
-                    return;
-                }
+                activate();
+            } else if (activeItemIndex >= 0) {
+                expandMenu();
             }
-            
-            // Check if clicking on top-level menu
-            int topItem = getItemAt(mouseX, mouseY);
-            if (topItem >= 0) {
-                if (topItem == activeItemIndex && expanded) {
-                    collapseMenu();
-                } else {
-                    setActiveItem(topItem);
-                    expandMenu();
-                }
-            } else {
-                collapseMenu();
-            }
-        }
-    } else if (e.type == SDL_MOUSEMOTION) {
-        int mouseX = e.motion.x;
-        int mouseY = e.motion.y;
-        
-        if (expanded) {
-            hoveredSubIndex = getSubItemAt(mouseX, mouseY);
-        }
-        
-        int newHoveredItem = getItemAt(mouseX, mouseY);
-        if (newHoveredItem != hoveredItemIndex) {
-            hoveredItemIndex = newHoveredItem;
-            if (expanded && hoveredItemIndex >= 0) {
-                setActiveItem(hoveredItemIndex);
-            }
-        }
-    } else if (e.type == SDL_KEYDOWN && hasFocus) {
-        switch (e.key.keysym.sym) {
-            case SDLK_ESCAPE:
-                collapseMenu();
-                break;
-            case SDLK_RETURN:
+            break;
+        case SDLK_LEFT:
+            if (activeItemIndex > 0) {
+                setActiveItem(activeItemIndex - 1);
                 if (expanded) {
-                    activate();
-                } else if (activeItemIndex >= 0) {
                     expandMenu();
                 }
-                break;
-            case SDLK_LEFT:
-                if (activeItemIndex > 0) {
-                    setActiveItem(activeItemIndex - 1);
-                    if (expanded) {
-                        expandMenu();
-                    }
-                }
-                break;
-            case SDLK_RIGHT:
-                if (activeItemIndex < static_cast<int>(items.size()) - 1) {
-                    setActiveItem(activeItemIndex + 1);
-                    if (expanded) {
-                        expandMenu();
-                    }
-                }
-                break;
-            case SDLK_UP:
-                if (expanded && subMenuSelectedIndex > 0) {
-                    subMenuSelectedIndex--;
-                }
-                break;
-            case SDLK_DOWN:
+            }
+            break;
+        case SDLK_RIGHT:
+            if (activeItemIndex < static_cast<int>(items.size()) - 1) {
+                setActiveItem(activeItemIndex + 1);
                 if (expanded) {
-                    if (activeItemIndex >= 0 && activeItemIndex < static_cast<int>(items.size())) {
-                        int maxSub = static_cast<int>(items[activeItemIndex].subItemLabels.size()) - 1;
-                        if (subMenuSelectedIndex < maxSub) {
-                            subMenuSelectedIndex++;
-                        }
-                    }
-                } else if (activeItemIndex >= 0) {
                     expandMenu();
                 }
-                break;
-        }
+            }
+            break;
+        case SDLK_UP:
+            if (expanded && subMenuSelectedIndex > 0) {
+                subMenuSelectedIndex--;
+            }
+            break;
+        case SDLK_DOWN:
+            if (expanded) {
+                if (activeItemIndex >= 0 && activeItemIndex < static_cast<int>(items.size())) {
+                    int maxSub = static_cast<int>(items[activeItemIndex].subItemLabels.size()) - 1;
+                    if (subMenuSelectedIndex < maxSub) {
+                        subMenuSelectedIndex++;
+                    }
+                }
+            } else if (activeItemIndex >= 0) {
+                expandMenu();
+            }
+            break;
     }
 }
 

@@ -1,12 +1,12 @@
 #pragma once
-#include "UIElement.h"
+#include "InteractiveElement.h"
 #include <vector>
 #include <string>
 #include <functional>
 
 namespace ui {
 
-class ListView : public UIElement {
+class ListView : public InteractiveElement {
 private:
     int hoveredIndex = -1; // Index being hovered over
     
@@ -32,10 +32,12 @@ public:
     // Constructor
     ListView(int x_, int y_, int w_, int h_, const std::vector<std::string>& items_, int itemHeight_ = 30);
     
-    void handleEvent(const SDL_Event &e) override;
-    bool isInteractive() const override { return true; }
     SDL_Rect getFocusRect() const override;
     void activate() override;
+
+protected:
+    void onMouseDown(int x, int y) override;
+    void onKeyDown(const SDL_Keycode& key) override;
 
 protected:
     void renderImpl(const RenderContext& ctx) override;

@@ -1,5 +1,5 @@
 #pragma once
-#include "UIElement.h"
+#include "InteractiveElement.h"
 #include <vector>
 #include <string>
 #include <functional>
@@ -26,7 +26,7 @@ struct MenuItem {
 };
 
 // ContextMenu: A full-width menu bar that spans the application
-class ContextMenu : public UIElement {
+class ContextMenu : public InteractiveElement {
 private:
     int hoveredItemIndex = -1;
     int hoveredSubIndex = -1;
@@ -46,13 +46,15 @@ public:
     
     ContextMenu(int x_, int y_, int w_, int h_, const std::vector<TopMenuItem>& menus);
     
-    void handleEvent(const SDL_Event &e) override;
-    bool isInteractive() const override { return true; }
     SDL_Rect getFocusRect() const override;
     void activate() override;
 
 protected:
+    void onMouseDown(int x, int y) override;
+    void onKeyDown(const SDL_Keycode& key) override;
     void renderImpl(const RenderContext& ctx) override;
+
+public:
     
 public:
     // Menu management
