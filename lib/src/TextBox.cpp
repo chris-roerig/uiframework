@@ -31,11 +31,7 @@ void TextBox::invalidateStringCache() {
     displayCache.valid = false;
 }
 
-void TextBox::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<Theme> theme) {
-    if (!ErrorHandling::validateRenderParams(renderer, theme)) {
-        return;
-    }
-    
+void TextBox::renderImpl(const RenderContext& ctx) {
     // Check if dimensions changed and invalidate cache if needed
     if (width != lastWidth || height != lastHeight) {
         invalidateStringCache();
@@ -45,40 +41,40 @@ void TextBox::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<The
     
     const int padding = ui::Constants::DEFAULT_PADDING;
     int boxHeight = height;
-    if (font) {
-        boxHeight = std::max(height, TTF_FontLineSkip(font) + 2 * padding);
+    if (ctx.font) {
+        boxHeight = std::max(height, TTF_FontLineSkip(ctx.font) + 2 * padding);
     }
     
     SDL_Rect rect = { x, y, width, boxHeight };
-    ThemeableElementColors tc = theme->textInputColors();
+    ThemeableElementColors tc = ctx.textInputColors();
     
     // Determine colors based on enabled state
     Color bgColor = enabled ? tc.textInputBackground : tc.textInputDisabled;
     Color textColor = enabled ? tc.textInputText : tc.textInputTextDisabled;
     
     // Draw background
-    drawFilledRect(renderer, rect, bgColor);
+    drawFilledRect(ctx.renderer, rect, bgColor);
     
     // Draw 3D border
-    SDL_SetRenderDrawColor(renderer, tc.textInputBorderLight.r, tc.textInputBorderLight.g,
+    SDL_SetRenderDrawColor(ctx.renderer, tc.textInputBorderLight.r, tc.textInputBorderLight.g,
                            tc.textInputBorderLight.b, tc.textInputBorderLight.a);
-    SDL_RenderDrawLine(renderer, x, y, x + width, y);
-    SDL_RenderDrawLine(renderer, x, y, x, y + boxHeight);
+    SDL_RenderDrawLine(ctx.renderer, x, y, x + width, y);
+    SDL_RenderDrawLine(ctx.renderer, x, y, x, y + boxHeight);
     
-    SDL_SetRenderDrawColor(renderer, tc.textInputBorderDark.r, tc.textInputBorderDark.g,
+    SDL_SetRenderDrawColor(ctx.renderer, tc.textInputBorderDark.r, tc.textInputBorderDark.g,
                            tc.textInputBorderDark.b, tc.textInputBorderDark.a);
-    SDL_RenderDrawLine(renderer, x, y + boxHeight, x + width, y + boxHeight);
-    SDL_RenderDrawLine(renderer, x + width, y, x + width, y + boxHeight);
+    SDL_RenderDrawLine(ctx.renderer, x, y + boxHeight, x + width, y + boxHeight);
+    SDL_RenderDrawLine(ctx.renderer, x + width, y, x + width, y + boxHeight);
     
     // Draw focus indicator (only when enabled)
     if (hasFocus && enabled) {
         SDL_Rect focusRect = getFocusRect();
-        SDL_SetRenderDrawColor(renderer, textColor.r, textColor.g, textColor.b, textColor.a);
-        SDL_RenderDrawRect(renderer, &focusRect);
+        SDL_SetRenderDrawColor(ctx.renderer, textColor.r, textColor.g, textColor.b, textColor.a);
+        SDL_RenderDrawRect(ctx.renderer, &focusRect);
     }
     
     // Render text content
-    if (font && !content.empty()) {
+    if (ctx.font && !content.empty()) {
         int availableWidth = width - 2 * padding;
         if (availableWidth <= 0) return;
         
@@ -92,16 +88,16 @@ void TextBox::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<The
                 // Render selected text with highlighted background (only when enabled)
                 SDL_Color bgColor = { textColor.r, textColor.g, textColor.b, textColor.a };
                 SDL_Color selTextColor = { bgColor.r, bgColor.g, bgColor.b, bgColor.a };
-                surface = TTF_RenderText_Shaded(font, displayText.c_str(), selTextColor, bgColor);
+                surface = TTF_RenderText_Shaded(ctx.font, displayText.c_str(), selTextColor, bgColor);
             } else {
-                surface = TTF_RenderText_Solid(font, displayText.c_str(), sdlTextColor);
+                surface = TTF_RenderText_Solid(ctx.font, displayText.c_str(), sdlTextColor);
             }
             
             if (surface) {
-                SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+                SDL_Texture* texture = SDL_CreateTextureFromSurface(ctx.renderer, surface);
                 if (texture) {
                     SDL_Rect dst = { x + padding, y + padding, surface->w, surface->h };
-                    SDL_RenderCopy(renderer, texture, nullptr, &dst);
+                    SDL_RenderCopy(ctx.renderer, texture, nullptr, &dst);
                     SDL_DestroyTexture(texture);
                 } else {
                     SDL_FreeSurface(surface);
@@ -117,13 +113,13 @@ void TextBox::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<The
             if (cursorPosition > 0 && cursorPosition <= content.length()) {
                 std::string beforeCursor = content.substr(0, cursorPosition);
                 int beforeWidth = 0;
-                if (TTF_SizeText(font, beforeCursor.c_str(), &beforeWidth, nullptr) == 0) {
+                if (TTF_SizeText(ctx.font, beforeCursor.c_str(), &beforeWidth, nullptr) == 0) {
                     cursorX += beforeWidth;
                 }
             }
             SDL_Color textColor = { tc.textInputText.r, tc.textInputText.g, tc.textInputText.b, tc.textInputText.a };
-            SDL_SetRenderDrawColor(renderer, textColor.r, textColor.g, textColor.b, textColor.a);
-            SDL_RenderDrawLine(renderer, cursorX, y + padding, cursorX, y + boxHeight - padding);
+            SDL_SetRenderDrawColor(ctx.renderer, textColor.r, textColor.g, textColor.b, textColor.a);
+            SDL_RenderDrawLine(ctx.renderer, cursorX, y + padding, cursorX, y + boxHeight - padding);
         }
     }
 }

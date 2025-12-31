@@ -14,11 +14,14 @@ public:
     CheckBox(int x_, int y_, int size, bool initial = false, std::function<void(bool)> callback = nullptr)
       : UIElement(x_, y_, size, size), checked(initial), onToggle(callback) {}
     
-    void render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<class Theme> theme) override;
     void handleEvent(const SDL_Event &e) override;
     bool isInteractive() const override { return true; }
     void activate() override;
     
+protected:
+    void renderImpl(const RenderContext& ctx) override;
+    
+public:
     // Sizing API implementation
     std::pair<int, int> getPreferredSize(TTF_Font* font) const override;
     std::pair<int, int> getMinimumSize() const override;

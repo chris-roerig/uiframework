@@ -10,35 +10,31 @@
 
 namespace ui {
 
-void CheckBox::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<Theme> theme) {
-    if (!ErrorHandling::validateRenderParams(renderer, theme)) {
-        return;
-    }
-    
+void CheckBox::renderImpl(const RenderContext& ctx) {
     SDL_Rect rect = { x, y, width, height };
-    ThemeableElementColors tc = theme->checkboxColors();
+    ThemeableElementColors tc = ctx.checkboxColors();
     
     // Determine colors based on enabled state
     Color bgColor = enabled ? tc.checkboxEnabled : tc.checkboxDisabled;
     Color checkColor = enabled ? tc.checkboxChecked : tc.checkboxDisabled;
     
     // Draw checkbox background
-    drawFilledRect(renderer, rect, bgColor);
+    drawFilledRect(ctx.renderer, rect, bgColor);
     
     // Draw 3D border for the checkbox
-    SDL_SetRenderDrawColor(renderer, tc.checkboxBorderLight.r, tc.checkboxBorderLight.g, tc.checkboxBorderLight.b, tc.checkboxBorderLight.a);
-    SDL_RenderDrawLine(renderer, rect.x, rect.y, rect.x + rect.w, rect.y);         // Top edge
-    SDL_RenderDrawLine(renderer, rect.x, rect.y, rect.x, rect.y + rect.h);         // Left edge
+    SDL_SetRenderDrawColor(ctx.renderer, tc.checkboxBorderLight.r, tc.checkboxBorderLight.g, tc.checkboxBorderLight.b, tc.checkboxBorderLight.a);
+    SDL_RenderDrawLine(ctx.renderer, rect.x, rect.y, rect.x + rect.w, rect.y);         // Top edge
+    SDL_RenderDrawLine(ctx.renderer, rect.x, rect.y, rect.x, rect.y + rect.h);         // Left edge
     
-    SDL_SetRenderDrawColor(renderer, tc.checkboxBorderDark.r, tc.checkboxBorderDark.g, tc.checkboxBorderDark.b, tc.checkboxBorderDark.a);
-    SDL_RenderDrawLine(renderer, rect.x, rect.y + rect.h, rect.x + rect.w, rect.y + rect.h); // Bottom edge
-    SDL_RenderDrawLine(renderer, rect.x + rect.w, rect.y, rect.x + rect.w, rect.y + rect.h); // Right edge
+    SDL_SetRenderDrawColor(ctx.renderer, tc.checkboxBorderDark.r, tc.checkboxBorderDark.g, tc.checkboxBorderDark.b, tc.checkboxBorderDark.a);
+    SDL_RenderDrawLine(ctx.renderer, rect.x, rect.y + rect.h, rect.x + rect.w, rect.y + rect.h); // Bottom edge
+    SDL_RenderDrawLine(ctx.renderer, rect.x + rect.w, rect.y, rect.x + rect.w, rect.y + rect.h); // Right edge
     
     // Draw focus indicator (only when enabled)
     if (hasFocus && enabled) {
         SDL_Rect focusRect = getFocusRect();
-        SDL_SetRenderDrawColor(renderer, checkColor.r, checkColor.g, checkColor.b, checkColor.a);
-        SDL_RenderDrawRect(renderer, &focusRect);
+        SDL_SetRenderDrawColor(ctx.renderer, checkColor.r, checkColor.g, checkColor.b, checkColor.a);
+        SDL_RenderDrawRect(ctx.renderer, &focusRect);
     }
     
     // If checked, draw a filled square
@@ -49,7 +45,7 @@ void CheckBox::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<Th
             width - 2 * (ui::Constants::BORDER_OFFSET + 2),
             height - 2 * (ui::Constants::BORDER_OFFSET + 2)
         };
-        drawFilledRect(renderer, checkRect, checkColor);
+        drawFilledRect(ctx.renderer, checkRect, checkColor);
     }
 }
 
