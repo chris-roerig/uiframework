@@ -13,31 +13,31 @@ CycleList::CycleList(int x, int y, int w, int h, const std::vector<std::string>&
     }
 }
 
-void CycleList::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<Theme> theme) {
+void CycleList::renderImpl(const RenderContext& ctx) {
     if (!visible) return;
     
-    auto colors = theme->cycleListColors();
+    auto colors = ctx.cycleListColors();
     
     // Draw main background
-    SDL_SetRenderDrawColor(renderer, colors.cycleListBackground.r, colors.cycleListBackground.g, 
+    SDL_SetRenderDrawColor(ctx.renderer, colors.cycleListBackground.r, colors.cycleListBackground.g, 
                           colors.cycleListBackground.b, colors.cycleListBackground.a);
     SDL_Rect bgRect = {x, y, width, height};
-    SDL_RenderFillRect(renderer, &bgRect);
+    SDL_RenderFillRect(ctx.renderer, &bgRect);
     
     // Draw borders (top, left, right normal thickness)
-    SDL_SetRenderDrawColor(renderer, colors.cycleListBorder.r, colors.cycleListBorder.g, 
+    SDL_SetRenderDrawColor(ctx.renderer, colors.cycleListBorder.r, colors.cycleListBorder.g, 
                           colors.cycleListBorder.b, colors.cycleListBorder.a);
     
     // Top border
-    SDL_RenderDrawLine(renderer, x, y, x + width - 1, y);
+    SDL_RenderDrawLine(ctx.renderer, x, y, x + width - 1, y);
     // Left border  
-    SDL_RenderDrawLine(renderer, x, y, x, y + height - 1);
+    SDL_RenderDrawLine(ctx.renderer, x, y, x, y + height - 1);
     // Right border
-    SDL_RenderDrawLine(renderer, x + width - 1, y, x + width - 1, y + height - 1);
+    SDL_RenderDrawLine(ctx.renderer, x + width - 1, y, x + width - 1, y + height - 1);
     
     // Draw thicker bottom border (2px)
-    SDL_RenderDrawLine(renderer, x, y + height - 1, x + width - 1, y + height - 1);
-    SDL_RenderDrawLine(renderer, x, y + height - 2, x + width - 1, y + height - 2);
+    SDL_RenderDrawLine(ctx.renderer, x, y + height - 1, x + width - 1, y + height - 1);
+    SDL_RenderDrawLine(ctx.renderer, x, y + height - 2, x + width - 1, y + height - 2);
     
     // Render current value text
     if (!items.empty()) {
@@ -49,12 +49,12 @@ void CycleList::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<T
         
         auto* textEntry = getCachedText("current_value", items[selectedIndex], 
                                        {colors.cycleListText.r, colors.cycleListText.g, colors.cycleListText.b, colors.cycleListText.a}, 
-                                       renderer, font);
+                                       ctx.renderer, ctx.font);
         if (textEntry && textEntry->texture) {
             int textX = x + 5; // Small padding
             int textY = y + (height - textEntry->height) / 2;
             SDL_Rect textRect = {textX, textY, textEntry->width, textEntry->height};
-            SDL_RenderCopy(renderer, textEntry->texture, nullptr, &textRect);
+            SDL_RenderCopy(ctx.renderer, textEntry->texture, nullptr, &textRect);
             
             // Render inverted text over indicator area if text overlaps
             if (items.size() > 1 && textX < indicatorX + segmentWidth && textX + textEntry->width > indicatorX &&
@@ -62,7 +62,7 @@ void CycleList::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<T
                 
                 auto* invertedTextEntry = getCachedText("inverted_value", items[selectedIndex], 
                                                        {colors.cycleListBackground.r, colors.cycleListBackground.g, colors.cycleListBackground.b, colors.cycleListBackground.a}, 
-                                                       renderer, font);
+                                                       ctx.renderer, ctx.font);
                 if (invertedTextEntry && invertedTextEntry->texture) {
                     // Calculate intersection area
                     int clipX = std::max(textX, indicatorX);
@@ -73,7 +73,7 @@ void CycleList::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<T
                     if (clipW > 0 && clipH > 0) {
                         SDL_Rect srcRect = {clipX - textX, clipY - textY, clipW, clipH};
                         SDL_Rect dstRect = {clipX, clipY, clipW, clipH};
-                        SDL_RenderCopy(renderer, invertedTextEntry->texture, &srcRect, &dstRect);
+                        SDL_RenderCopy(ctx.renderer, invertedTextEntry->texture, &srcRect, &dstRect);
                     }
                 }
             }
@@ -88,19 +88,19 @@ void CycleList::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<T
         int indicatorHeight = 4;
         
         // Draw indicator background with border color
-        SDL_SetRenderDrawColor(renderer, colors.cycleListIndicator.r, colors.cycleListIndicator.g, 
+        SDL_SetRenderDrawColor(ctx.renderer, colors.cycleListIndicator.r, colors.cycleListIndicator.g, 
                               colors.cycleListIndicator.b, colors.cycleListIndicator.a);
         SDL_Rect indicatorRect = {indicatorX, indicatorY, segmentWidth, indicatorHeight};
-        SDL_RenderFillRect(renderer, &indicatorRect);
+        SDL_RenderFillRect(ctx.renderer, &indicatorRect);
     }
     
     // Draw focus border if focused
     if (hasFocus) {
-        auto focusColors = theme->focusColors();
-        SDL_SetRenderDrawColor(renderer, focusColors.focusBorder.r, focusColors.focusBorder.g, 
+        auto focusColors = ctx.theme->focusColors();
+        SDL_SetRenderDrawColor(ctx.renderer, focusColors.focusBorder.r, focusColors.focusBorder.g, 
                               focusColors.focusBorder.b, focusColors.focusBorder.a);
         SDL_Rect focusRect = {x - 1, y - 1, width + 2, height + 2};
-        SDL_RenderDrawRect(renderer, &focusRect);
+        SDL_RenderDrawRect(ctx.renderer, &focusRect);
     }
 }
 

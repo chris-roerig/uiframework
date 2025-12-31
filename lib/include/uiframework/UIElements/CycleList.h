@@ -15,7 +15,9 @@ private:
 public:
     CycleList(int x, int y, int w, int h, const std::vector<std::string>& items_);
     
-    void render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<Theme> theme) override;
+protected:
+    void renderImpl(const RenderContext& ctx) override;
+public:
     void handleEvent(const SDL_Event &e) override;
     bool isInteractive() const override { return true; }
     

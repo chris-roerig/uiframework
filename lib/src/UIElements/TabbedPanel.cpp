@@ -10,31 +10,31 @@ TabbedPanel::TabbedPanel(int x, int y, int w, int h)
     : UIElement(x, y, w, h) {
 }
 
-void TabbedPanel::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<Theme> theme) {
+void TabbedPanel::renderImpl(const RenderContext& ctx) {
     if (!visible) return;
     
     // Draw panel background
-    auto colors = theme->tabbedPanelColors();
-    SDL_SetRenderDrawColor(renderer, colors.tabbedPanelBackground.r, colors.tabbedPanelBackground.g, 
+    auto colors = ctx.tabbedPanelColors();
+    SDL_SetRenderDrawColor(ctx.renderer, colors.tabbedPanelBackground.r, colors.tabbedPanelBackground.g, 
                           colors.tabbedPanelBackground.b, colors.tabbedPanelBackground.a);
     SDL_Rect panelRect = {x, y + tabHeight, width, height - tabHeight};
-    SDL_RenderFillRect(renderer, &panelRect);
+    SDL_RenderFillRect(ctx.renderer, &panelRect);
     
     // Draw panel border
-    SDL_SetRenderDrawColor(renderer, colors.tabbedPanelBorder.r, colors.tabbedPanelBorder.g, 
+    SDL_SetRenderDrawColor(ctx.renderer, colors.tabbedPanelBorder.r, colors.tabbedPanelBorder.g, 
                           colors.tabbedPanelBorder.b, colors.tabbedPanelBorder.a);
-    SDL_RenderDrawRect(renderer, &panelRect);
+    SDL_RenderDrawRect(ctx.renderer, &panelRect);
     
-    renderTabs(renderer, font, theme);
-    renderTabContent(renderer, font, theme);
+    renderTabs(ctx.renderer, ctx.font, ctx.theme);
+    renderTabContent(ctx.renderer, ctx.font, ctx.theme);
     
     // Draw focus border if focused
     if (hasFocus) {
-        auto focusColors = theme->focusColors();
-        SDL_SetRenderDrawColor(renderer, focusColors.focusBorder.r, focusColors.focusBorder.g, 
+        auto focusColors = ctx.theme->focusColors();
+        SDL_SetRenderDrawColor(ctx.renderer, focusColors.focusBorder.r, focusColors.focusBorder.g, 
                               focusColors.focusBorder.b, focusColors.focusBorder.a);
         SDL_Rect focusRect = {x - 1, y - 1, width + 2, height + 2};
-        SDL_RenderDrawRect(renderer, &focusRect);
+        SDL_RenderDrawRect(ctx.renderer, &focusRect);
     }
 }
 
