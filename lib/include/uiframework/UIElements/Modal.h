@@ -21,12 +21,15 @@ public:
     Modal(int x_, int y_, int w_, int h_, const std::string &msg, const std::string &buttonText, 
           bool hasCancel = false, std::function<void()> onCloseCallback = nullptr);
     
-    void render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<class Theme> theme) override;
     void handleEvent(const SDL_Event &e) override;
     SDL_Rect getFocusRect() const override;
     bool isInteractive() const override { return true; }
     void activate() override;
+
+protected:
+    void renderImpl(const RenderContext& ctx) override;
     
+public:
     // Modal management
     void dismiss();
     bool isDismissed() const { return dismissed; }

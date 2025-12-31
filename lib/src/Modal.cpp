@@ -31,28 +31,28 @@ Modal::Modal(int x_, int y_, int w_, int h_, const std::string &msg, const std::
     }
 }
 
-void Modal::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<Theme> theme) {
-    if (!renderer || !theme || dismissed) {
+void Modal::renderImpl(const RenderContext& ctx) {
+    if (dismissed) {
         return;
     }
     
-    ThemeableElementColors tc = theme->modalColors();
+    ThemeableElementColors tc = ctx.modalColors();
     
     // Draw semi-transparent overlay over entire screen
     if (coreRef) {
         SDL_Rect screenRect = { 0, 0, 800, 600 }; // Use default screen size for now
         Color overlayColor = { 0, 0, 0, 128 }; // Semi-transparent black
-        drawFilledRect(renderer, screenRect, overlayColor);
+        drawFilledRect(ctx.ctx.renderer, screenRect, overlayColor);
     }
     
     // Draw modal background
     SDL_Rect modalRect = { x, y, width, height };
-    drawFilledRect(renderer, modalRect, tc.modalBackground);
+    drawFilledRect(ctx.renderer, modalRect, tc.modalBackground);
     
     // Draw modal border
-    SDL_SetRenderDrawColor(renderer, tc.modalBorder.r, tc.modalBorder.g, 
+    SDL_SetRenderDrawColor(ctx.renderer, tc.modalBorder.r, tc.modalBorder.g, 
                           tc.modalBorder.b, tc.modalBorder.a);
-    SDL_RenderDrawRect(renderer, &modalRect);
+    SDL_RenderDrawRect(ctx.renderer, &modalRect);
     
     // Draw title bar (optional)
     SDL_Rect titleRect = { x, y, width, ui::Constants::MODAL_TITLE_HEIGHT };
@@ -60,15 +60,15 @@ void Modal::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<Theme
     titleColor.r = std::max(0, static_cast<int>(titleColor.r) - ui::Constants::COLOR_DARKEN_AMOUNT);
     titleColor.g = std::max(0, static_cast<int>(titleColor.g) - ui::Constants::COLOR_DARKEN_AMOUNT);
     titleColor.b = std::max(0, static_cast<int>(titleColor.b) - ui::Constants::COLOR_DARKEN_AMOUNT);
-    drawFilledRect(renderer, titleRect, titleColor);
+    drawFilledRect(ctx.renderer, titleRect, titleColor);
     
     // Draw message text
-    if (font && !message.empty()) {
+    if (ctx.font && !message.empty()) {
         SDL_Color textColor = { tc.modalText.r, tc.modalText.g, tc.modalText.b, tc.modalText.a };
         
         // Simple word wrapping for message
         const int padding = ui::Constants::MODAL_PADDING;
-        const int lineHeight = TTF_FontLineSkip(font);
+        const int lineHeight = TTF_FontLineSkip(ctx.font);
         int textY = y + 40; // Below title bar
         int availableWidth = width - 2 * padding;
         
@@ -98,12 +98,12 @@ void Modal::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<Theme
             if (word == "\n") {
                 // Render current line and start new one
                 if (!currentLine.empty()) {
-                    SDL_Surface* surface = TTF_RenderText_Solid(font, currentLine.c_str(), textColor);
+                    SDL_Surface* surface = TTF_RenderText_Solid(ctx.font, currentLine.c_str(), textColor);
                     if (surface) {
-                        SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+                        SDL_Texture* texture = SDL_CreateTextureFromSurface(ctx.renderer, surface);
                         if (texture) {
                             SDL_Rect dst = { x + padding, textY, surface->w, surface->h };
-                            SDL_RenderCopy(renderer, texture, nullptr, &dst);
+                            SDL_RenderCopy(ctx.renderer, texture, nullptr, &dst);
                             SDL_DestroyTexture(texture);
                         }
                         SDL_FreeSurface(surface);
@@ -116,19 +116,19 @@ void Modal::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<Theme
             
             std::string testLine = currentLine.empty() ? word : currentLine + " " + word;
             int testWidth = 0;
-            TTF_SizeText(font, testLine.c_str(), &testWidth, nullptr);
+            TTF_SizeText(ctx.font, testLine.c_str(), &testWidth, nullptr);
             
             if (testWidth <= availableWidth) {
                 currentLine = testLine;
             } else {
                 // Render current line and start new one with current word
                 if (!currentLine.empty()) {
-                    SDL_Surface* surface = TTF_RenderText_Solid(font, currentLine.c_str(), textColor);
+                    SDL_Surface* surface = TTF_RenderText_Solid(ctx.font, currentLine.c_str(), textColor);
                     if (surface) {
-                        SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+                        SDL_Texture* texture = SDL_CreateTextureFromSurface(ctx.renderer, surface);
                         if (texture) {
                             SDL_Rect dst = { x + padding, textY, surface->w, surface->h };
-                            SDL_RenderCopy(renderer, texture, nullptr, &dst);
+                            SDL_RenderCopy(ctx.renderer, texture, nullptr, &dst);
                             SDL_DestroyTexture(texture);
                         }
                         SDL_FreeSurface(surface);
@@ -141,12 +141,12 @@ void Modal::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<Theme
         
         // Render final line
         if (!currentLine.empty()) {
-            SDL_Surface* surface = TTF_RenderText_Solid(font, currentLine.c_str(), textColor);
+            SDL_Surface* surface = TTF_RenderText_Solid(ctx.font, currentLine.c_str(), textColor);
             if (surface) {
-                SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+                SDL_Texture* texture = SDL_CreateTextureFromSurface(ctx.renderer, surface);
                 if (texture) {
                     SDL_Rect dst = { x + padding, textY, surface->w, surface->h };
-                    SDL_RenderCopy(renderer, texture, nullptr, &dst);
+                    SDL_RenderCopy(ctx.renderer, texture, nullptr, &dst);
                     SDL_DestroyTexture(texture);
                 }
                 SDL_FreeSurface(surface);
@@ -163,9 +163,9 @@ void Modal::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<Theme
         int totalButtonWidth = 0;
         for (const auto& label : buttonLabels) {
             int buttonWidth = ui::Constants::MIN_BUTTON_WIDTH; // Default width
-            if (font) {
+            if (ctx.font) {
                 int textWidth = 0;
-                TTF_SizeText(font, label.c_str(), &textWidth, nullptr);
+                TTF_SizeText(ctx.font, label.c_str(), &textWidth, nullptr);
                 buttonWidth = std::max(ui::Constants::MIN_BUTTON_WIDTH, textWidth + ui::Constants::BUTTON_TEXT_PADDING);
             }
             totalButtonWidth += buttonWidth;
@@ -176,9 +176,9 @@ void Modal::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<Theme
         
         for (size_t i = 0; i < buttonLabels.size(); i++) {
             int buttonWidth = ui::Constants::MIN_BUTTON_WIDTH;
-            if (font) {
+            if (ctx.font) {
                 int textWidth = 0;
-                TTF_SizeText(font, buttonLabels[i].c_str(), &textWidth, nullptr);
+                TTF_SizeText(ctx.font, buttonLabels[i].c_str(), &textWidth, nullptr);
                 buttonWidth = std::max(ui::Constants::MIN_BUTTON_WIDTH, textWidth + ui::Constants::BUTTON_TEXT_PADDING);
             }
             
@@ -192,20 +192,20 @@ void Modal::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<Theme
                 buttonBg.g = std::min(ui::Constants::FULL_ALPHA, static_cast<int>(buttonBg.g) + ui::Constants::COLOR_LIGHTEN_AMOUNT);
                 buttonBg.b = std::min(255, static_cast<int>(buttonBg.b) + 30);
             }
-            drawFilledRect(renderer, buttonRect, buttonBg);
+            drawFilledRect(ctx.renderer, buttonRect, buttonBg);
             
             // Draw button border
-            SDL_SetRenderDrawColor(renderer, tc.modalButtonBorder.r, tc.modalButtonBorder.g, 
+            SDL_SetRenderDrawColor(ctx.renderer, tc.modalButtonBorder.r, tc.modalButtonBorder.g, 
                                   tc.modalButtonBorder.b, tc.modalButtonBorder.a);
-            SDL_RenderDrawRect(renderer, &buttonRect);
+            SDL_RenderDrawRect(ctx.renderer, &buttonRect);
             
             // Draw button text
-            if (font) {
+            if (ctx.font) {
                 SDL_Color buttonTextColor = { tc.modalButtonText.r, tc.modalButtonText.g, 
                                             tc.modalButtonText.b, tc.modalButtonText.a };
-                SDL_Surface* surface = TTF_RenderText_Solid(font, buttonLabels[i].c_str(), buttonTextColor);
+                SDL_Surface* surface = TTF_RenderText_Solid(ctx.font, buttonLabels[i].c_str(), buttonTextColor);
                 if (surface) {
-                    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+                    SDL_Texture* texture = SDL_CreateTextureFromSurface(ctx.renderer, surface);
                     if (texture) {
                         SDL_Rect textRect = { 
                             buttonX + (buttonWidth - surface->w) / 2,
@@ -213,7 +213,7 @@ void Modal::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<Theme
                             surface->w, 
                             surface->h 
                         };
-                        SDL_RenderCopy(renderer, texture, nullptr, &textRect);
+                        SDL_RenderCopy(ctx.renderer, texture, nullptr, &textRect);
                         SDL_DestroyTexture(texture);
                     }
                     SDL_FreeSurface(surface);
@@ -324,7 +324,7 @@ SDL_Rect Modal::getButtonRect(int buttonIndex) const {
     
     for (size_t i = 0; i < buttonLabels.size(); i++) {
         int buttonWidth = 80; // Default width - matches rendering
-        // Note: We can't access font here, so we use default width
+        // Note: We can't access ctx.font here, so we use default width
         // This is a limitation, but better than the previous mismatch
         buttonWidths.push_back(buttonWidth);
         totalButtonWidth += buttonWidth;

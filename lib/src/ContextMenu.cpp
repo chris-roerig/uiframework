@@ -160,19 +160,15 @@ void ContextMenu::renderSubmenu(SDL_Renderer* renderer, TTF_Font* font, std::sha
     renderSubmenuItems(renderer, font, theme, activeItem, subMenuRect);
 }
 
-void ContextMenu::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<Theme> theme) {
-    if (!ErrorHandling::validateRenderParams(renderer, theme)) {
-        return;
-    }
-    
+void ContextMenu::renderImpl(const RenderContext& ctx) {
     // Render menu bar background and border
-    renderMenuBar(renderer, font, theme);
+    renderMenuBar(ctx.renderer, ctx.font, ctx.theme);
     
     // Render top-level menu items
-    renderMenuItems(renderer, font, theme);
+    renderMenuItems(ctx.renderer, ctx.font, ctx.theme);
     
     // Render submenu if expanded
-    renderSubmenu(renderer, font, theme);
+    renderSubmenu(ctx.renderer, ctx.font, ctx.theme);
     
     // Draw focus indicator
     if (hasFocus) {

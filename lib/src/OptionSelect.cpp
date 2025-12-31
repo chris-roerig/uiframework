@@ -205,8 +205,8 @@ void OptionSelect::renderExpanded(SDL_Renderer* renderer, TTF_Font* font, std::s
     }
 }
 
-void OptionSelect::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<Theme> theme) {
-    if (!renderer || !theme || options.empty()) {
+void OptionSelect::renderImpl(const RenderContext& ctx) {
+    if (options.empty()) {
         return;
     }
     
@@ -218,9 +218,9 @@ void OptionSelect::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_pt
     }
     
     if (expanded) {
-        renderExpanded(renderer, font, theme);
+        renderExpanded(ctx.renderer, ctx.font, ctx.theme);
     } else {
-        renderCollapsed(renderer, font, theme);
+        renderCollapsed(ctx.renderer, ctx.font, ctx.theme);
     }
 }
 

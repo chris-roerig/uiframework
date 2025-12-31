@@ -46,12 +46,15 @@ public:
     
     ContextMenu(int x_, int y_, int w_, int h_, const std::vector<TopMenuItem>& menus);
     
-    void render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<class Theme> theme) override;
     void handleEvent(const SDL_Event &e) override;
     bool isInteractive() const override { return true; }
     SDL_Rect getFocusRect() const override;
     void activate() override;
+
+protected:
+    void renderImpl(const RenderContext& ctx) override;
     
+public:
     // Menu management
     void setMenuItems(const std::vector<TopMenuItem>& menus);
     void addMenuItem(const TopMenuItem& menu);

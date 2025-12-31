@@ -36,8 +36,10 @@ public:
     Image(Image&& other) noexcept;
     Image& operator=(Image&& other) noexcept;
 
-    void render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<class Theme> theme) override;
+protected:
+    void renderImpl(const RenderContext& ctx) override;
     
+public:
     // Image-specific methods
     void setStretch(bool shouldStretch) { stretch = shouldStretch; }
     bool isStretched() const { return stretch; }

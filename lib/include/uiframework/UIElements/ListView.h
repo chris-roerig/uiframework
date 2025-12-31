@@ -32,11 +32,15 @@ public:
     // Constructor
     ListView(int x_, int y_, int w_, int h_, const std::vector<std::string>& items_, int itemHeight_ = 30);
     
-    void render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<class Theme> theme) override;
     void handleEvent(const SDL_Event &e) override;
     bool isInteractive() const override { return true; }
     SDL_Rect getFocusRect() const override;
     void activate() override;
+
+protected:
+    void renderImpl(const RenderContext& ctx) override;
+    
+public:
     
     // Item management
     void setItems(const std::vector<std::string>& newItems);

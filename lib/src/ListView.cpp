@@ -15,27 +15,23 @@ ListView::ListView(int x_, int y_, int w_, int h_, const std::vector<std::string
     filteredItems = items; // Initially show all items
 }
 
-void ListView::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<Theme> theme) {
-    if (!renderer || !theme) {
-        return;
-    }
-    
-    ThemeableElementColors tc = theme->listViewColors();
+void ListView::renderImpl(const RenderContext& ctx) {
+    ThemeableElementColors tc = ctx.listViewColors();
     
     // Draw background
     SDL_Rect bgRect = { x, y, width, height };
-    drawFilledRect(renderer, bgRect, tc.listViewBackground);
+    drawFilledRect(ctx.ctx.renderer, bgRect, tc.listViewBackground);
     
     // Draw border
-    SDL_SetRenderDrawColor(renderer, tc.listViewBorder.r, tc.listViewBorder.g, 
+    SDL_SetRenderDrawColor(ctx.ctx.renderer, tc.listViewBorder.r, tc.listViewBorder.g, 
                           tc.listViewBorder.b, tc.listViewBorder.a);
-    SDL_RenderDrawRect(renderer, &bgRect);
+    SDL_RenderDrawRect(ctx.ctx.renderer, &bgRect);
     
     // Draw focus indicator
     if (hasFocus) {
         SDL_Rect focusRect = getFocusRect();
-        SDL_SetRenderDrawColor(renderer, tc.listViewSelectedItem.r, tc.listViewSelectedItem.g, tc.listViewSelectedItem.b, tc.listViewSelectedItem.a);
-        SDL_RenderDrawRect(renderer, &focusRect);
+        SDL_SetRenderDrawColor(ctx.ctx.renderer, tc.listViewSelectedItem.r, tc.listViewSelectedItem.g, tc.listViewSelectedItem.b, tc.listViewSelectedItem.a);
+        SDL_RenderDrawRect(ctx.ctx.renderer, &focusRect);
     }
     
     const auto& currentItems = getCurrentItems();
@@ -44,7 +40,7 @@ void ListView::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<Th
     scrollOffset = std::clamp(scrollOffset, 0, maxScroll);
     
     // Set clipping rectangle
-    SDL_RenderSetClipRect(renderer, &bgRect);
+    SDL_RenderSetClipRect(ctx.ctx.renderer, &bgRect);
     
     // Render visible items
     for (int i = 0; i < visibleItems && (scrollOffset + i) < static_cast<int>(currentItems.size()); i++) {
@@ -63,11 +59,11 @@ void ListView::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<Th
         
         // Draw item background
         if (isSelected) {
-            drawFilledRect(renderer, itemRect, tc.listViewSelectedItem);
+            drawFilledRect(ctx.renderer, itemRect, tc.listViewSelectedItem);
         } else if (isHovered) {
             Color hoverColor = tc.listViewSelectedItem;
             hoverColor.a = 128; // Semi-transparent
-            drawFilledRect(renderer, itemRect, hoverColor);
+            drawFilledRect(ctx.renderer, itemRect, hoverColor);
         }
         
         // Draw item text
@@ -77,7 +73,7 @@ void ListView::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<Th
                 SDL_Color textColor = { tc.listViewText.r, tc.listViewText.g, tc.listViewText.b, tc.listViewText.a };
                 SDL_Surface* surface = TTF_RenderText_Solid(font, itemText.c_str(), textColor);
                 if (surface) {
-                    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+                    SDL_Texture* texture = SDL_CreateTextureFromSurface(ctx.renderer, surface);
                     if (texture) {
                         SDL_Rect textRect = { 
                             x + 5, 
@@ -85,7 +81,7 @@ void ListView::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<Th
                             std::min(surface->w, width - ui::Constants::LISTVIEW_TEXT_PADDING), 
                             surface->h 
                         };
-                        SDL_RenderCopy(renderer, texture, nullptr, &textRect);
+                        SDL_RenderCopy(ctx.renderer, texture, nullptr, &textRect);
                         SDL_DestroyTexture(texture);
                     }
                     SDL_FreeSurface(surface);
@@ -94,20 +90,20 @@ void ListView::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<Th
         }
         
         // Draw item separator
-        SDL_SetRenderDrawColor(renderer, tc.listViewBorder.r, tc.listViewBorder.g, 
+        SDL_SetRenderDrawColor(ctx.renderer, tc.listViewBorder.r, tc.listViewBorder.g, 
                               tc.listViewBorder.b, tc.listViewBorder.a);
-        SDL_RenderDrawLine(renderer, x, y + (i + 1) * itemHeight, x + width, y + (i + 1) * itemHeight);
+        SDL_RenderDrawLine(ctx.renderer, x, y + (i + 1) * itemHeight, x + width, y + (i + 1) * itemHeight);
     }
     
     // Reset clipping
-    SDL_RenderSetClipRect(renderer, nullptr);
+    SDL_RenderSetClipRect(ctx.renderer, nullptr);
     
     // Draw scrollbar if needed
     if (static_cast<int>(currentItems.size()) > visibleItems) {
         int scrollbarWidth = ui::Constants::LISTVIEW_SCROLLBAR_WIDTH;
         int scrollbarX = x + width - scrollbarWidth;
         SDL_Rect scrollbarTrack = { scrollbarX, y, scrollbarWidth, height };
-        drawFilledRect(renderer, scrollbarTrack, tc.listViewBackground);
+        drawFilledRect(ctx.renderer, scrollbarTrack, tc.listViewBackground);
         
         // Calculate scrollbar thumb
         float thumbRatio = static_cast<float>(visibleItems) / currentItems.size();
@@ -116,7 +112,7 @@ void ListView::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<Th
         int thumbY = y + static_cast<int>((height - thumbHeight) * scrollRatio);
         
         SDL_Rect scrollbarThumb = { scrollbarX, thumbY, scrollbarWidth, thumbHeight };
-        drawFilledRect(renderer, scrollbarThumb, tc.listViewSelectedItem);
+        drawFilledRect(ctx.renderer, scrollbarThumb, tc.listViewSelectedItem);
     }
 }
 

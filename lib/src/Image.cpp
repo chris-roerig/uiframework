@@ -68,8 +68,8 @@ void Image::cleanup() {
     }
 }
 
-void Image::loadFromFile(SDL_Renderer* renderer, const std::string& path) {
-    if (!renderer || path.empty()) {
+void Image::loadFromFile(SDL_Renderer* ctx.renderer, const std::string& path) {
+    if (!ctx.renderer || path.empty()) {
         return;
     }
     
@@ -81,7 +81,7 @@ void Image::loadFromFile(SDL_Renderer* renderer, const std::string& path) {
         return;
     }
     
-    texture = SDL_CreateTextureFromSurface(renderer, surface);
+    texture = SDL_CreateTextureFromSurface(ctx.renderer, surface);
     if (!texture) {
         std::cerr << "SDL_CreateTextureFromSurface Error: " << SDL_GetError() << std::endl;
         SDL_FreeSurface(surface);
@@ -99,8 +99,8 @@ void Image::loadFromFile(SDL_Renderer* renderer, const std::string& path) {
     }
 }
 
-void Image::loadFromData(SDL_Renderer* renderer, const unsigned char* data, size_t dataSize) {
-    if (!renderer || !data || dataSize == 0) {
+void Image::loadFromData(SDL_Renderer* ctx.renderer, const unsigned char* data, size_t dataSize) {
+    if (!ctx.renderer || !data || dataSize == 0) {
         return;
     }
     
@@ -119,7 +119,7 @@ void Image::loadFromData(SDL_Renderer* renderer, const unsigned char* data, size
         return;
     }
     
-    texture = SDL_CreateTextureFromSurface(renderer, surface);
+    texture = SDL_CreateTextureFromSurface(ctx.renderer, surface);
     if (!texture) {
         std::cerr << "SDL_CreateTextureFromSurface Error: " << SDL_GetError() << std::endl;
         SDL_FreeSurface(surface);
@@ -137,17 +137,17 @@ void Image::loadFromData(SDL_Renderer* renderer, const unsigned char* data, size
     }
 }
 
-void Image::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<Theme> theme) {
-    if (!renderer || !visible) {
+void Image::renderImpl(const RenderContext& ctx) {
+    if (!visible) {
         return;
     }
     
     // Load texture if not already loaded
     if (!texture) {
         if (isDataImage && !imageData.empty()) {
-            loadFromData(renderer, imageData.data(), imageData.size());
+            loadFromData(ctx.ctx.renderer, imageData.data(), imageData.size());
         } else if (!isDataImage && !filePath.empty()) {
-            loadFromFile(renderer, filePath);
+            loadFromFile(ctx.ctx.renderer, filePath);
         }
     }
     
@@ -156,16 +156,16 @@ void Image::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<Theme
         if (theme) {
             auto colors = theme->buttonColors();
             SDL_Rect rect = { x, y, width, height };
-            SDL_SetRenderDrawColor(renderer, colors.buttonBackground.r, colors.buttonBackground.g, 
+            SDL_SetRenderDrawColor(ctx.renderer, colors.buttonBackground.r, colors.buttonBackground.g, 
                                  colors.buttonBackground.b, colors.buttonBackground.a);
-            SDL_RenderFillRect(renderer, &rect);
-            SDL_SetRenderDrawColor(renderer, colors.buttonText.r, colors.buttonText.g, 
+            SDL_RenderFillRect(ctx.renderer, &rect);
+            SDL_SetRenderDrawColor(ctx.renderer, colors.buttonText.r, colors.buttonText.g, 
                                  colors.buttonText.b, colors.buttonText.a);
-            SDL_RenderDrawRect(renderer, &rect);
+            SDL_RenderDrawRect(ctx.renderer, &rect);
             
             // Draw X to indicate missing image
-            SDL_RenderDrawLine(renderer, x, y, x + width, y + height);
-            SDL_RenderDrawLine(renderer, x + width, y, x, y + height);
+            SDL_RenderDrawLine(ctx.renderer, x, y, x + width, y + height);
+            SDL_RenderDrawLine(ctx.renderer, x + width, y, x, y + height);
         }
         return;
     }
@@ -186,39 +186,39 @@ void Image::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<Theme
         };
     }
     
-    SDL_RenderCopy(renderer, texture, nullptr, &destRect);
+    SDL_RenderCopy(ctx.renderer, texture, nullptr, &destRect);
     
     // Draw focus indicator if focused
     if (hasFocus && theme) {
         auto colors = theme->focusColors();
         SDL_Rect focusRect = getFocusRect();
-        SDL_SetRenderDrawColor(renderer, colors.focusBorder.r, colors.focusBorder.g, 
+        SDL_SetRenderDrawColor(ctx.renderer, colors.focusBorder.r, colors.focusBorder.g, 
                              colors.focusBorder.b, colors.focusBorder.a);
-        SDL_RenderDrawRect(renderer, &focusRect);
+        SDL_RenderDrawRect(ctx.renderer, &focusRect);
     }
 }
 
-void Image::reload(SDL_Renderer* renderer) {
+void Image::reload(SDL_Renderer* ctx.renderer) {
     if (isDataImage && !imageData.empty()) {
-        loadFromData(renderer, imageData.data(), imageData.size());
+        loadFromData(ctx.renderer, imageData.data(), imageData.size());
     } else if (!isDataImage && !filePath.empty()) {
-        loadFromFile(renderer, filePath);
+        loadFromFile(ctx.renderer, filePath);
     }
 }
 
-void Image::setImagePath(SDL_Renderer* renderer, const std::string& path) {
+void Image::setImagePath(SDL_Renderer* ctx.renderer, const std::string& path) {
     filePath = path;
     imageData.clear();
     isDataImage = false;
-    loadFromFile(renderer, path);
+    loadFromFile(ctx.renderer, path);
 }
 
-void Image::setImageData(SDL_Renderer* renderer, const unsigned char* data, size_t dataSize) {
+void Image::setImageData(SDL_Renderer* ctx.renderer, const unsigned char* data, size_t dataSize) {
     filePath.clear();
     isDataImage = true;
     if (data && dataSize > 0) {
         imageData.assign(data, data + dataSize);
-        loadFromData(renderer, data, dataSize);
+        loadFromData(ctx.renderer, data, dataSize);
     } else {
         imageData.clear();
         cleanup();
