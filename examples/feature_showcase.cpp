@@ -89,25 +89,25 @@ int main() {
         themeLabel->setTooltip("All tooltips use theme colors automatically");
         
         auto themeButton1 = ui.createButton("Framework Theme", 20, 390, [&ui]() {
-            ui.setTheme("framework");
+            ui.setTheme("Framework");
             std::cout << "Switched to Framework theme" << std::endl;
         });
         themeButton1->setTooltip("Switch to Framework (dark) theme");
         
         auto themeButton2 = ui.createButton("Solarized Light", 180, 390, [&ui]() {
-            ui.setTheme("solarized_light");
+            ui.setTheme("SolarizedLight");
             std::cout << "Switched to Solarized Light theme" << std::endl;
         });
         themeButton2->setTooltip("Switch to Solarized Light theme");
         
         auto themeButton3 = ui.createButton("Solarized Dark", 340, 390, [&ui]() {
-            ui.setTheme("solarized_dark");
+            ui.setTheme("SolarizedDark");
             std::cout << "Switched to Solarized Dark theme" << std::endl;
         });
         themeButton3->setTooltip("Switch to Solarized Dark theme");
         
         auto themeButton4 = ui.createButton("Molokai", 500, 390, [&ui]() {
-            ui.setTheme("molokai");
+            ui.setTheme("Molokai");
             std::cout << "Switched to Molokai theme" << std::endl;
         });
         themeButton4->setTooltip("Switch to Molokai theme");
