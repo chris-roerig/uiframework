@@ -20,6 +20,7 @@ common_sources = [
   'lib/src/FontManager.cpp',
   'lib/src/TTFManager.cpp',
   'lib/src/UIElement.cpp',
+  'lib/src/Utils/TextUtils.cpp',
   'lib/src/Focus/FocusManager.cpp',
   'lib/src/ContextMenu.cpp',
   'lib/src/Modal.cpp',

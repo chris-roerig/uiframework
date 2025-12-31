@@ -4,6 +4,7 @@
 #include "uiframework/UICore.h"
 #include "uiframework/Constants.h"
 #include "uiframework/ErrorHandling.h"
+#include "uiframework/Utils/TextUtils.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include <iostream>
@@ -17,42 +18,10 @@ std::string TextBox::getCachedTruncatedText(const std::string& text, TTF_Font* f
         return displayCache.truncatedText;
     }
     
-    // Cache miss - calculate truncated text
+    // Cache miss - use TextUtils for truncation
     displayCache.originalText = text;
     displayCache.availableWidth = availableWidth;
-    
-    // Perform truncation logic
-    std::string displayText = text;
-    int textW = 0, textH = 0;
-    if (TTF_SizeText(font, displayText.c_str(), &textW, &textH) == 0 && textW > availableWidth) {
-        std::string ellipsis = "...";
-        int ellipsisW = 0;
-        if (TTF_SizeText(font, ellipsis.c_str(), &ellipsisW, &textH) == 0) {
-            if (ellipsisW >= availableWidth) {
-                displayText = "";
-            } else {
-                // Binary search for optimal truncation point
-                int left = 0, right = static_cast<int>(displayText.length());
-                while (left < right) {
-                    int mid = (left + right + 1) / 2;
-                    std::string candidate = displayText.substr(0, mid) + ellipsis;
-                    int candidateW = 0;
-                    if (TTF_SizeText(font, candidate.c_str(), &candidateW, nullptr) == 0 && candidateW <= availableWidth) {
-                        left = mid;
-                    } else {
-                        right = mid - 1;
-                    }
-                }
-                if (left > 0) {
-                    displayText = displayText.substr(0, left) + ellipsis;
-                } else {
-                    displayText = "";
-                }
-            }
-        }
-    }
-    
-    displayCache.truncatedText = displayText;
+    displayCache.truncatedText = TextUtils::truncateWithEllipsis(text, font, availableWidth);
     displayCache.valid = true;
     
     return displayCache.truncatedText;

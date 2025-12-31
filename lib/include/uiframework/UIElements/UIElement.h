@@ -7,6 +7,7 @@
 #include <memory>
 #include <unordered_map>
 #include "../Constants.h"
+#include "../Rendering/RenderContext.h"
 
 namespace ui {
 

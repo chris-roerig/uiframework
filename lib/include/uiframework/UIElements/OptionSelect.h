@@ -26,7 +26,6 @@ private:
     // Helper methods
     void renderCollapsed(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<class Theme> theme);
     void renderExpanded(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<class Theme> theme);
-    std::string truncateText(const std::string& text, TTF_Font* font, int availableWidth) const;
     std::string getCachedTruncatedText(const std::string& text, TTF_Font* font, int availableWidth, StringCache& cache) const;
     bool isValidIndex(int index) const;
     

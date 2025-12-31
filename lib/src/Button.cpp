@@ -15,11 +15,11 @@ void Button::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<Them
     }
     
     // Retrieve button colors from the theme
-    ThemeableElementColors tc = theme->buttonColors();
+    auto colors = theme->buttonColors();
     SDL_Rect rect = { x, y, width, height };
 
     // Determine background color; darken if pressed
-    Color bg = tc.buttonBackground;
+    Color bg = colors.buttonBackground;
     if (pressed) {
         bg = Color(static_cast<uint8_t>(bg.r * Constants::BUTTON_PRESSED_DARKEN_FACTOR),
                    static_cast<uint8_t>(bg.g * Constants::BUTTON_PRESSED_DARKEN_FACTOR),
@@ -33,13 +33,13 @@ void Button::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<Them
     // Draw button border if focused
     if (hasFocus) {
         SDL_Rect focusRect = getFocusRect();
-        SDL_SetRenderDrawColor(renderer, tc.buttonText.r, tc.buttonText.g, tc.buttonText.b, tc.buttonText.a);
+        SDL_SetRenderDrawColor(renderer, colors.buttonText.r, colors.buttonText.g, colors.buttonText.b, colors.buttonText.a);
         SDL_RenderDrawRect(renderer, &focusRect);
     }
     
     // Draw the button text
     if (font && !text.empty()) {
-        SDL_Color sdlColor = { tc.buttonText.r, tc.buttonText.g, tc.buttonText.b, tc.buttonText.a };
+        SDL_Color sdlColor = { colors.buttonText.r, colors.buttonText.g, colors.buttonText.b, colors.buttonText.a };
         TextCacheEntry* cached = getCachedText("main", text, sdlColor, renderer, font);
         if (cached && cached->texture) {
             SDL_Rect dst;

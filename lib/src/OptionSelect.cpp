@@ -3,6 +3,7 @@
 #include "uiframework/Helpers.h"
 #include "uiframework/UICore.h"
 #include "uiframework/Constants.h"
+#include "uiframework/Utils/TextUtils.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include <algorithm>
@@ -15,10 +16,10 @@ std::string OptionSelect::getCachedTruncatedText(const std::string& text, TTF_Fo
         return cache.truncatedText;
     }
     
-    // Cache miss - calculate truncated text
+    // Cache miss - use TextUtils for truncation
     cache.originalText = text;
     cache.availableWidth = availableWidth;
-    cache.truncatedText = truncateText(text, font, availableWidth);
+    cache.truncatedText = TextUtils::truncateWithEllipsis(text, font, availableWidth);
     cache.valid = true;
     
     return cache.truncatedText;
@@ -65,36 +66,6 @@ void OptionSelect::removeOption(int index) {
         
         invalidateStringCache();
     }
-}
-
-std::string OptionSelect::truncateText(const std::string& text, TTF_Font* font, int availableWidth) const {
-    if (!font || availableWidth <= 0) return "";
-    
-    int textW = 0;
-    if (TTF_SizeText(font, text.c_str(), &textW, nullptr) == 0 && textW <= availableWidth) {
-        return text;
-    }
-    
-    std::string ellipsis = Constants::ELLIPSIS;
-    int ellipsisW = 0;
-    if (TTF_SizeText(font, ellipsis.c_str(), &ellipsisW, nullptr) != 0 || ellipsisW >= availableWidth) {
-        return "";
-    }
-    
-    // Binary search for optimal truncation point
-    int left = 0, right = static_cast<int>(text.length());
-    while (left < right) {
-        int mid = (left + right + 1) / 2;
-        std::string candidate = text.substr(0, mid) + ellipsis;
-        int candidateW = 0;
-        if (TTF_SizeText(font, candidate.c_str(), &candidateW, nullptr) == 0 && candidateW <= availableWidth) {
-            left = mid;
-        } else {
-            right = mid - 1;
-        }
-    }
-    
-    return left > 0 ? text.substr(0, left) + ellipsis : "";
 }
 
 bool OptionSelect::isValidIndex(int index) const {

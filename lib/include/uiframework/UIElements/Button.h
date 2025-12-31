@@ -17,10 +17,11 @@ public:
     Button(int x_, int y_, int w_, int h_, const std::string &text_, std::function<void()> callback)
       : UIElement(x_, y_, w_, h_), text(text_), onClick(callback) {}
     
-    void render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<class Theme> theme) override;
     void handleEvent(const SDL_Event &e) override;
     bool isInteractive() const override { return true; }
     void activate() override;
+
+    void render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<class Theme> theme) override;
     
     // Button-specific methods
     void setText(const std::string& newText) { 
