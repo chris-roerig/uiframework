@@ -42,7 +42,7 @@ void Modal::renderImpl(const RenderContext& ctx) {
     if (coreRef) {
         SDL_Rect screenRect = { 0, 0, 800, 600 }; // Use default screen size for now
         Color overlayColor = { 0, 0, 0, 128 }; // Semi-transparent black
-        drawFilledRect(ctx.ctx.renderer, screenRect, overlayColor);
+        drawFilledRect(ctx.renderer, screenRect, overlayColor);
     }
     
     // Draw modal background

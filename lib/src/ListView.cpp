@@ -20,18 +20,18 @@ void ListView::renderImpl(const RenderContext& ctx) {
     
     // Draw background
     SDL_Rect bgRect = { x, y, width, height };
-    drawFilledRect(ctx.ctx.renderer, bgRect, tc.listViewBackground);
+    drawFilledRect(ctx.renderer, bgRect, tc.listViewBackground);
     
     // Draw border
-    SDL_SetRenderDrawColor(ctx.ctx.renderer, tc.listViewBorder.r, tc.listViewBorder.g, 
+    SDL_SetRenderDrawColor(ctx.renderer, tc.listViewBorder.r, tc.listViewBorder.g, 
                           tc.listViewBorder.b, tc.listViewBorder.a);
-    SDL_RenderDrawRect(ctx.ctx.renderer, &bgRect);
+    SDL_RenderDrawRect(ctx.renderer, &bgRect);
     
     // Draw focus indicator
     if (hasFocus) {
         SDL_Rect focusRect = getFocusRect();
-        SDL_SetRenderDrawColor(ctx.ctx.renderer, tc.listViewSelectedItem.r, tc.listViewSelectedItem.g, tc.listViewSelectedItem.b, tc.listViewSelectedItem.a);
-        SDL_RenderDrawRect(ctx.ctx.renderer, &focusRect);
+        SDL_SetRenderDrawColor(ctx.renderer, tc.listViewSelectedItem.r, tc.listViewSelectedItem.g, tc.listViewSelectedItem.b, tc.listViewSelectedItem.a);
+        SDL_RenderDrawRect(ctx.renderer, &focusRect);
     }
     
     const auto& currentItems = getCurrentItems();
@@ -40,7 +40,7 @@ void ListView::renderImpl(const RenderContext& ctx) {
     scrollOffset = std::clamp(scrollOffset, 0, maxScroll);
     
     // Set clipping rectangle
-    SDL_RenderSetClipRect(ctx.ctx.renderer, &bgRect);
+    SDL_RenderSetClipRect(ctx.renderer, &bgRect);
     
     // Render visible items
     for (int i = 0; i < visibleItems && (scrollOffset + i) < static_cast<int>(currentItems.size()); i++) {
@@ -67,11 +67,11 @@ void ListView::renderImpl(const RenderContext& ctx) {
         }
         
         // Draw item text
-        if (font && itemIndex < static_cast<int>(currentItems.size())) {
+        if (ctx.font && itemIndex < static_cast<int>(currentItems.size())) {
             const std::string& itemText = currentItems[itemIndex];
             if (!itemText.empty()) {
                 SDL_Color textColor = { tc.listViewText.r, tc.listViewText.g, tc.listViewText.b, tc.listViewText.a };
-                SDL_Surface* surface = TTF_RenderText_Solid(font, itemText.c_str(), textColor);
+                SDL_Surface* surface = TTF_RenderText_Solid(ctx.font, itemText.c_str(), textColor);
                 if (surface) {
                     SDL_Texture* texture = SDL_CreateTextureFromSurface(ctx.renderer, surface);
                     if (texture) {

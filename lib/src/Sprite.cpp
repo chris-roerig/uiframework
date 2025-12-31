@@ -70,8 +70,8 @@ void Sprite::cleanup() {
     }
 }
 
-void Sprite::loadFromFile(SDL_Renderer* ctx.renderer, const std::string& path) {
-    if (!ctx.renderer || path.empty()) {
+void Sprite::loadFromFile(SDL_Renderer* renderer, const std::string& path) {
+    if (!renderer || path.empty()) {
         return;
     }
     
@@ -83,7 +83,7 @@ void Sprite::loadFromFile(SDL_Renderer* ctx.renderer, const std::string& path) {
         return;
     }
     
-    texture = SDL_CreateTextureFromSurface(ctx.renderer, surface);
+    texture = SDL_CreateTextureFromSurface(renderer, surface);
     if (!texture) {
         std::cerr << "SDL_CreateTextureFromSurface Error: " << SDL_GetError() << std::endl;
         SDL_FreeSurface(surface);
@@ -106,8 +106,8 @@ void Sprite::loadFromFile(SDL_Renderer* ctx.renderer, const std::string& path) {
     }
 }
 
-void Sprite::loadFromData(SDL_Renderer* ctx.renderer, const unsigned char* data, size_t dataSize) {
-    if (!ctx.renderer || !data || dataSize == 0) {
+void Sprite::loadFromData(SDL_Renderer* renderer, const unsigned char* data, size_t dataSize) {
+    if (!renderer || !data || dataSize == 0) {
         return;
     }
     
@@ -125,7 +125,7 @@ void Sprite::loadFromData(SDL_Renderer* ctx.renderer, const unsigned char* data,
         return;
     }
     
-    texture = SDL_CreateTextureFromSurface(ctx.renderer, surface);
+    texture = SDL_CreateTextureFromSurface(renderer, surface);
     if (!texture) {
         std::cerr << "SDL_CreateTextureFromSurface Error: " << SDL_GetError() << std::endl;
         SDL_FreeSurface(surface);
@@ -156,16 +156,16 @@ void Sprite::renderImpl(const RenderContext& ctx) {
     // Load texture if not already loaded
     if (!texture) {
         if (isDataImage && !imageData.empty()) {
-            loadFromData(ctx.ctx.renderer, imageData.data(), imageData.size());
+            loadFromData(ctx.renderer, imageData.data(), imageData.size());
         } else if (!isDataImage && !filePath.empty()) {
-            loadFromFile(ctx.ctx.renderer, filePath);
+            loadFromFile(ctx.renderer, filePath);
         }
     }
     
     if (!texture) {
         // Draw placeholder rectangle if sprite failed to load
-        if (theme) {
-            auto colors = theme->buttonColors();
+        if (ctx.theme) {
+            auto colors = ctx.theme->buttonColors();
             SDL_Rect rect = { x, y, width, height };
             SDL_SetRenderDrawColor(ctx.renderer, colors.buttonBackground.r, colors.buttonBackground.g, 
                                  colors.buttonBackground.b, colors.buttonBackground.a);
@@ -200,8 +200,8 @@ void Sprite::renderImpl(const RenderContext& ctx) {
     SDL_RenderCopy(ctx.renderer, texture, &srcRect, &destRect);
     
     // Draw focus indicator if focused
-    if (hasFocus && theme) {
-        auto colors = theme->focusColors();
+    if (hasFocus && ctx.theme) {
+        auto colors = ctx.theme->focusColors();
         SDL_Rect focusRect = getFocusRect();
         SDL_SetRenderDrawColor(ctx.renderer, colors.focusBorder.r, colors.focusBorder.g, 
                              colors.focusBorder.b, colors.focusBorder.a);
@@ -219,27 +219,27 @@ void Sprite::setSourceRect(const SDL_Rect &rect) {
     }
 }
 
-void Sprite::reload(SDL_Renderer* ctx.renderer) {
+void Sprite::reload(SDL_Renderer* renderer) {
     if (isDataImage && !imageData.empty()) {
-        loadFromData(ctx.renderer, imageData.data(), imageData.size());
+        loadFromData(renderer, imageData.data(), imageData.size());
     } else if (!isDataImage && !filePath.empty()) {
-        loadFromFile(ctx.renderer, filePath);
+        loadFromFile(renderer, filePath);
     }
 }
 
-void Sprite::setSpritePath(SDL_Renderer* ctx.renderer, const std::string& path) {
+void Sprite::setSpritePath(SDL_Renderer* renderer, const std::string& path) {
     filePath = path;
     imageData.clear();
     isDataImage = false;
-    loadFromFile(ctx.renderer, path);
+    loadFromFile(renderer, path);
 }
 
-void Sprite::setSpriteData(SDL_Renderer* ctx.renderer, const unsigned char* data, size_t dataSize) {
+void Sprite::setSpriteData(SDL_Renderer* renderer, const unsigned char* data, size_t dataSize) {
     filePath.clear();
     isDataImage = true;
     if (data && dataSize > 0) {
         imageData.assign(data, data + dataSize);
-        loadFromData(ctx.renderer, data, dataSize);
+        loadFromData(renderer, data, dataSize);
     } else {
         imageData.clear();
         cleanup();

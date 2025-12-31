@@ -107,7 +107,7 @@ void VirtualKeyboard::renderImpl(const RenderContext& ctx) {
     auto colors = ctx.textInputColors();
     
     // Calculate proper height based on text size
-    int textHeight = TTF_FontLineSkip(ctx.ctx.font);
+    int textHeight = TTF_FontLineSkip(ctx.font);
     int actualHeight = textHeight * 3 + 40; // 3 rows of text + padding
     
     // Draw background

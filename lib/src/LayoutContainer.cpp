@@ -24,7 +24,7 @@ void LayoutContainer::renderImpl(const RenderContext& ctx) {
         int borderWidth = gridLayout->getBorderWidth();
         if (borderWidth > 0) {
             auto colors = ctx.theme->gridColors();
-            SDL_SetRenderDrawColor(ctx.ctx.renderer, colors.gridBorder.r, colors.gridBorder.g, 
+            SDL_SetRenderDrawColor(ctx.renderer, colors.gridBorder.r, colors.gridBorder.g, 
                                  colors.gridBorder.b, colors.gridBorder.a);
             
             int rows = gridLayout->getRowCount();
@@ -52,7 +52,7 @@ void LayoutContainer::renderImpl(const RenderContext& ctx) {
     
     // Draw container focus border
     if (hasFocus) {
-        auto colors = theme->focusColors();
+        auto colors = ctx.theme->focusColors();
         SDL_Rect focusRect = getFocusRect();
         SDL_SetRenderDrawColor(ctx.renderer, colors.focusBorder.r, colors.focusBorder.g, 
                              colors.focusBorder.b, colors.focusBorder.a);

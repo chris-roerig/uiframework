@@ -29,7 +29,7 @@ void ProgressBar::renderImpl(const RenderContext& ctx) {
     // Draw border
     SDL_Rect borderRect = { x, y, width, height };
     SDL_SetRenderDrawColor(ctx.renderer, tc.progressBarBorder.r, tc.progressBarBorder.g, tc.progressBarBorder.b, tc.progressBarBorder.a);
-    SDL_RenderDrawRect(renderer, &borderRect);
+    SDL_RenderDrawRect(ctx.renderer, &borderRect);
 
     // Draw background (inside the border)
     SDL_Rect bgRect = { x + 1, y + 1, width - 2, height - 2 };

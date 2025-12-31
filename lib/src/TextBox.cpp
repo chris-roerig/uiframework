@@ -78,7 +78,7 @@ void TextBox::renderImpl(const RenderContext& ctx) {
         int availableWidth = width - 2 * padding;
         if (availableWidth <= 0) return;
         
-        std::string displayText = getCachedTruncatedText(content, font, availableWidth);
+        std::string displayText = getCachedTruncatedText(content, ctx.font, availableWidth);
         
         if (!displayText.empty()) {
             SDL_Color sdlTextColor = { textColor.r, textColor.g, textColor.b, textColor.a };

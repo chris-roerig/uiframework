@@ -81,7 +81,7 @@ float HSlider::getValueFromPosition(int mouseX, int mouseY) {
 }
 
 void HSlider::renderImpl(const RenderContext& ctx) {
-    if (!ctx.renderer || !theme) return;
+    if (!ctx.renderer || !ctx.theme) return;
     
     auto colors = ctx.sliderColors();
     
@@ -120,7 +120,7 @@ float VSlider::getValueFromPosition(int mouseX, int mouseY) {
 }
 
 void VSlider::renderImpl(const RenderContext& ctx) {
-    if (!ctx.renderer || !theme) return;
+    if (!ctx.renderer || !ctx.theme) return;
     
     auto colors = ctx.sliderColors();
     
@@ -185,7 +185,7 @@ float KnobSlider::getValueFromPosition(int mouseX, int mouseY) {
 }
 
 void KnobSlider::renderImpl(const RenderContext& ctx) {
-    if (!ctx.renderer || !theme) return;
+    if (!ctx.renderer || !ctx.theme) return;
     
     auto colors = ctx.sliderColors();
     int centerX = x + width / 2;

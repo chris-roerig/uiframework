@@ -172,11 +172,11 @@ void ContextMenu::renderImpl(const RenderContext& ctx) {
     
     // Draw focus indicator
     if (hasFocus) {
-        ThemeableElementColors tc = theme->contextMenuColors();
+        ThemeableElementColors tc = ctx.contextMenuColors();
         SDL_Rect focusRect = getFocusRect();
-        SDL_SetRenderDrawColor(renderer, tc.contextMenuActiveItem.r, tc.contextMenuActiveItem.g, 
+        SDL_SetRenderDrawColor(ctx.renderer, tc.contextMenuActiveItem.r, tc.contextMenuActiveItem.g, 
                               tc.contextMenuActiveItem.b, tc.contextMenuActiveItem.a);
-        SDL_RenderDrawRect(renderer, &focusRect);
+        SDL_RenderDrawRect(ctx.renderer, &focusRect);
     }
 }
 
