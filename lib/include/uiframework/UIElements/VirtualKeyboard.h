@@ -41,10 +41,13 @@ private:
 public:
     VirtualKeyboard(int x_, int y_, int w_, int h_, std::function<void(char)> callback);
     
-    void render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<class Theme> theme) override;
     void handleEvent(const SDL_Event &e) override;
     bool isInteractive() const override { return true; }
+
+protected:
+    void renderImpl(const RenderContext& ctx) override;
     
+public:
     void setMode(KeyboardMode newMode);
     KeyboardMode getMode() const { return mode; }
     void setSelectedIndex(int index);

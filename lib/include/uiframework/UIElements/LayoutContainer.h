@@ -16,10 +16,13 @@ public:
     virtual ~LayoutContainer() override = default;
     
     // UIElement interface
-    void render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<class Theme> theme) override;
     void handleEvent(const SDL_Event &e) override;
     bool isInteractive() const override { return false; } // Container itself is not interactive
+
+protected:
+    void renderImpl(const RenderContext& ctx) override;
     
+public:
     // Layout management
     void setLayout(std::unique_ptr<Layout> newLayout);
     Layout* getLayout() const { return layout.get(); }

@@ -51,14 +51,12 @@ void AnimatedSprite::calculateFrames(int frameCount, int frameWidth, int frameHe
     }
 }
 
-void AnimatedSprite::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<Theme> theme) {
-    if (!renderer || !theme) return;
-    
+void AnimatedSprite::renderImpl(const RenderContext& ctx) {
     // Update animation before rendering
     update();
     
     // Call parent render method
-    Sprite::render(renderer, font, theme);
+    Sprite::renderImpl(ctx);
 }
 
 void AnimatedSprite::update() {

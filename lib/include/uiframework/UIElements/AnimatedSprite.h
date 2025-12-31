@@ -28,8 +28,10 @@ public:
 
     virtual ~AnimatedSprite() override = default;
 
-    void render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<class Theme> theme) override;
+protected:
+    void renderImpl(const RenderContext& ctx) override;
 
+public:
     // Animation control
     void update();
     void play() { isPlaying = true; }

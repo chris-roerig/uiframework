@@ -38,8 +38,10 @@ public:
     Sprite(Sprite&& other) noexcept;
     Sprite& operator=(Sprite&& other) noexcept;
 
-    void render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<class Theme> theme) override;
+protected:
+    void renderImpl(const RenderContext& ctx) override;
 
+public:
     // Sprite-specific methods
     void setSourceRect(const SDL_Rect &rect);
     SDL_Rect getSourceRect() const { return srcRect; }

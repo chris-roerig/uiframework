@@ -36,7 +36,9 @@ protected:
     
 public:
     HSlider(int x, int y, int w, int h, float min = 0.0f, float max = 100.0f, float initial = 0.0f);
-    void render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<Theme> theme) override;
+
+protected:
+    void renderImpl(const RenderContext& ctx) override;
 };
 
 class VSlider : public Slider {
@@ -45,7 +47,9 @@ protected:
     
 public:
     VSlider(int x, int y, int w, int h, float min = 0.0f, float max = 100.0f, float initial = 0.0f);
-    void render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<Theme> theme) override;
+
+protected:
+    void renderImpl(const RenderContext& ctx) override;
 };
 
 class KnobSlider : public Slider {
@@ -54,7 +58,9 @@ protected:
     
 public:
     KnobSlider(int x, int y, int w, int h, float min = 0.0f, float max = 100.0f, float initial = 0.0f);
-    void render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<Theme> theme) override;
+
+protected:
+    void renderImpl(const RenderContext& ctx) override;
 };
 
 } // namespace ui

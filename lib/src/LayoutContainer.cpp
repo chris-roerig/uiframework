@@ -14,8 +14,8 @@ LayoutContainer::LayoutContainer(int x_, int y_, int w_, int h_, std::unique_ptr
     }
 }
 
-void LayoutContainer::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<Theme> theme) {
-    if (!renderer || !theme || !layout) {
+void LayoutContainer::renderImpl(const RenderContext& ctx) {
+    if (!layout) {
         return;
     }
     
@@ -23,8 +23,8 @@ void LayoutContainer::render(SDL_Renderer* renderer, TTF_Font* font, std::shared
     if (auto* gridLayout = dynamic_cast<ui::GridLayout*>(layout.get())) {
         int borderWidth = gridLayout->getBorderWidth();
         if (borderWidth > 0) {
-            auto colors = theme->gridColors();
-            SDL_SetRenderDrawColor(renderer, colors.gridBorder.r, colors.gridBorder.g, 
+            auto colors = ctx.theme->gridColors();
+            SDL_SetRenderDrawColor(ctx.ctx.renderer, colors.gridBorder.r, colors.gridBorder.g, 
                                  colors.gridBorder.b, colors.gridBorder.a);
             
             int rows = gridLayout->getRowCount();
@@ -38,14 +38,14 @@ void LayoutContainer::render(SDL_Renderer* renderer, TTF_Font* font, std::shared
             for (int c = 0; c <= cols; ++c) {
                 int lineX = x + c * (cellWidth + borderWidth);
                 SDL_Rect vLine = {lineX, y, borderWidth, height};
-                SDL_RenderFillRect(renderer, &vLine);
+                SDL_RenderFillRect(ctx.renderer, &vLine);
             }
             
             // Draw horizontal lines
             for (int r = 0; r <= rows; ++r) {
                 int lineY = y + r * (cellHeight + borderWidth);
                 SDL_Rect hLine = {x, lineY, width, borderWidth};
-                SDL_RenderFillRect(renderer, &hLine);
+                SDL_RenderFillRect(ctx.renderer, &hLine);
             }
         }
     }
@@ -54,9 +54,9 @@ void LayoutContainer::render(SDL_Renderer* renderer, TTF_Font* font, std::shared
     if (hasFocus) {
         auto colors = theme->focusColors();
         SDL_Rect focusRect = getFocusRect();
-        SDL_SetRenderDrawColor(renderer, colors.focusBorder.r, colors.focusBorder.g, 
+        SDL_SetRenderDrawColor(ctx.renderer, colors.focusBorder.r, colors.focusBorder.g, 
                              colors.focusBorder.b, colors.focusBorder.a);
-        SDL_RenderDrawRect(renderer, &focusRect);
+        SDL_RenderDrawRect(ctx.renderer, &focusRect);
     }
     
     // Child elements are rendered by the main UI system

@@ -80,30 +80,30 @@ float HSlider::getValueFromPosition(int mouseX, int mouseY) {
     return minValue + ratio * (maxValue - minValue);
 }
 
-void HSlider::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<Theme> theme) {
-    if (!renderer || !theme) return;
+void HSlider::renderImpl(const RenderContext& ctx) {
+    if (!ctx.renderer || !theme) return;
     
-    auto colors = theme->sliderColors();
+    auto colors = ctx.sliderColors();
     
     // Draw track
     SDL_Rect trackRect = { x, y + height/2 - 2, width, 4 };
-    drawFilledRect(renderer, trackRect, colors.sliderTrack);
-    SDL_SetRenderDrawColor(renderer, colors.sliderBorder.r, colors.sliderBorder.g, colors.sliderBorder.b, colors.sliderBorder.a);
-    SDL_RenderDrawRect(renderer, &trackRect);
+    drawFilledRect(ctx.renderer, trackRect, colors.sliderTrack);
+    SDL_SetRenderDrawColor(ctx.renderer, colors.sliderBorder.r, colors.sliderBorder.g, colors.sliderBorder.b, colors.sliderBorder.a);
+    SDL_RenderDrawRect(ctx.renderer, &trackRect);
     
     // Draw thumb
     float ratio = (currentValue - minValue) / (maxValue - minValue);
     int thumbX = x + static_cast<int>(ratio * width) - 8;
     SDL_Rect thumbRect = { thumbX, y, 16, height };
-    drawFilledRect(renderer, thumbRect, colors.sliderThumb);
-    SDL_SetRenderDrawColor(renderer, colors.sliderBorder.r, colors.sliderBorder.g, colors.sliderBorder.b, colors.sliderBorder.a);
-    SDL_RenderDrawRect(renderer, &thumbRect);
+    drawFilledRect(ctx.renderer, thumbRect, colors.sliderThumb);
+    SDL_SetRenderDrawColor(ctx.renderer, colors.sliderBorder.r, colors.sliderBorder.g, colors.sliderBorder.b, colors.sliderBorder.a);
+    SDL_RenderDrawRect(ctx.renderer, &thumbRect);
     
     // Draw focus indicator
     if (hasFocus) {
         SDL_Rect focusRect = getFocusRect();
-        SDL_SetRenderDrawColor(renderer, colors.buttonText.r, colors.buttonText.g, colors.buttonText.b, colors.buttonText.a);
-        SDL_RenderDrawRect(renderer, &focusRect);
+        SDL_SetRenderDrawColor(ctx.renderer, colors.buttonText.r, colors.buttonText.g, colors.buttonText.b, colors.buttonText.a);
+        SDL_RenderDrawRect(ctx.renderer, &focusRect);
     }
 }
 
@@ -119,30 +119,30 @@ float VSlider::getValueFromPosition(int mouseX, int mouseY) {
     return minValue + ratio * (maxValue - minValue);
 }
 
-void VSlider::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<Theme> theme) {
-    if (!renderer || !theme) return;
+void VSlider::renderImpl(const RenderContext& ctx) {
+    if (!ctx.renderer || !theme) return;
     
-    auto colors = theme->sliderColors();
+    auto colors = ctx.sliderColors();
     
     // Draw track
     SDL_Rect trackRect = { x + width/2 - 2, y, 4, height };
-    drawFilledRect(renderer, trackRect, colors.sliderTrack);
-    SDL_SetRenderDrawColor(renderer, colors.sliderBorder.r, colors.sliderBorder.g, colors.sliderBorder.b, colors.sliderBorder.a);
-    SDL_RenderDrawRect(renderer, &trackRect);
+    drawFilledRect(ctx.renderer, trackRect, colors.sliderTrack);
+    SDL_SetRenderDrawColor(ctx.renderer, colors.sliderBorder.r, colors.sliderBorder.g, colors.sliderBorder.b, colors.sliderBorder.a);
+    SDL_RenderDrawRect(ctx.renderer, &trackRect);
     
     // Draw thumb
     float ratio = (currentValue - minValue) / (maxValue - minValue);
     int thumbY = y + height - static_cast<int>(ratio * height) - 8; // Inverted for vertical
     SDL_Rect thumbRect = { x, thumbY, width, 16 };
-    drawFilledRect(renderer, thumbRect, colors.sliderThumb);
-    SDL_SetRenderDrawColor(renderer, colors.sliderBorder.r, colors.sliderBorder.g, colors.sliderBorder.b, colors.sliderBorder.a);
-    SDL_RenderDrawRect(renderer, &thumbRect);
+    drawFilledRect(ctx.renderer, thumbRect, colors.sliderThumb);
+    SDL_SetRenderDrawColor(ctx.renderer, colors.sliderBorder.r, colors.sliderBorder.g, colors.sliderBorder.b, colors.sliderBorder.a);
+    SDL_RenderDrawRect(ctx.renderer, &thumbRect);
     
     // Draw focus indicator
     if (hasFocus) {
         SDL_Rect focusRect = getFocusRect();
-        SDL_SetRenderDrawColor(renderer, colors.buttonText.r, colors.buttonText.g, colors.buttonText.b, colors.buttonText.a);
-        SDL_RenderDrawRect(renderer, &focusRect);
+        SDL_SetRenderDrawColor(ctx.renderer, colors.buttonText.r, colors.buttonText.g, colors.buttonText.b, colors.buttonText.a);
+        SDL_RenderDrawRect(ctx.renderer, &focusRect);
     }
 }
 
@@ -184,16 +184,16 @@ float KnobSlider::getValueFromPosition(int mouseX, int mouseY) {
     return minValue + normalizedAngle * (maxValue - minValue);
 }
 
-void KnobSlider::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<Theme> theme) {
-    if (!renderer || !theme) return;
+void KnobSlider::renderImpl(const RenderContext& ctx) {
+    if (!ctx.renderer || !theme) return;
     
-    auto colors = theme->sliderColors();
+    auto colors = ctx.sliderColors();
     int centerX = x + width / 2;
     int centerY = y + height / 2;
     int radius = std::min(width, height) / 2 - 6; // More padding for better proportions
     
     // Draw filled circle (knob body) with anti-aliasing effect
-    SDL_SetRenderDrawColor(renderer, colors.sliderThumb.r, colors.sliderThumb.g, colors.sliderThumb.b, colors.sliderThumb.a);
+    SDL_SetRenderDrawColor(ctx.renderer, colors.sliderThumb.r, colors.sliderThumb.g, colors.sliderThumb.b, colors.sliderThumb.a);
     
     // Multiple passes for smoother appearance
     for (int r = 0; r <= radius; r++) {
@@ -201,13 +201,13 @@ void KnobSlider::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<
             int dx = (int)sqrt(r * r - dy * dy);
             if (r == radius) {
                 // Outer edge - draw border
-                SDL_SetRenderDrawColor(renderer, colors.sliderBorder.r, colors.sliderBorder.g, colors.sliderBorder.b, colors.sliderBorder.a);
-                SDL_RenderDrawPoint(renderer, centerX - dx, centerY + dy);
-                SDL_RenderDrawPoint(renderer, centerX + dx, centerY + dy);
+                SDL_SetRenderDrawColor(ctx.renderer, colors.sliderBorder.r, colors.sliderBorder.g, colors.sliderBorder.b, colors.sliderBorder.a);
+                SDL_RenderDrawPoint(ctx.renderer, centerX - dx, centerY + dy);
+                SDL_RenderDrawPoint(ctx.renderer, centerX + dx, centerY + dy);
             } else {
                 // Inner fill
-                SDL_SetRenderDrawColor(renderer, colors.sliderThumb.r, colors.sliderThumb.g, colors.sliderThumb.b, colors.sliderThumb.a);
-                SDL_RenderDrawLine(renderer, centerX - dx, centerY + dy, centerX + dx, centerY + dy);
+                SDL_SetRenderDrawColor(ctx.renderer, colors.sliderThumb.r, colors.sliderThumb.g, colors.sliderThumb.b, colors.sliderThumb.a);
+                SDL_RenderDrawLine(ctx.renderer, centerX - dx, centerY + dy, centerX + dx, centerY + dy);
             }
         }
     }
@@ -223,34 +223,34 @@ void KnobSlider::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<
     int indicatorX = centerX + cos(valueAngle) * indicatorLength;
     int indicatorY = centerY + sin(valueAngle) * indicatorLength;
     
-    SDL_SetRenderDrawColor(renderer, colors.sliderBorder.r, colors.sliderBorder.g, colors.sliderBorder.b, colors.sliderBorder.a);
+    SDL_SetRenderDrawColor(ctx.renderer, colors.sliderBorder.r, colors.sliderBorder.g, colors.sliderBorder.b, colors.sliderBorder.a);
     
     // Draw thick line by drawing multiple parallel lines
     for (int offset = -2; offset <= 2; offset++) {
         int offsetX = offset * sin(valueAngle);
         int offsetY = -offset * cos(valueAngle);
-        SDL_RenderDrawLine(renderer, 
+        SDL_RenderDrawLine(ctx.renderer, 
                           centerX + offsetX, centerY + offsetY, 
                           indicatorX + offsetX, indicatorY + offsetY);
     }
     
     // Draw larger center dot for better visual feedback
-    SDL_SetRenderDrawColor(renderer, colors.sliderBorder.r, colors.sliderBorder.g, colors.sliderBorder.b, colors.sliderBorder.a);
+    SDL_SetRenderDrawColor(ctx.renderer, colors.sliderBorder.r, colors.sliderBorder.g, colors.sliderBorder.b, colors.sliderBorder.a);
     for (int dx = -2; dx <= 2; dx++) {
         for (int dy = -2; dy <= 2; dy++) {
             if (dx*dx + dy*dy <= 4) { // Circle of radius 2
-                SDL_RenderDrawPoint(renderer, centerX + dx, centerY + dy);
+                SDL_RenderDrawPoint(ctx.renderer, centerX + dx, centerY + dy);
             }
         }
     }
     SDL_Rect centerDot = { centerX - 2, centerY - 2, 4, 4 };
-    SDL_RenderFillRect(renderer, &centerDot);
+    SDL_RenderFillRect(ctx.renderer, &centerDot);
     
     // Draw focus indicator
     if (hasFocus) {
         SDL_Rect focusRect = getFocusRect();
-        SDL_SetRenderDrawColor(renderer, colors.buttonText.r, colors.buttonText.g, colors.buttonText.b, colors.buttonText.a);
-        SDL_RenderDrawRect(renderer, &focusRect);
+        SDL_SetRenderDrawColor(ctx.renderer, colors.buttonText.r, colors.buttonText.g, colors.buttonText.b, colors.buttonText.a);
+        SDL_RenderDrawRect(ctx.renderer, &focusRect);
     }
 }
 

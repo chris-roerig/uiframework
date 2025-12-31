@@ -103,23 +103,21 @@ void VirtualKeyboard::handleNavigation(SDL_Keycode key) {
     }
 }
 
-void VirtualKeyboard::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<Theme> theme) {
-    if (!renderer || !theme || !font) return;
-    
-    auto colors = theme->textInputColors();
+void VirtualKeyboard::renderImpl(const RenderContext& ctx) {
+    auto colors = ctx.textInputColors();
     
     // Calculate proper height based on text size
-    int textHeight = TTF_FontLineSkip(font);
+    int textHeight = TTF_FontLineSkip(ctx.ctx.font);
     int actualHeight = textHeight * 3 + 40; // 3 rows of text + padding
     
     // Draw background
     SDL_Rect bgRect = {x, y, width, actualHeight};
-    drawFilledRect(renderer, bgRect, colors.textInputBackground);
+    drawFilledRect(ctx.renderer, bgRect, colors.textInputBackground);
     
     // Draw border
-    SDL_SetRenderDrawColor(renderer, colors.textInputBorderDark.r, colors.textInputBorderDark.g, 
+    SDL_SetRenderDrawColor(ctx.renderer, colors.textInputBorderDark.r, colors.textInputBorderDark.g, 
                            colors.textInputBorderDark.b, colors.textInputBorderDark.a);
-    SDL_RenderDrawRect(renderer, &bgRect);
+    SDL_RenderDrawRect(ctx.renderer, &bgRect);
     
     if (currentChars->empty()) return;
     
@@ -157,19 +155,19 @@ void VirtualKeyboard::render(SDL_Renderer* renderer, TTF_Font* font, std::shared
                       colors.textInputBackground.b, colors.textInputBackground.a};
         }
         
-        SDL_Surface* surface = TTF_RenderText_Solid(font, (*currentChars)[i].c_str(), textColor);
+        SDL_Surface* surface = TTF_RenderText_Solid(ctx.font, (*currentChars)[i].c_str(), textColor);
         if (surface) {
-            SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+            SDL_Texture* texture = SDL_CreateTextureFromSurface(ctx.renderer, surface);
             if (texture) {
                 // Draw background for selected character (simple inversion)
                 if (isSelected) {
                     SDL_Rect charBgRect = {currentX, currentY, charSpacing, textHeight + 4};
                     Color bg(bgColor.r, bgColor.g, bgColor.b, bgColor.a);
-                    drawFilledRect(renderer, charBgRect, bg);
+                    drawFilledRect(ctx.renderer, charBgRect, bg);
                 }
                 
                 SDL_Rect dst = {currentX + 5, currentY + 2, surface->w, surface->h};
-                SDL_RenderCopy(renderer, texture, nullptr, &dst);
+                SDL_RenderCopy(ctx.renderer, texture, nullptr, &dst);
                 SDL_DestroyTexture(texture);
             }
             SDL_FreeSurface(surface);
@@ -189,12 +187,12 @@ void VirtualKeyboard::render(SDL_Renderer* renderer, TTF_Font* font, std::shared
     
     SDL_Color modeColor = {colors.textInputText.r, colors.textInputText.g, 
                           colors.textInputText.b, colors.textInputText.a};
-    SDL_Surface* modeSurface = TTF_RenderText_Solid(font, modeText.c_str(), modeColor);
+    SDL_Surface* modeSurface = TTF_RenderText_Solid(ctx.font, modeText.c_str(), modeColor);
     if (modeSurface) {
-        SDL_Texture* modeTexture = SDL_CreateTextureFromSurface(renderer, modeSurface);
+        SDL_Texture* modeTexture = SDL_CreateTextureFromSurface(ctx.renderer, modeSurface);
         if (modeTexture) {
             SDL_Rect modeDst = {x + width - 40, y + 5, modeSurface->w, modeSurface->h};
-            SDL_RenderCopy(renderer, modeTexture, nullptr, &modeDst);
+            SDL_RenderCopy(ctx.renderer, modeTexture, nullptr, &modeDst);
             SDL_DestroyTexture(modeTexture);
         }
         SDL_FreeSurface(modeSurface);
