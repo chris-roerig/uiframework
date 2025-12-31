@@ -124,91 +124,81 @@ void TextBox::renderImpl(const RenderContext& ctx) {
     }
 }
 
-void TextBox::handleEvent(const SDL_Event &e) {
-    if (!visible || !enabled) return;
-    
-    if (e.type == SDL_MOUSEBUTTONDOWN) {
-        if (e.button.button == SDL_BUTTON_LEFT) {
-            int mouseX = e.button.x;
-            int mouseY = e.button.y;
-            if (containsPoint(mouseX, mouseY)) {
-                if (coreRef) {
-                    coreRef->setFocus(elementId);
-                }
-            }
+void TextBox::onMouseDown(int x, int y) {
+    // Focus is automatically handled by InteractiveElement
+}
+
+void TextBox::onTextInput(const std::string& inputText) {
+    if (!inputText.empty()) {
+        if (textSelected) {
+            // Replace selected text
+            content = inputText;
+            cursorPosition = inputText.length();
+            textSelected = false;
+            invalidateStringCache();
+        } else {
+            // Insert at cursor position
+            content.insert(cursorPosition, inputText);
+            cursorPosition += inputText.length();
+            invalidateStringCache();
         }
-    } else if (e.type == SDL_TEXTINPUT && hasFocus) {
-        // Insert text at cursor position or replace selected text
-        std::string inputText = e.text.text;
-        if (!inputText.empty()) {
+    }
+}
+
+void TextBox::onKeyDown(const SDL_Keycode& key) {
+    switch (key) {
+        case SDLK_BACKSPACE:
             if (textSelected) {
-                // Replace selected text
-                content = inputText;
-                cursorPosition = inputText.length();
-                textSelected = false;
-                invalidateStringCache();
-            } else {
-                // Insert at cursor position
-                content.insert(cursorPosition, inputText);
-                cursorPosition += inputText.length();
-                invalidateStringCache();
-            }
-        }
-    } else if (e.type == SDL_KEYDOWN && hasFocus) {
-        switch (e.key.keysym.sym) {
-            case SDLK_BACKSPACE:
-                if (textSelected) {
-                    content.clear();
-                    cursorPosition = 0;
-                    textSelected = false;
-                    invalidateStringCache();
-                } else if (cursorPosition > 0) {
-                    content.erase(cursorPosition - 1, 1);
-                    cursorPosition--;
-                    invalidateStringCache();
-                }
-                break;
-            case SDLK_DELETE:
-                if (textSelected) {
-                    content.clear();
-                    cursorPosition = 0;
-                    textSelected = false;
-                    invalidateStringCache();
-                } else if (cursorPosition < content.length()) {
-                    content.erase(cursorPosition, 1);
-                    invalidateStringCache();
-                }
-                break;
-            case SDLK_LEFT:
-                if (cursorPosition > 0) {
-                    cursorPosition--;
-                }
-                textSelected = false;
-                break;
-            case SDLK_RIGHT:
-                if (cursorPosition < content.length()) {
-                    cursorPosition++;
-                }
-                textSelected = false;
-                break;
-            case SDLK_HOME:
+                content.clear();
                 cursorPosition = 0;
                 textSelected = false;
-                break;
-            case SDLK_END:
-                cursorPosition = content.length();
+                invalidateStringCache();
+            } else if (cursorPosition > 0) {
+                content.erase(cursorPosition - 1, 1);
+                cursorPosition--;
+                invalidateStringCache();
+            }
+            break;
+        case SDLK_DELETE:
+            if (textSelected) {
+                content.clear();
+                cursorPosition = 0;
                 textSelected = false;
-                break;
-            case SDLK_a:
-                if (e.key.keysym.mod & KMOD_CTRL) {
-                    selectAll();
-                }
-                break;
-            case SDLK_RETURN:
-            case SDLK_KP_ENTER:
-                activate();
-                break;
-        }
+                invalidateStringCache();
+            } else if (cursorPosition < content.length()) {
+                content.erase(cursorPosition, 1);
+                invalidateStringCache();
+            }
+            break;
+        case SDLK_LEFT:
+            if (cursorPosition > 0) {
+                cursorPosition--;
+            }
+            textSelected = false;
+            break;
+        case SDLK_RIGHT:
+            if (cursorPosition < content.length()) {
+                cursorPosition++;
+            }
+            textSelected = false;
+            break;
+        case SDLK_HOME:
+            cursorPosition = 0;
+            textSelected = false;
+            break;
+        case SDLK_END:
+            cursorPosition = content.length();
+            textSelected = false;
+            break;
+        case SDLK_a:
+            if (SDL_GetModState() & KMOD_CTRL) {
+                selectAll();
+            }
+            break;
+        case SDLK_RETURN:
+        case SDLK_KP_ENTER:
+            activate();
+            break;
     }
 }
 

@@ -49,26 +49,6 @@ void CheckBox::renderImpl(const RenderContext& ctx) {
     }
 }
 
-void CheckBox::handleEvent(const SDL_Event &e) {
-    if (!visible || !enabled) {
-        return;
-    }
-    
-    if (e.type == SDL_MOUSEBUTTONDOWN) {
-        if (e.button.button == SDL_BUTTON_LEFT) {
-            int mouseX = e.button.x;
-            int mouseY = e.button.y;
-            if (containsPoint(mouseX, mouseY)) {
-                activate();
-            }
-        }
-    } else if (e.type == SDL_KEYDOWN && hasFocus) {
-        if (e.key.keysym.sym == SDLK_SPACE || e.key.keysym.sym == SDLK_RETURN) {
-            activate();
-        }
-    }
-}
-
 void CheckBox::activate() {
     setChecked(!checked);
 }

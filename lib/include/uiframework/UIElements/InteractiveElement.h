@@ -24,11 +24,6 @@ protected:
     virtual void onKeyDown(const SDL_Keycode& key) {}
     virtual void onTextInput(const std::string& text) {}
 
-    // Helper method for activation (space/enter key or mouse click)
-    virtual void activate() override {}
-
-public:
-
 public:
     InteractiveElement(int x, int y, int w, int h);
     virtual ~InteractiveElement() = default;
@@ -38,6 +33,9 @@ public:
     
     // Interactive elements can receive focus
     bool isInteractive() const override { return true; }
+
+    // Helper method for activation (space/enter key or mouse click)
+    virtual void activate() {}
 
     // State accessors
     bool getIsDragging() const { return isDragging; }

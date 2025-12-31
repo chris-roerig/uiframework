@@ -1,12 +1,12 @@
 #pragma once
-#include "UIElement.h"
+#include "InteractiveElement.h"
 #include <vector>
 #include <string>
 #include <functional>
 
 namespace ui {
 
-class TextBox : public UIElement {
+class TextBox : public InteractiveElement {
 private:
     bool textSelected = false;   // true if text is selected
     size_t cursorPosition = 0;   // cursor position in text
@@ -29,14 +29,20 @@ public:
     bool autoHighlight;  // auto-highlight on focus; default true
     
     TextBox(int x_, int y_, int w_, int h_, const std::string& defaultText = "", bool autoHighlight_ = true)
-      : UIElement(x_, y_, w_, h_), content(defaultText), autoHighlight(autoHighlight_) {
+      : InteractiveElement(x_, y_, w_, h_), content(defaultText), autoHighlight(autoHighlight_) {
         cursorPosition = content.length();
     }
     
-    void handleEvent(const SDL_Event &e) override;
-    bool isInteractive() const override { return true; }
     SDL_Rect getFocusRect() const override;
     void activate() override;
+
+protected:
+    // InteractiveElement event handlers
+    void onMouseDown(int x, int y) override;
+    void onTextInput(const std::string& text) override;
+    void onKeyDown(const SDL_Keycode& key) override;
+
+public:
 
 protected:
     void renderImpl(const RenderContext& ctx) override;

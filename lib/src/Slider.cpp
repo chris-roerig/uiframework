@@ -11,31 +11,19 @@ namespace ui {
 
 // Base Slider implementation
 Slider::Slider(int x_, int y_, int w_, int h_, float min, float max, float initial)
-    : UIElement(x_, y_, w_, h_), minValue(min), maxValue(max), currentValue(std::clamp(initial, min, max)) {
+    : InteractiveElement(x_, y_, w_, h_), minValue(min), maxValue(max), currentValue(std::clamp(initial, min, max)) {
 }
 
-void Slider::handleEvent(const SDL_Event &e) {
-    if (!visible) return;
-    
-    if (e.type == SDL_MOUSEBUTTONDOWN) {
-        if (e.button.button == SDL_BUTTON_LEFT) {
-            int mouseX = e.button.x;
-            int mouseY = e.button.y;
-            if (containsPoint(mouseX, mouseY)) {
-                if (coreRef) {
-                    coreRef->setFocus(elementId);
-                }
-                isDragging = true;
-                updateValueFromMouse(mouseX, mouseY);
-            }
-        }
-    } else if (e.type == SDL_MOUSEBUTTONUP) {
-        if (e.button.button == SDL_BUTTON_LEFT) {
-            isDragging = false;
-        }
-    } else if (e.type == SDL_MOUSEMOTION && isDragging) {
-        updateValueFromMouse(e.motion.x, e.motion.y);
-    }
+void Slider::onMouseDown(int x, int y) {
+    updateValueFromMouse(x, y);
+}
+
+void Slider::onMouseUp(int x, int y) {
+    // Nothing special needed for mouse up
+}
+
+void Slider::onMouseDrag(int x, int y) {
+    updateValueFromMouse(x, y);
 }
 
 void Slider::updateValueFromMouse(int mouseX, int mouseY) {

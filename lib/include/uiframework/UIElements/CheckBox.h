@@ -1,27 +1,25 @@
 #pragma once
-#include "UIElement.h"
+#include "InteractiveElement.h"
 #include <vector>
 #include <string>
 #include <functional>
 
 namespace ui {
 
-class CheckBox : public UIElement {
+class CheckBox : public InteractiveElement {
 public:
     bool checked;
     std::function<void(bool)> onToggle;
     
     CheckBox(int x_, int y_, int size, bool initial = false, std::function<void(bool)> callback = nullptr)
-      : UIElement(x_, y_, size, size), checked(initial), onToggle(callback) {}
-    
-    void handleEvent(const SDL_Event &e) override;
-    bool isInteractive() const override { return true; }
-    void activate() override;
+      : InteractiveElement(x_, y_, size, size), checked(initial), onToggle(callback) {}
     
 protected:
     void renderImpl(const RenderContext& ctx) override;
     
 public:
+    void activate() override;
+    
     // Sizing API implementation
     std::pair<int, int> getPreferredSize(TTF_Font* font) const override;
     std::pair<int, int> getMinimumSize() const override;
