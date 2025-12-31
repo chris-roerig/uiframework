@@ -6,6 +6,7 @@
 #include "uiframework/Theme/ThemeMolokai.h"
 #include "uiframework/Theme/ThemeSolarizedDark.h"
 #include "uiframework/Theme/ThemeSolarizedLight.h"
+#include "uiframework/Resources/EmbeddedFontRegistry.h"
 
 // Constructor
 UI::UI(const char* title, int width, int height) {

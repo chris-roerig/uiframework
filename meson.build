@@ -48,6 +48,7 @@ common_sources = [
   'lib/src/GridLayout.cpp',
   'lib/src/ElementPool.cpp',
   'lib/src/RealTime/UIUpdateQueue.cpp',
+  'lib/src/EmbeddedFontRegistry.cpp',
   'lib/src/Utils/BorderRenderer.cpp',
   'lib/src/Utils/TooltipRenderer.cpp',
 ]
@@ -148,6 +149,14 @@ executable('feature_showcase',
 # Bulk operations demo (Phase 6)
 executable('bulk_operations_demo',
   sources : ['examples/bulk_operations_demo.cpp'] + common_sources,
+  dependencies : [sdl2_dep, ttf_dep, sdl2_image_dep],
+  include_directories : ['lib/include'],
+  install : false
+)
+
+# Phase 0 Font Demo (Font Improvement Plan Phase 0)
+executable('phase0_font_demo',
+  sources : ['examples/phase0_font_demo.cpp'] + common_sources,
   dependencies : [sdl2_dep, ttf_dep, sdl2_image_dep],
   include_directories : ['lib/include'],
   install : false
