@@ -15,7 +15,7 @@ public:
         setId(id);
     }
     
-    void render(SDL_Renderer*, TTF_Font*, std::shared_ptr<ui::Theme>) override {}
+    void renderImpl(const ui::RenderContext& ctx) override {}
     void handleEvent(const SDL_Event&) override {}
     
     bool isInteractive() const override { return interactive; }

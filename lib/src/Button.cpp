@@ -24,7 +24,7 @@ void Button::renderImpl(const RenderContext& ctx) {
         bg = colors.buttonBackground;
         textColor = colors.buttonText;
         // Darken if pressed
-        if (pressed) {
+        if (getIsPressed()) {
             bg = Color(static_cast<uint8_t>(bg.r * Constants::BUTTON_PRESSED_DARKEN_FACTOR),
                        static_cast<uint8_t>(bg.g * Constants::BUTTON_PRESSED_DARKEN_FACTOR),
                        static_cast<uint8_t>(bg.b * Constants::BUTTON_PRESSED_DARKEN_FACTOR),
@@ -54,37 +54,6 @@ void Button::renderImpl(const RenderContext& ctx) {
             dst.y = y + (height - dst.h) / 2;
             
             SDL_RenderCopy(ctx.renderer, cached->texture, nullptr, &dst);
-        }
-    }
-}
-
-void Button::handleEvent(const SDL_Event &e) {
-    if (!visible || !enabled) return;
-    
-    if (e.type == SDL_MOUSEBUTTONDOWN) {
-        if (e.button.button == SDL_BUTTON_LEFT) {
-            int mouseX = e.button.x;
-            int mouseY = e.button.y;
-            if (containsPoint(mouseX, mouseY)) {
-                pressed = true;
-                // Auto-focus on click for consistency with other widgets
-                if (coreRef) {
-                    coreRef->setFocus(elementId);
-                }
-            }
-        }
-    } else if (e.type == SDL_MOUSEBUTTONUP) {
-        if (e.button.button == SDL_BUTTON_LEFT && pressed) {
-            int mouseX = e.button.x;
-            int mouseY = e.button.y;
-            pressed = false;
-            if (containsPoint(mouseX, mouseY)) {
-                activate();
-            }
-        }
-    } else if (e.type == SDL_KEYDOWN && hasFocus) {
-        if (e.key.keysym.sym == SDLK_RETURN || e.key.keysym.sym == SDLK_SPACE) {
-            activate();
         }
     }
 }
