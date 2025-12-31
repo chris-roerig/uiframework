@@ -11,11 +11,12 @@ namespace ui {
 void Label::renderImpl(const RenderContext& ctx) {
     ThemeableElementColors tc = ctx.labelColors();
     SDL_Color sdlColor = { tc.labelText.r, tc.labelText.g, tc.labelText.b, tc.labelText.a };
+    SDL_Rect contentRect = getContentRect();
     
     if (ctx.font) {
         TextCacheEntry* cached = getCachedText("main", text, sdlColor, ctx.renderer, ctx.font);
         if (cached && cached->texture) {
-            SDL_Rect dst = { x, y, cached->width, cached->height };
+            SDL_Rect dst = { contentRect.x, contentRect.y, cached->width, cached->height };
             SDL_RenderCopy(ctx.renderer, cached->texture, nullptr, &dst);
         }
     }

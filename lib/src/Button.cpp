@@ -14,6 +14,7 @@ void Button::renderImpl(const RenderContext& ctx) {
     // Retrieve button colors from the theme
     auto colors = ctx.buttonColors();
     SDL_Rect rect = { x, y, width, height };
+    SDL_Rect contentRect = getContentRect();
 
     // Determine background and text colors based on enabled state
     Color bg, textColor;
@@ -50,8 +51,8 @@ void Button::renderImpl(const RenderContext& ctx) {
             SDL_Rect dst;
             dst.w = cached->width;
             dst.h = cached->height;
-            dst.x = x + (width - dst.w) / 2;
-            dst.y = y + (height - dst.h) / 2;
+            dst.x = contentRect.x + (contentRect.w - dst.w) / 2;
+            dst.y = contentRect.y + (contentRect.h - dst.h) / 2;
             
             SDL_RenderCopy(ctx.renderer, cached->texture, nullptr, &dst);
         }

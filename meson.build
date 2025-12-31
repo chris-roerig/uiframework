@@ -129,6 +129,14 @@ executable('tooltip_demo',
   install : false
 )
 
+# Spacing demo (Phase 2.3)
+executable('spacing_demo',
+  sources : ['examples/spacing_demo.cpp'] + common_sources,
+  dependencies : [sdl2_dep, ttf_dep, sdl2_image_dep],
+  include_directories : ['lib/include'],
+  install : false
+)
+
 # Bulk operations demo (Phase 6)
 executable('bulk_operations_demo',
   sources : ['examples/bulk_operations_demo.cpp'] + common_sources,

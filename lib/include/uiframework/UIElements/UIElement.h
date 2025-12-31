@@ -52,6 +52,16 @@ public:
     mutable bool showTooltip = false;
     mutable Uint32 hoverStartTime = 0;
     
+    // Spacing support
+    struct Spacing {
+        int top, right, bottom, left;
+        Spacing(int all = 0) : top(all), right(all), bottom(all), left(all) {}
+        Spacing(int t, int r, int b, int l) : top(t), right(r), bottom(b), left(l) {}
+    };
+    
+    Spacing padding{0};
+    Spacing margin{0};
+    
     UIElement(int x_, int y_, int w_, int h_)
       : x(x_), y(y_), width(w_), height(h_) {}
     
@@ -144,6 +154,25 @@ public:
     bool isTooltipVisible() const { return showTooltip; }
     void setHoverStartTime(Uint32 time) const { hoverStartTime = time; }
     Uint32 getHoverStartTime() const { return hoverStartTime; }
+    
+    // Spacing API
+    void setPadding(int all) { padding = Spacing(all); }
+    void setPadding(int top, int right, int bottom, int left) { padding = Spacing(top, right, bottom, left); }
+    void setMargin(int all) { margin = Spacing(all); }
+    void setMargin(int top, int right, int bottom, int left) { margin = Spacing(top, right, bottom, left); }
+    
+    const Spacing& getPadding() const { return padding; }
+    const Spacing& getMargin() const { return margin; }
+    
+    // Get content rectangle (element bounds minus padding)
+    SDL_Rect getContentRect() const {
+        return SDL_Rect{
+            x + padding.left,
+            y + padding.top,
+            width - padding.left - padding.right,
+            height - padding.top - padding.bottom
+        };
+    }
 };
 
 } // namespace ui

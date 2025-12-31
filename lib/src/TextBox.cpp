@@ -89,7 +89,8 @@ void TextBox::renderImpl(const RenderContext& ctx) {
             if (surface) {
                 SDL_Texture* texture = SDL_CreateTextureFromSurface(ctx.renderer, surface);
                 if (texture) {
-                    SDL_Rect dst = { x + padding, y + padding, surface->w, surface->h };
+                    SDL_Rect contentRect = getContentRect();
+                    SDL_Rect dst = { contentRect.x + padding, contentRect.y + padding, surface->w, surface->h };
                     SDL_RenderCopy(ctx.renderer, texture, nullptr, &dst);
                     SDL_DestroyTexture(texture);
                 } else {
@@ -112,7 +113,8 @@ void TextBox::renderImpl(const RenderContext& ctx) {
             }
             SDL_Color textColor = { tc.textInputText.r, tc.textInputText.g, tc.textInputText.b, tc.textInputText.a };
             SDL_SetRenderDrawColor(ctx.renderer, textColor.r, textColor.g, textColor.b, textColor.a);
-            SDL_RenderDrawLine(ctx.renderer, cursorX, y + padding, cursorX, y + boxHeight - padding);
+            SDL_Rect contentRect = getContentRect();
+            SDL_RenderDrawLine(ctx.renderer, cursorX, contentRect.y + padding, cursorX, contentRect.y + contentRect.h - padding);
         }
     }
 }
