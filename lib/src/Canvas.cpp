@@ -7,24 +7,20 @@
 
 namespace ui {
 
-void Canvas::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<Theme> theme) {
-    if (!renderer || !theme) {
-        return;
-    }
-    
+void Canvas::renderImpl(const RenderContext& ctx) {
     // Set clipping rectangle to canvas bounds
     SDL_Rect clipRect = { x, y, width, height };
-    SDL_RenderSetClipRect(renderer, &clipRect);
+    SDL_RenderSetClipRect(ctx.renderer, &clipRect);
     
     // Draw canvas background
-    auto colors = theme->canvasColors();
-    drawFilledRect(renderer, clipRect, colors.canvasBackground);
+    auto colors = ctx.labelColors(); // Canvas uses label colors as fallback
+    drawFilledRect(ctx.renderer, clipRect, colors.canvasBackground);
     
     // Execute all draw commands
     for (auto& cmd : drawCommands) {
         if (cmd) {
             try {
-                cmd(renderer);
+                cmd(ctx.renderer);
             } catch (const std::exception& e) {
                 std::cerr << "Error executing canvas draw command: " << e.what() << std::endl;
             }
@@ -32,14 +28,14 @@ void Canvas::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<Them
     }
     
     // Reset clipping
-    SDL_RenderSetClipRect(renderer, nullptr);
+    SDL_RenderSetClipRect(ctx.renderer, nullptr);
     
     // Draw border if focused
-    if (hasFocus && theme) {
-        auto colors = theme->focusColors();
+    if (hasFocus) {
+        auto colors = ctx.labelColors();
         SDL_Rect focusRect = getFocusRect();
-        SDL_SetRenderDrawColor(renderer, colors.focusBorder.r, colors.focusBorder.g, colors.focusBorder.b, colors.focusBorder.a);
-        SDL_RenderDrawRect(renderer, &focusRect);
+        SDL_SetRenderDrawColor(ctx.renderer, colors.focusBorder.r, colors.focusBorder.g, colors.focusBorder.b, colors.focusBorder.a);
+        SDL_RenderDrawRect(ctx.renderer, &focusRect);
     }
 }
 

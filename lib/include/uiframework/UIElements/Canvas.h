@@ -13,8 +13,10 @@ public:
     
     Canvas(int x_, int y_, int w_, int h_) : UIElement(x_, y_, w_, h_) {}
     
-    void render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<class Theme> theme) override;
+protected:
+    void renderImpl(const RenderContext& ctx) override;
     
+public:
     // Drawing methods
     void rect(const SDL_Rect &rect, const Color &color);
     void filledRect(const SDL_Rect &rect, const Color &color);

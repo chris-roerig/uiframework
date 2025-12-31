@@ -23,41 +23,37 @@ std::pair<int, int> ProgressBar::getTextSize(const std::string &text, TTF_Font* 
     return {0, 0}; // Fallback if there's an error
 }
 
-void ProgressBar::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<Theme> theme) {
-    if (!renderer || !theme) {
-        return;
-    }
-    
-    ThemeableElementColors tc = theme->progressBarColors();
+void ProgressBar::renderImpl(const RenderContext& ctx) {
+    ThemeableElementColors tc = ctx.progressBarColors();
 
     // Draw border
     SDL_Rect borderRect = { x, y, width, height };
-    SDL_SetRenderDrawColor(renderer, tc.progressBarBorder.r, tc.progressBarBorder.g, tc.progressBarBorder.b, tc.progressBarBorder.a);
+    SDL_SetRenderDrawColor(ctx.renderer, tc.progressBarBorder.r, tc.progressBarBorder.g, tc.progressBarBorder.b, tc.progressBarBorder.a);
     SDL_RenderDrawRect(renderer, &borderRect);
 
     // Draw background (inside the border)
     SDL_Rect bgRect = { x + 1, y + 1, width - 2, height - 2 };
-    drawFilledRect(renderer, bgRect, tc.progressBarBackground);
+    drawFilledRect(ctx.renderer, bgRect, tc.progressBarBackground);
 
     // Draw progress fill (ensuring it stays within borders)
     int fillWidth = static_cast<int>((width - 2) * progress);
     if (fillWidth > 0) {
         fillWidth = std::max(fillWidth, 1); // Ensure at least 1px fill when progress > 0
         SDL_Rect fillRect = { x + 1, y + 1, fillWidth, height - 2 };
-        drawFilledRect(renderer, fillRect, tc.progressBarForeground);
+        drawFilledRect(ctx.renderer, fillRect, tc.progressBarForeground);
     }
 
     // Draw focus indicator
     if (hasFocus) {
         SDL_Rect focusRect = getFocusRect();
-        SDL_SetRenderDrawColor(renderer, tc.progressBarBorder.r, tc.progressBarBorder.g, tc.progressBarBorder.b, tc.progressBarBorder.a);
-        SDL_RenderDrawRect(renderer, &focusRect);
+        SDL_SetRenderDrawColor(ctx.renderer, tc.progressBarBorder.r, tc.progressBarBorder.g, tc.progressBarBorder.b, tc.progressBarBorder.a);
+        SDL_RenderDrawRect(ctx.renderer, &focusRect);
     }
 
     // Display percentage text (if enabled)
-    if (showText && font) {
+    if (showText && ctx.font) {
         std::string progressText = std::to_string(getPercentage()) + "%";
-        auto [textW, textH] = getTextSize(progressText, font);
+        auto [textW, textH] = getTextSize(progressText, ctx.font);
         
         if (textW > 0 && textH > 0) {
             // Center the text in the progress bar
@@ -74,12 +70,12 @@ void ProgressBar::render(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr
                 textColor = { tc.progressBarForeground.r, tc.progressBarForeground.g, tc.progressBarForeground.b, tc.progressBarForeground.a };
             }
             
-            SDL_Surface* surface = TTF_RenderText_Solid(font, progressText.c_str(), textColor);
+            SDL_Surface* surface = TTF_RenderText_Solid(ctx.font, progressText.c_str(), textColor);
             if (surface) {
-                SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+                SDL_Texture* texture = SDL_CreateTextureFromSurface(ctx.renderer, surface);
                 if (texture) {
                     SDL_Rect dst = { textX, textY, surface->w, surface->h };
-                    SDL_RenderCopy(renderer, texture, nullptr, &dst);
+                    SDL_RenderCopy(ctx.renderer, texture, nullptr, &dst);
                     SDL_DestroyTexture(texture);
                 }
                 SDL_FreeSurface(surface);
