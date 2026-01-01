@@ -37,6 +37,11 @@ FontManager& FontManager::getInstance() {
     return *instance;
 }
 
+// Phase 1: Constructor with cache initialization
+FontManager::FontManager() 
+    : maxFontCacheSize(DEFAULT_MAX_FONT_CACHE_SIZE), totalTexturesCreated(0) {
+}
+
 // Legacy method for backward compatibility
 TTF_Font* FontManager::getFont(const std::string& path, int size) {
     std::lock_guard<std::mutex> lock(cacheMutex);
@@ -45,6 +50,8 @@ TTF_Font* FontManager::getFont(const std::string& path, int size) {
     auto it = fontCache.find(key);
     
     if (it != fontCache.end()) {
+        // Phase 1: Update LRU on cache hit
+        updateLRU(key);
         return it->second;
     }
     
@@ -62,7 +69,12 @@ TTF_Font* FontManager::getFont(const std::string& path, int size) {
         // Use embedded font as default
         font = loadEmbeddedFont(size);
         if (font) {
+            // Phase 1: Check cache size before adding
+            if (fontCache.size() >= maxFontCacheSize) {
+                evictOldestFont();
+            }
             fontCache[key] = font;
+            updateLRU(key);
             return font;
         }
         
@@ -93,7 +105,12 @@ TTF_Font* FontManager::getFont(const std::string& path, int size) {
     }
     
     if (font) {
+        // Phase 1: Check cache size before adding
+        if (fontCache.size() >= maxFontCacheSize) {
+            evictOldestFont();
+        }
         fontCache[key] = font;
+        updateLRU(key);
     } else {
         Logger::log(LogLevel::ERROR, "Failed to load font: " + (path.empty() ? "default" : path));
     }
@@ -109,6 +126,8 @@ TTF_Font* FontManager::getFont(const std::string& familyName, int size, FontStyl
     auto it = fontCache.find(key);
     
     if (it != fontCache.end()) {
+        // Phase 1: Update LRU on cache hit
+        updateLRU(key);
         return it->second;
     }
     
@@ -116,7 +135,12 @@ TTF_Font* FontManager::getFont(const std::string& familyName, int size, FontStyl
     TTF_Font* font = loadEmbeddedFont(familyName, size, style);
     
     if (font) {
+        // Phase 1: Check cache size before adding
+        if (fontCache.size() >= maxFontCacheSize) {
+            evictOldestFont();
+        }
         fontCache[key] = font;
+        updateLRU(key);
         Logger::log(LogLevel::INFO, "Loaded embedded font: " + familyName + " (size " + std::to_string(size) + ")");
     } else {
         Logger::log(LogLevel::WARNING, "Failed to load font family: " + familyName + " (size " + std::to_string(size) + ")");
@@ -156,8 +180,17 @@ std::vector<std::string> FontManager::getAvailableFamilies() const {
     std::lock_guard<std::mutex> lock(cacheMutex);
     std::vector<std::string> families;
     
+    // Add embedded fonts
     for (const auto& family : embeddedFonts) {
         families.push_back(family.first);
+    }
+    
+    // Phase 4: Add external fonts
+    for (const auto& family : externalFonts) {
+        // Only add if not already in the list (avoid duplicates)
+        if (std::find(families.begin(), families.end(), family.first) == families.end()) {
+            families.push_back(family.first);
+        }
     }
     
     return families;
@@ -165,7 +198,8 @@ std::vector<std::string> FontManager::getAvailableFamilies() const {
 
 bool FontManager::isFamilyAvailable(const std::string& familyName) const {
     std::lock_guard<std::mutex> lock(cacheMutex);
-    return embeddedFonts.find(familyName) != embeddedFonts.end();
+    return embeddedFonts.find(familyName) != embeddedFonts.end() ||
+           externalFonts.find(familyName) != externalFonts.end();
 }
 
 TTF_Font* FontManager::loadEmbeddedFont(int size) {
@@ -174,36 +208,53 @@ TTF_Font* FontManager::loadEmbeddedFont(int size) {
 }
 
 TTF_Font* FontManager::loadEmbeddedFont(const std::string& familyName, int size, FontStyle style) {
-    // Find the embedded font data
+    // First try embedded fonts
     auto familyIt = embeddedFonts.find(familyName);
-    if (familyIt == embeddedFonts.end()) {
-        return nullptr;
-    }
-    
-    auto styleIt = familyIt->second.find(style);
-    if (styleIt == familyIt->second.end()) {
-        // Fallback to regular style if requested style not available
-        styleIt = familyIt->second.find(FontStyle::Regular);
+    if (familyIt != embeddedFonts.end()) {
+        auto styleIt = familyIt->second.find(style);
         if (styleIt == familyIt->second.end()) {
-            return nullptr;
+            // Fallback to regular style if requested style not available
+            styleIt = familyIt->second.find(FontStyle::Regular);
+        }
+        
+        if (styleIt != familyIt->second.end()) {
+            const EmbeddedFontData& fontData = styleIt->second;
+            
+            SDL_RWops* rw = SDL_RWFromConstMem(fontData.data, fontData.size);
+            if (rw) {
+                TTF_Font* font = TTF_OpenFontRW(rw, 1, size); // 1 = free RWops automatically
+                if (font) {
+                    return font;
+                } else {
+                    Logger::log(LogLevel::ERROR, "Failed to load embedded font " + familyName + ": " + std::string(TTF_GetError()));
+                }
+            } else {
+                Logger::log(LogLevel::ERROR, "Failed to create RWops from embedded font: " + familyName);
+            }
         }
     }
     
-    const EmbeddedFontData& fontData = styleIt->second;
-    
-    SDL_RWops* rw = SDL_RWFromConstMem(fontData.data, fontData.size);
-    if (!rw) {
-        Logger::log(LogLevel::ERROR, "Failed to create RWops from embedded font: " + familyName);
-        return nullptr;
+    // Phase 4: Try external fonts if embedded font not found
+    auto externalFamilyIt = externalFonts.find(familyName);
+    if (externalFamilyIt != externalFonts.end()) {
+        auto externalStyleIt = externalFamilyIt->second.find(style);
+        if (externalStyleIt == externalFamilyIt->second.end()) {
+            // Fallback to regular style if requested style not available
+            externalStyleIt = externalFamilyIt->second.find(FontStyle::Regular);
+        }
+        
+        if (externalStyleIt != externalFamilyIt->second.end()) {
+            const std::string& filePath = externalStyleIt->second;
+            TTF_Font* font = TTF_OpenFont(filePath.c_str(), size);
+            if (font) {
+                return font;
+            } else {
+                Logger::log(LogLevel::ERROR, "Failed to load external font " + familyName + " from " + filePath + ": " + std::string(TTF_GetError()));
+            }
+        }
     }
     
-    TTF_Font* font = TTF_OpenFontRW(rw, 1, size); // 1 = free RWops automatically
-    if (!font) {
-        Logger::log(LogLevel::ERROR, "Failed to load embedded font " + familyName + ": " + std::string(TTF_GetError()));
-        return nullptr;
-    }
-    
-    return font;
+    return nullptr;
 }
 
 void FontManager::cleanup() {
@@ -220,6 +271,213 @@ void FontManager::cleanup() {
 
 FontManager::~FontManager() {
     cleanup();
+}
+
+// Phase 1: Cache management methods
+void FontManager::evictOldestFont() {
+    if (fontLRU.empty()) {
+        return;
+    }
+    
+    // Remove the least recently used font
+    FontKey oldestKey = fontLRU.back();
+    fontLRU.pop_back();
+    
+    auto it = fontCache.find(oldestKey);
+    if (it != fontCache.end()) {
+        TTF_CloseFont(it->second);
+        fontCache.erase(it);
+        Logger::log(LogLevel::DEBUG, "Evicted font from cache: " + oldestKey.familyName + 
+                   " (size " + std::to_string(oldestKey.size) + ")");
+    }
+}
+
+void FontManager::updateLRU(const FontKey& key) {
+    // Remove key from current position in LRU list
+    auto it = std::find(fontLRU.begin(), fontLRU.end(), key);
+    if (it != fontLRU.end()) {
+        fontLRU.erase(it);
+    }
+    
+    // Add key to front (most recently used)
+    fontLRU.push_front(key);
+}
+
+size_t FontManager::estimateFontMemoryUsage(TTF_Font* font) const {
+    if (!font) {
+        return 0;
+    }
+    
+    // Rough estimate: base font structure + glyph cache
+    // TTF_Font structure is typically ~1KB + glyph cache varies by usage
+    // We'll estimate 4KB per font as a reasonable baseline
+    return 4096;
+}
+
+void FontManager::setMaxCacheSize(size_t maxFonts) {
+    std::lock_guard<std::mutex> lock(cacheMutex);
+    maxFontCacheSize = maxFonts;
+    
+    // Evict fonts if current cache exceeds new limit
+    while (fontCache.size() > maxFontCacheSize && !fontLRU.empty()) {
+        evictOldestFont();
+    }
+}
+
+size_t FontManager::getCacheSize() const {
+    std::lock_guard<std::mutex> lock(cacheMutex);
+    return fontCache.size();
+}
+
+size_t FontManager::getMaxCacheSize() const {
+    std::lock_guard<std::mutex> lock(cacheMutex);
+    return maxFontCacheSize;
+}
+
+FontMemoryStats FontManager::getMemoryStats() const {
+    std::lock_guard<std::mutex> lock(cacheMutex);
+    
+    FontMemoryStats stats;
+    stats.totalFontsLoaded = fontCache.size();
+    stats.totalTexturesCreated = totalTexturesCreated;
+    stats.maxFontCacheSize = maxFontCacheSize;
+    stats.currentFontCacheSize = fontCache.size();
+    
+    // Estimate memory usage
+    stats.estimatedMemoryUsage = 0;
+    for (const auto& pair : fontCache) {
+        stats.estimatedMemoryUsage += estimateFontMemoryUsage(pair.second);
+    }
+    
+    return stats;
+}
+
+void FontManager::logMemoryUsage() const {
+    FontMemoryStats stats = getMemoryStats();
+    
+    Logger::log(LogLevel::INFO, "Font Memory Usage:");
+    Logger::log(LogLevel::INFO, "  Fonts loaded: " + std::to_string(stats.totalFontsLoaded) + 
+               "/" + std::to_string(stats.maxFontCacheSize));
+    Logger::log(LogLevel::INFO, "  Estimated memory: " + std::to_string(stats.estimatedMemoryUsage / 1024) + " KB");
+    Logger::log(LogLevel::INFO, "  Textures created: " + std::to_string(stats.totalTexturesCreated));
+}
+
+// Phase 3: Font metrics and text measurement methods
+FontMetrics FontManager::getFontMetrics(const std::string& familyName, int size, FontStyle style) {
+    TTF_Font* font = getFont(familyName, size, style);
+    if (!font) {
+        return FontMetrics(); // Return empty metrics if font not found
+    }
+    
+    int ascent = TTF_FontAscent(font);
+    int descent = TTF_FontDescent(font);
+    int lineSkip = TTF_FontLineSkip(font);
+    int height = TTF_FontHeight(font);
+    
+    return FontMetrics(ascent, descent, lineSkip, height);
+}
+
+int FontManager::getTextWidth(const std::string& text, const std::string& familyName, int size, FontStyle style) {
+    TTF_Font* font = getFont(familyName, size, style);
+    if (!font || text.empty()) {
+        return 0;
+    }
+    
+    int width = 0;
+    TTF_SizeText(font, text.c_str(), &width, nullptr);
+    return width;
+}
+
+int FontManager::getTextHeight(const std::string& text, const std::string& familyName, int size, FontStyle style) {
+    TTF_Font* font = getFont(familyName, size, style);
+    if (!font || text.empty()) {
+        return 0;
+    }
+    
+    int height = 0;
+    TTF_SizeText(font, text.c_str(), nullptr, &height);
+    return height;
+}
+
+std::pair<int, int> FontManager::getTextSize(const std::string& text, const std::string& familyName, int size, FontStyle style) {
+    TTF_Font* font = getFont(familyName, size, style);
+    if (!font || text.empty()) {
+        return {0, 0};
+    }
+    
+    int width = 0, height = 0;
+    TTF_SizeText(font, text.c_str(), &width, &height);
+    return {width, height};
+}
+
+// Phase 4: Runtime font registration methods
+bool FontManager::registerFontFromMemory(const std::string& familyName, FontStyle style,
+                                        const unsigned char* data, size_t dataSize) {
+    if (!data || dataSize == 0 || familyName.empty()) {
+        return false;
+    }
+    
+    std::lock_guard<std::mutex> lock(cacheMutex);
+    
+    // Register as embedded font (reuse existing embedded font system)
+    EmbeddedFontData fontData;
+    fontData.data = data;
+    fontData.size = dataSize;
+    
+    embeddedFonts[familyName][style] = fontData;
+    
+    return true;
+}
+
+bool FontManager::registerFontFromFile(const std::string& familyName, FontStyle style,
+                                      const std::string& filePath) {
+    if (familyName.empty() || filePath.empty()) {
+        return false;
+    }
+    
+    // Test if file can be loaded
+    TTF_Font* testFont = TTF_OpenFont(filePath.c_str(), 12);
+    if (!testFont) {
+        std::cerr << "FontManager: Cannot load font file: " << filePath << " - " << TTF_GetError() << std::endl;
+        return false;
+    }
+    TTF_CloseFont(testFont);
+    
+    std::lock_guard<std::mutex> lock(cacheMutex);
+    
+    // Register external font path
+    externalFonts[familyName][style] = filePath;
+    
+    return true;
+}
+
+void FontManager::unregisterFontFamily(const std::string& familyName) {
+    if (familyName.empty()) {
+        return;
+    }
+    
+    std::lock_guard<std::mutex> lock(cacheMutex);
+    
+    // Remove from embedded fonts
+    embeddedFonts.erase(familyName);
+    
+    // Remove from external fonts
+    externalFonts.erase(familyName);
+    
+    // Remove cached fonts for this family
+    auto it = fontCache.begin();
+    while (it != fontCache.end()) {
+        if (it->first.familyName == familyName) {
+            TTF_CloseFont(it->second);
+            
+            // Remove from LRU list
+            fontLRU.remove(it->first);
+            
+            it = fontCache.erase(it);
+        } else {
+            ++it;
+        }
+    }
 }
 
 } // namespace ui

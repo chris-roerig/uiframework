@@ -18,6 +18,7 @@ common_sources = [
   'lib/src/UI.cpp',
   'lib/src/Logger.cpp',
   'lib/src/FontManager.cpp',
+  'lib/src/FontConfig.cpp',
   'lib/src/TTFManager.cpp',
   'lib/src/UIElement.cpp',
   'lib/src/InteractiveElement.cpp',
@@ -157,6 +158,38 @@ executable('bulk_operations_demo',
 # Phase 0 Font Demo (Font Improvement Plan Phase 0)
 executable('phase0_font_demo',
   sources : ['examples/phase0_font_demo.cpp'] + common_sources,
+  dependencies : [sdl2_dep, ttf_dep, sdl2_image_dep],
+  include_directories : ['lib/include'],
+  install : false
+)
+
+# Phase 1 Cache Management Demo (Font Improvement Plan Phase 1)
+executable('phase1_cache_demo',
+  sources : ['examples/phase1_cache_demo.cpp'] + common_sources,
+  dependencies : [sdl2_dep, ttf_dep, sdl2_image_dep],
+  include_directories : ['lib/include'],
+  install : false
+)
+
+# Phase 2 Font Families & Styles Demo (Font Improvement Plan Phase 2)
+executable('phase2_font_families_demo',
+  sources : ['examples/phase2_font_families_demo.cpp'] + common_sources,
+  dependencies : [sdl2_dep, ttf_dep, sdl2_image_dep],
+  include_directories : ['lib/include'],
+  install : false
+)
+
+# Phase 3 Font Metrics & Layout Demo (Font Improvement Plan Phase 3)
+executable('phase3_font_metrics_demo',
+  sources : ['examples/phase3_font_metrics_demo.cpp'] + common_sources,
+  dependencies : [sdl2_dep, ttf_dep, sdl2_image_dep],
+  include_directories : ['lib/include'],
+  install : false
+)
+
+# Phase 4 Font Configuration & Management Demo (Font Improvement Plan Phase 4)
+executable('phase4_font_config_demo',
+  sources : ['examples/phase4_font_config_demo.cpp'] + common_sources,
   dependencies : [sdl2_dep, ttf_dep, sdl2_image_dep],
   include_directories : ['lib/include'],
   install : false

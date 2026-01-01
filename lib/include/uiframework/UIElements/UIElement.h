@@ -6,8 +6,10 @@
 #include <functional>
 #include <memory>
 #include <unordered_map>
+#include <list>
 #include "../Constants.h"
 #include "../Rendering/RenderContext.h"
+#include "../Resources/FontManager.h"
 
 namespace ui {
 
@@ -34,12 +36,26 @@ protected:
     std::string elementId;
     uint64_t numericId = 0; // Performance-optimized numeric ID
     UICore* coreRef = nullptr; // Non-owning reference to core
+    
+    // Phase 1: Text cache with size limits
+    static constexpr size_t MAX_TEXT_CACHE_ENTRIES = 10;
     mutable std::unordered_map<std::string, std::unique_ptr<TextCacheEntry>> textCache;
+    mutable std::list<std::string> textCacheLRU; // LRU tracking for text cache
     
     // Helper method for cached text rendering
     TextCacheEntry* getCachedText(const std::string& key, const std::string& text, 
                                   SDL_Color color, SDL_Renderer* renderer, TTF_Font* font) const;
     void invalidateTextCache() const;
+    
+    // Phase 1: Text cache management
+    void evictOldestTextCache() const;
+    
+    // Phase 2: Font properties
+    std::string fontFamily = "";  // Empty means use default
+    int fontSize = 0;             // 0 means use default
+    FontStyle fontStyle = FontStyle::Regular;
+    FontType fontType = FontType::Primary;  // For theme-based selection
+    bool useThemeFont = true;     // Whether to use theme-based font selection
     
 public:
     int x, y, width, height;
@@ -173,6 +189,44 @@ public:
             height - padding.top - padding.bottom
         };
     }
+    
+    // Phase 2: Font API
+    void setFont(const std::string& familyName, int size, FontStyle style = FontStyle::Regular);
+    void setThemeFont(FontType type, int size = 0);  // 0 means use theme default
+    void setFontSize(int size);
+    void setFontStyle(FontStyle style);
+    
+    // Get the actual font to use for rendering
+    TTF_Font* getEffectiveFont() const;
+    
+    // Font property getters
+    const std::string& getFontFamily() const { return fontFamily; }
+    int getFontSize() const { return fontSize; }
+    FontStyle getFontStyle() const { return fontStyle; }
+    FontType getFontType() const { return fontType; }
+    bool isUsingThemeFont() const { return useThemeFont; }
+    
+    // Phase 3: Text alignment support
+    enum class TextAlignment {
+        TopLeft, TopCenter, TopRight,
+        MiddleLeft, MiddleCenter, MiddleRight,
+        BottomLeft, BottomCenter, BottomRight,
+        Baseline  // Proper baseline alignment
+    };
+    
+    // Phase 3: Text positioning with baseline alignment
+    SDL_Point calculateTextPosition(const std::string& text, const SDL_Rect& bounds, 
+                                   TextAlignment alignment = TextAlignment::TopLeft) const;
+    
+    // Phase 3: Get font metrics for current effective font
+    FontMetrics getEffectiveFontMetrics() const;
+
+private:
+    TextAlignment textAlignment = TextAlignment::TopLeft;
+    
+public:
+    void setTextAlignment(TextAlignment alignment) { textAlignment = alignment; }
+    TextAlignment getTextAlignment() const { return textAlignment; }
 };
 
 } // namespace ui

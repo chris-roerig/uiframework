@@ -4,6 +4,7 @@
 #include <vector>
 #include <utility>
 #include <SDL2/SDL_ttf.h>
+#include "uiframework/Resources/FontManager.h"
 
 namespace ui {
 
@@ -49,6 +50,42 @@ public:
      * @return Vector of text lines that fit within maxWidth
      */
     static std::vector<std::string> wrapText(const std::string& text, TTF_Font* font, int maxWidth);
+
+    // Phase 3: Font-aware text operations using FontManager
+    /**
+     * @brief Get text dimensions using font family and style
+     * @param text Text to measure
+     * @param familyName Font family name
+     * @param size Font size
+     * @param style Font style
+     * @return Pair of (width, height) in pixels
+     */
+    static std::pair<int, int> getTextSizeAdvanced(const std::string& text, const std::string& familyName, 
+                                                  int size, FontStyle style = FontStyle::Regular);
+    
+    /**
+     * @brief Wrap text with font-aware measurements
+     * @param text Text to wrap
+     * @param familyName Font family name
+     * @param size Font size
+     * @param maxWidth Maximum width per line in pixels
+     * @param style Font style
+     * @return Vector of text lines that fit within maxWidth
+     */
+    static std::vector<std::string> wrapTextAdvanced(const std::string& text, const std::string& familyName,
+                                                    int size, int maxWidth, FontStyle style = FontStyle::Regular);
+    
+    /**
+     * @brief Truncate text with ellipsis using font family and style
+     * @param text Original text to truncate
+     * @param familyName Font family name
+     * @param size Font size
+     * @param maxWidth Maximum width in pixels
+     * @param style Font style
+     * @return Truncated text with ellipsis
+     */
+    static std::string truncateWithEllipsisAdvanced(const std::string& text, const std::string& familyName,
+                                                   int size, int maxWidth, FontStyle style = FontStyle::Regular);
 
 private:
     static constexpr const char* ELLIPSIS = "...";

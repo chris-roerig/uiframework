@@ -114,4 +114,108 @@ std::vector<std::string> TextUtils::wrapText(const std::string& text, TTF_Font* 
     return lines;
 }
 
+// Phase 3: Font-aware text operations using FontManager
+std::pair<int, int> TextUtils::getTextSizeAdvanced(const std::string& text, const std::string& familyName, 
+                                                  int size, FontStyle style) {
+    return FontManager::getInstance().getTextSize(text, familyName, size, style);
+}
+
+std::vector<std::string> TextUtils::wrapTextAdvanced(const std::string& text, const std::string& familyName,
+                                                    int size, int maxWidth, FontStyle style) {
+    std::vector<std::string> lines;
+    
+    if (maxWidth <= 0 || text.empty()) {
+        return lines;
+    }
+    
+    // Simple word-based wrapping using FontManager
+    std::string currentLine;
+    std::string word;
+    
+    for (char c : text) {
+        if (c == ' ' || c == '\n') {
+            // Check if adding this word would exceed width
+            std::string testLine = currentLine.empty() ? word : currentLine + " " + word;
+            int testWidth = FontManager::getInstance().getTextWidth(testLine, familyName, size, style);
+            
+            if (testWidth <= maxWidth) {
+                currentLine = testLine;
+            } else {
+                // Word doesn't fit, start new line
+                if (!currentLine.empty()) {
+                    lines.push_back(currentLine);
+                }
+                currentLine = word;
+            }
+            
+            word.clear();
+            
+            // Handle explicit line breaks
+            if (c == '\n') {
+                lines.push_back(currentLine);
+                currentLine.clear();
+            }
+        } else {
+            word += c;
+        }
+    }
+    
+    // Handle final word
+    if (!word.empty()) {
+        std::string testLine = currentLine.empty() ? word : currentLine + " " + word;
+        int testWidth = FontManager::getInstance().getTextWidth(testLine, familyName, size, style);
+        
+        if (testWidth <= maxWidth) {
+            currentLine = testLine;
+        } else {
+            if (!currentLine.empty()) {
+                lines.push_back(currentLine);
+            }
+            currentLine = word;
+        }
+    }
+    
+    // Add final line
+    if (!currentLine.empty()) {
+        lines.push_back(currentLine);
+    }
+    
+    return lines;
+}
+
+std::string TextUtils::truncateWithEllipsisAdvanced(const std::string& text, const std::string& familyName,
+                                                   int size, int maxWidth, FontStyle style) {
+    if (maxWidth <= 0) {
+        return "";
+    }
+    
+    // Check if text already fits
+    int textW = FontManager::getInstance().getTextWidth(text, familyName, size, style);
+    if (textW <= maxWidth) {
+        return text;
+    }
+    
+    // Check if ellipsis fits
+    int ellipsisW = FontManager::getInstance().getTextWidth(ELLIPSIS, familyName, size, style);
+    if (ellipsisW >= maxWidth) {
+        return "";
+    }
+    
+    // Binary search for optimal truncation point
+    int left = 0, right = static_cast<int>(text.length());
+    while (left < right) {
+        int mid = (left + right + 1) / 2;
+        std::string candidate = text.substr(0, mid) + ELLIPSIS;
+        int candidateW = FontManager::getInstance().getTextWidth(candidate, familyName, size, style);
+        
+        if (candidateW <= maxWidth) {
+            left = mid;
+        } else {
+            right = mid - 1;
+        }
+    }
+    
+    return left > 0 ? text.substr(0, left) + ELLIPSIS : "";
+}
+
 } // namespace ui

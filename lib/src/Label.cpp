@@ -13,8 +13,14 @@ void Label::renderImpl(const RenderContext& ctx) {
     SDL_Color sdlColor = { tc.labelText.r, tc.labelText.g, tc.labelText.b, tc.labelText.a };
     SDL_Rect contentRect = getContentRect();
     
-    if (ctx.font) {
-        TextCacheEntry* cached = getCachedText("main", text, sdlColor, ctx.renderer, ctx.font);
+    // Phase 2: Use element's effective font instead of context font
+    TTF_Font* effectiveFont = getEffectiveFont();
+    if (!effectiveFont) {
+        effectiveFont = ctx.font; // Fallback to context font
+    }
+    
+    if (effectiveFont) {
+        TextCacheEntry* cached = getCachedText("main", text, sdlColor, ctx.renderer, effectiveFont);
         if (cached && cached->texture) {
             SDL_Rect dst = { contentRect.x, contentRect.y, cached->width, cached->height };
             SDL_RenderCopy(ctx.renderer, cached->texture, nullptr, &dst);
@@ -30,19 +36,35 @@ void Label::setText(const std::string &newText) {
 }
 
 void Label::autoSize(TTF_Font* font) {
-    if (font && !text.empty()) {
-        TTF_SizeText(font, text.c_str(), &width, &height);
+    // Phase 2: Use element's effective font for auto-sizing
+    TTF_Font* effectiveFont = getEffectiveFont();
+    if (!effectiveFont) {
+        effectiveFont = font; // Fallback to provided font
+    }
+    
+    if (effectiveFont && !text.empty()) {
+        TTF_SizeText(effectiveFont, text.c_str(), &width, &height);
+        // Add padding to the calculated size
+        width += padding.left + padding.right;
+        height += padding.top + padding.bottom;
     }
 }
 
 std::pair<int, int> Label::getPreferredSize(TTF_Font* font) const {
-    if (!font || text.empty()) {
+    // Phase 2: Use element's effective font for size calculation
+    TTF_Font* effectiveFont = getEffectiveFont();
+    if (!effectiveFont) {
+        effectiveFont = font; // Fallback to provided font
+    }
+    
+    if (!effectiveFont || text.empty()) {
         return {width, height};
     }
     
     int textW = 0, textH = 0;
-    TTF_SizeText(font, text.c_str(), &textW, &textH);
-    return {textW, textH};
+    TTF_SizeText(effectiveFont, text.c_str(), &textW, &textH);
+    // Add padding to the calculated size
+    return {textW + padding.left + padding.right, textH + padding.top + padding.bottom};
 }
 
 std::pair<int, int> Label::getMinimumSize() const {
