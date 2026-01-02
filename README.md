@@ -49,8 +49,8 @@ int main() {
 ```bash
 meson setup build
 meson compile -C build
-./build/progressive_test    # Run demo
-./build/ui_tests           # Run tests
+./build/comprehensive_demo    # Run comprehensive demo
+./build/ui_tests             # Run tests
 ```
 
 ## Documentation
