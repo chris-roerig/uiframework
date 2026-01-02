@@ -1,52 +1,75 @@
 # Pre-Compact Summary
 
 ## Current Objective
-Building constraint-based positioning system for UI framework to replace complex layout system. Target: DAW applications with fixed window dimensions requiring real-time performance.
+Building UI Layout Editor Tool - visual wireframing application that outputs JSON positioning data for LLM-driven UI development workflow. Designer creates wireframes → Tool exports structured JSON → Future LLM generates actual UI code.
 
 ## Current State
 **Phase 1 COMPLETE** ✅
-- ConstraintManager class with thread-safe operations
-- Anchor enum: Above, Below, Left, Right, Center
-- UIElement integration: setAnchor(), clearConstraints(), hasConstraints(), updateConstraintPosition()
-- Position calculation with caching
-- All tests passing (9 constraint tests + 3773 total assertions)
-- Working demo: ./build/constraint_demo
+- Basic LayoutEditor application functional
+- Element palette: Button, Label, TextBox creation working
+- Canvas: 1024x600 with 10px grid snapping
+- JSON export: Clean structured output with positions/properties
+- Build integration: `make layout-editor` command working
+- Test run successful: Created 3 elements, exported valid JSON
 
 ## Key Design Decisions
-- Thread-safe with mutex protection
-- O(1) positioning updates via caching
-- Instance-based ConstraintManager (not static)
-- UI class owns ConstraintManager, elements get reference via registerElement()
-- Weak_ptr for target elements to avoid circular references
-- Position calculated once, cached until constraints change
+- **Canvas size**: Fixed 1024x600 pixels
+- **Output format**: JSON with positions only (no constraint relationships)
+- **Element types**: Start with basics (button, label, textbox)
+- **Grid snapping**: 10px grid for precise positioning
+- **Architecture**: LayoutEditor class + WireframeElement struct
+- **File location**: tools/layout_editor.cpp
 
 ## Implementation Details
 **Core Files:**
-- `lib/include/uiframework/Constraints/ConstraintManager.h`
-- `lib/src/ConstraintManager.cpp`
-- Modified: `UIElement.h/cpp`, `UI.h/cpp`
-- Tests: `dev/tests/test_constraints.cpp`
-- Demo: `examples/constraint_demo.cpp`
+- `tools/layout_editor.cpp` - Main application
+- `docs/FEATURE_PLAN.md` - Complete development plan
+- Build integration in `meson.build` and `Makefile`
 
-**API:**
-```cpp
-element->setAnchor(target, ui::AnchorType::Below, 10);
-element->clearConstraints();
-bool hasConstraints = element->hasConstraints();
+**JSON Output Format:**
+```json
+{
+  "canvas": {"width": 1024, "height": 600},
+  "elements": [
+    {"type": "button", "id": "element_8", "x": 220, "y": 50, 
+     "width": 100, "height": 30, "text": "Button 1"}
+  ]
+}
 ```
+
+**Current Functionality:**
+- Element palette buttons create and place elements
+- Automatic positioning with offset to avoid overlap
+- JSON export to wireframe.json
+- Basic save/load project structure (load not implemented)
 
 ## Next Actions (Phase 2)
 Per docs/FEATURE_PLAN.md:
-1. Create GridSnap utility class
-2. Add setGridSize() and snapToGrid() methods to UI/UIElement
-3. Implement grid-aligned positioning calculations
-4. **Milestone:** Elements snap to configurable grid
+1. Implement drag-and-drop for element positioning
+2. Add element selection (click to select)
+3. Enable element deletion
+4. Update wireframe data during interactions
+5. **Milestone:** Interactive element manipulation
 
 ## Open Questions
-- Grid size storage location (UI class vs global)
-- Grid snapping interaction with existing constraints
-- Performance impact of grid calculations
+- Drag implementation: Mouse event handling approach
+- Selection visual feedback: Highlight selected elements how?
+- Element bounds: Constrain to canvas area or allow overflow?
+
+## Critical APIs/Structures
+```cpp
+struct WireframeElement {
+    std::string type, id, text;
+    int x, y, width, height;
+};
+
+class LayoutEditor {
+    std::vector<WireframeElement> wireframeElements;
+    void addElementToCanvas(type, text);
+    void exportToJSON();
+};
+```
 
 ## Status
-Phase 1 milestone achieved: "Elements can anchor to each other"
-Ready to proceed with Phase 2: Grid Snapping system
+Phase 1 milestone achieved: "Basic wireframing tool functional"
+Ready to proceed with Phase 2: Interactive element manipulation

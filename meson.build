@@ -81,6 +81,14 @@ executable('demo',
   install : false
 )
 
+# UI Layout Editor Tool
+executable('layout_editor',
+  sources : ['tools/layout_editor.cpp'] + common_sources,
+  dependencies : [sdl2_dep, ttf_dep, sdl2_image_dep],
+  include_directories : ['lib/include'],
+  install : false
+)
+
 # Static analysis targets
 run_target('static-analysis',
   command : [find_program('tools/scripts/run_static_analysis.sh')]

@@ -1,16 +1,17 @@
-.PHONY: help all build test clean setup static-analysis demo
+.PHONY: help all build test clean setup static-analysis demo layout-editor
 
 # Default target - show help
 help:
 	@echo "UI Framework - Available targets:"
-	@echo "  help      - Show this help message (default)"
-	@echo "  build     - Compile the project (library only)"
-	@echo "  test      - Run all tests"
-	@echo "  demo      - Build and run grid system demo"
+	@echo "  help         - Show this help message (default)"
+	@echo "  build        - Compile the project (library only)"
+	@echo "  test         - Run all tests"
+	@echo "  demo         - Build and run grid system demo"
+	@echo "  layout-editor - Build and run UI layout editor tool"
 	@echo "  static-analysis - Run static analysis tools"
-	@echo "  clean     - Remove build directory"
-	@echo "  rebuild   - Clean and rebuild from scratch"
-	@echo "  setup     - Setup build directory"
+	@echo "  clean        - Remove build directory"
+	@echo "  rebuild      - Clean and rebuild from scratch"
+	@echo "  setup        - Setup build directory"
 
 # Build the project (library only)
 build:
@@ -41,6 +42,11 @@ static-analysis:
 demo: build
 	meson compile -C build demo
 	./build/demo
+
+# Build and run UI layout editor tool
+layout-editor: build
+	meson compile -C build layout_editor
+	./build/layout_editor
 
 # Legacy alias
 all: build
