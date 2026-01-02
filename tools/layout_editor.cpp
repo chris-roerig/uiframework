@@ -21,7 +21,6 @@ private:
     std::vector<std::shared_ptr<ui::UIElement>> canvasElements;
     std::shared_ptr<ui::UIElement> selectedIndicator;
     std::vector<std::shared_ptr<ui::UIElement>> resizeHandles;
-    std::vector<std::shared_ptr<ui::UIElement>> selectionButtons;
 
 public:
     LayoutEditor(UI* uiInstance) : ui(uiInstance) {
@@ -146,7 +145,7 @@ public:
         std::cout << "Layout Editor Started!" << std::endl;
         std::cout << "- Canvas: 1024x600 with 10px grid" << std::endl;
         std::cout << "- Click palette buttons to add elements" << std::endl;
-        std::cout << "- Click elements to select them" << std::endl;
+        std::cout << "- Click buttons/checkboxes directly to select them" << std::endl;
         std::cout << "- Use Move buttons to position selected element" << std::endl;
         std::cout << "- Use Export JSON to get wireframe data" << std::endl;
     }
@@ -183,30 +182,20 @@ public:
             // Store element reference for interaction
             canvasElements.push_back(element);
             
-            // Create a selection button for this element (positioned near the element)
-            std::string selectBtnText = "Select " + type.substr(0, 1);
-            if (type == "checkbox") selectBtnText = "Select C";
-            else if (type == "hslider") selectBtnText = "Select H";
-            else if (type == "vslider") selectBtnText = "Select V";
-            else if (type == "progress") selectBtnText = "Select P";
-            else if (type == "image") selectBtnText = "Select I";
-            
-            auto selectBtn = ui->createButton(selectBtnText, startX + element->getWidth() + 5, startY, 
-                [this, element](){
-                    selectElement(element);
-                });
-            selectBtn->setSize(30, 20); // Small selection button
-            
-            // Track the selection button for cleanup
-            selectionButtons.push_back(selectBtn);
-            
-            // For buttons, also make them directly selectable
+            // Make all elements directly clickable for selection
             if (type == "button") {
                 auto buttonElement = std::static_pointer_cast<ui::Button>(element);
                 buttonElement->setCallback([this, element](){
                     selectElement(element);
                 });
+            } else if (type == "checkbox") {
+                auto checkboxElement = std::static_pointer_cast<ui::CheckBox>(element);
+                checkboxElement->setCallback([this, element](bool){
+                    selectElement(element);
+                });
             }
+            // Note: Other elements (label, textbox, canvas, sliders, progress, image) 
+            // will need to be selected via clicking their area - this is a UI framework limitation
             
             // Store wireframe data
             WireframeElement wfElement;
@@ -343,17 +332,10 @@ public:
         ui->removeElement(elementId);
         
         // Remove from canvas elements
-        auto canvasIt = std::find(canvasElements.begin(), canvasElements.end(), selectedElement);
-        if (canvasIt != canvasElements.end()) {
-            size_t elementIndex = std::distance(canvasElements.begin(), canvasIt);
-            canvasElements.erase(canvasIt);
-            
-            // Remove corresponding selection button
-            if (elementIndex < selectionButtons.size()) {
-                ui->removeElement(selectionButtons[elementIndex]->getId());
-                selectionButtons.erase(selectionButtons.begin() + elementIndex);
-            }
-        }
+        canvasElements.erase(
+            std::remove(canvasElements.begin(), canvasElements.end(), selectedElement),
+            canvasElements.end()
+        );
         
         // Remove from wireframe data
         wireframeElements.erase(
