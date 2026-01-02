@@ -148,17 +148,24 @@ public:
         }
         
         if (element) {
-            // Make element clickable for selection
+            // Store element reference for interaction
+            canvasElements.push_back(element);
+            
+            // Create a selection button for this element (positioned near the element)
+            std::string selectBtnText = "Select " + type.substr(0, 1);
+            auto selectBtn = ui->createButton(selectBtnText, startX + element->getWidth() + 5, startY, 
+                [this, element](){
+                    selectElement(element);
+                });
+            selectBtn->setSize(30, 20); // Small selection button
+            
+            // For buttons, also make them directly selectable
             if (type == "button") {
-                // For buttons, we need to override the callback to handle selection
                 auto buttonElement = std::static_pointer_cast<ui::Button>(element);
                 buttonElement->setCallback([this, element](){
                     selectElement(element);
                 });
             }
-            
-            // Store element reference for interaction
-            canvasElements.push_back(element);
             
             // Store wireframe data
             WireframeElement wfElement;
