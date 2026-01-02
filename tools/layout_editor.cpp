@@ -49,6 +49,20 @@ public:
         // Canvas area separator
         auto separator = ui->createLabel("Canvas (1024x600)", 200, 10);
         
+        // Create canvas background
+        auto canvas = ui->createCanvas(220, 30, 1024, 600);
+        
+        // Light gray background
+        canvas->filledRect({0, 0, 1024, 600}, ui::Color(245, 245, 245, 255));
+        
+        // Draw grid indicators every 50px
+        for (int x = 0; x <= 1024; x += 50) {
+            canvas->line(x, 0, x, 600, ui::Color(200, 200, 200, 128));
+        }
+        for (int y = 0; y <= 600; y += 50) {
+            canvas->line(0, y, 1024, y, ui::Color(200, 200, 200, 128));
+        }
+        
         // Export/Save buttons
         auto exportBtn = ui->createButton("Export JSON", 10, 200, [this](){
             exportToJSON();
@@ -268,7 +282,7 @@ public:
 
 int main() {
     try {
-        UI ui("UI Layout Editor", 1200, 700);
+        UI ui("UI Layout Editor", 1300, 700);  // Increased width to accommodate 1024px canvas
         LayoutEditor editor(&ui);
         
         ui.run();
