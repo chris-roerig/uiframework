@@ -13,6 +13,7 @@ UI::UI(const char* title, int width, int height) {
     try {
         auto defaultTheme = std::make_shared<ui::ThemeFrameworkDefault>();
         core = std::make_unique<ui::UICore>(title, width, height, defaultTheme);
+        constraintManager = std::make_unique<ui::ConstraintManager>();
         updateQueue = std::make_unique<ui::UIUpdateQueue>();
         
         // Set up frame callback for realtime update processing
@@ -366,35 +367,27 @@ void UI::addElement(std::shared_ptr<ui::UIElement> element) {
     }
 }
 
-// Layout creation methods
-std::shared_ptr<ui::LayoutContainer> UI::createVBoxLayout(int x, int y, int width, int height,
-                                                          int spacing) {
-    auto layout = std::make_unique<ui::VBoxLayout>(spacing);
-    auto container = std::make_shared<ui::LayoutContainer>(x, y, width, height, std::move(layout));
-    return registerElement(container);
-}
-
-std::shared_ptr<ui::LayoutContainer> UI::createHBoxLayout(int x, int y, int width, int height,
-                                                          int spacing) {
-    auto layout = std::make_unique<ui::HBoxLayout>(spacing);
-    auto container = std::make_shared<ui::LayoutContainer>(x, y, width, height, std::move(layout));
-    return registerElement(container);
-}
-
-std::shared_ptr<ui::LayoutContainer> UI::createGridLayout(int x, int y, int width, int height,
-                                                          int rows, int columns, int spacing) {
-    auto layout = std::make_unique<ui::GridLayout>(rows, columns);
-    layout->setSpacing(spacing);
-    auto container = std::make_shared<ui::LayoutContainer>(x, y, width, height, std::move(layout));
-    return registerElement(container);
-}
-
 int UI::getWidth() const {
     return core->getWidth();
 }
 
 int UI::getHeight() const {
     return core->getHeight();
+}
+
+ui::ConstraintManager* UI::getConstraintManager() const {
+    return constraintManager.get();
+}
+
+void UI::setGridSize(int gridSize) {
+    this->gridSize = gridSize;
+    if (constraintManager) {
+        constraintManager->setGridSize(gridSize);
+    }
+}
+
+int UI::getGridSize() const {
+    return gridSize;
 }
 
 // Element pooling for high-frequency scenarios

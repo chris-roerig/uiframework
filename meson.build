@@ -42,11 +42,8 @@ common_sources = [
   'lib/src/VirtualKeyboard.cpp',
   'lib/src/UIElements/CycleList.cpp',
   'lib/src/UIElements/TabbedPanel.cpp',
-  'lib/src/LayoutContainer.cpp',
-  'lib/src/Layout.cpp',
-  'lib/src/VBoxLayout.cpp',
-  'lib/src/HBoxLayout.cpp',
-  'lib/src/GridLayout.cpp',
+  'lib/src/ConstraintManager.cpp',
+  'lib/src/GridSnap.cpp',
   'lib/src/ElementPool.cpp',
   'lib/src/RealTime/UIUpdateQueue.cpp',
   'lib/src/EmbeddedFontRegistry.cpp',
@@ -78,6 +75,14 @@ install_subdir('lib/include/uiframework', install_dir : get_option('includedir')
 # Comprehensive Demo - Complete UI Framework Showcase
 executable('comprehensive_demo',
   sources : ['examples/comprehensive_demo.cpp'] + common_sources,
+  dependencies : [sdl2_dep, ttf_dep, sdl2_image_dep],
+  include_directories : ['lib/include'],
+  install : false
+)
+
+# Constraint System Demo - Phase 1 Implementation
+executable('constraint_demo',
+  sources : ['examples/constraint_demo.cpp'] + common_sources,
   dependencies : [sdl2_dep, ttf_dep, sdl2_image_dep],
   include_directories : ['lib/include'],
   install : false
@@ -117,7 +122,7 @@ if catch2_dep.found()
       'dev/tests/test_focus_visibility.cpp',
       'dev/tests/test_tab_navigation.cpp',
       'dev/tests/test_focus_groups.cpp',
-      'dev/tests/test_layout.cpp',  # Layout tests re-enabled after fixes
+      'dev/tests/test_constraints.cpp',  # Phase 1 constraint system tests
       'dev/tests/test_threading_improvements.cpp',
       'dev/tests/test_performance_benchmarks.cpp',  # New threading and performance tests
       'dev/tests/test_phase1_improvements.cpp',  # Phase 1 improvement tests

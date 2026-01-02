@@ -245,4 +245,57 @@ FontMetrics UIElement::getEffectiveFontMetrics() const {
     }
 }
 
+// Constraint-based positioning implementation
+void UIElement::setAnchor(std::shared_ptr<UIElement> target, AnchorType type, int offset) {
+    if (!constraintManager) return; // Need constraint manager reference
+    
+    Constraint constraint(target, type, offset);
+    constraintManager->addConstraint(this, constraint);
+    
+    // Calculate and apply new position
+    updateConstraintPosition();
+}
+
+void UIElement::clearConstraints() {
+    if (!constraintManager) return;
+    constraintManager->removeConstraints(this);
+}
+
+bool UIElement::hasConstraints() const {
+    if (!constraintManager) return false;
+    return constraintManager->hasConstraints(const_cast<UIElement*>(this));
+}
+
+void UIElement::updateConstraintPosition() {
+    if (!constraintManager) return;
+    auto newPos = constraintManager->calculatePosition(this);
+    if (newPos.first != -1 && newPos.second != -1) {
+        setPosition(newPos.first, newPos.second);
+    }
+}
+
+void UIElement::setConstraintManager(ConstraintManager* manager) {
+    constraintManager = manager;
+}
+
+void UIElement::snapToGrid() {
+    if (!gridSnappingEnabled || !constraintManager) return;
+    
+    int gridSize = constraintManager->getGridSize();
+    
+    if (GridSnap::isValidGridSize(gridSize)) {
+        int newX = x, newY = y;
+        GridSnap::snapPosition(newX, newY, gridSize);
+        setPosition(newX, newY);
+    }
+}
+
+void UIElement::setGridSnapping(bool enabled) {
+    gridSnappingEnabled = enabled;
+}
+
+bool UIElement::isGridSnappingEnabled() const {
+    return gridSnappingEnabled;
+}
+
 } // namespace ui

@@ -10,6 +10,8 @@
 #include "../Constants.h"
 #include "../Rendering/RenderContext.h"
 #include "../Resources/FontManager.h"
+#include "../Constraints/ConstraintManager.h"
+#include "../Constraints/GridSnap.h"
 
 namespace ui {
 
@@ -227,6 +229,28 @@ private:
 public:
     void setTextAlignment(TextAlignment alignment) { textAlignment = alignment; }
     TextAlignment getTextAlignment() const { return textAlignment; }
+    
+    // Constraint-based positioning
+    void setAnchor(std::shared_ptr<UIElement> target, AnchorType type, int offset = 0);
+    void clearConstraints();
+    bool hasConstraints() const;
+    void updateConstraintPosition();
+    void setConstraintManager(ConstraintManager* manager);
+    
+    // Grid snapping
+    void snapToGrid();
+    void setGridSnapping(bool enabled);
+    bool isGridSnappingEnabled() const;
+    
+    // Position getters for constraint calculations
+    int getX() const { return x; }
+    int getY() const { return y; }
+    int getWidth() const { return width; }
+    int getHeight() const { return height; }
+
+private:
+    ConstraintManager* constraintManager = nullptr;
+    bool gridSnappingEnabled = false;
 };
 
 } // namespace ui

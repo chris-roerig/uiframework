@@ -10,6 +10,7 @@ A high-performance, thread-safe C++17 UI framework built on SDL2 with 17+ widget
 - **Modern C++17**: Best practices with comprehensive error handling
 - **17+ UI Elements**: Buttons, text inputs, menus, layouts, graphics, and more
 - **Multiple Themes**: Built-in themes with runtime switching
+- **🆕 Constraint-Based Positioning**: Simple anchor system for element positioning (Phase 1)
 - **🆕 Comprehensive Tooltips**: Smart positioning, theme integration, hover delay
 - **🆕 Spacing Control**: Margin/padding support with automatic content positioning
 - **🆕 Disabled States**: Visual disabled states with interaction blocking
@@ -34,6 +35,13 @@ int main() {
         auto label = ui.createLabel("Hello World", 10, 50);
         label->setTooltip("This is a label with auto-sizing");
         
+        // NEW: Constraint-based positioning
+        auto anchoredButton = ui.createButton("Anchored", 0, 0, [](){
+            std::cout << "Anchored button clicked!" << std::endl;
+        });
+        anchoredButton->setAnchor(label, ui::AnchorType::Below, 10);
+        anchoredButton->setTooltip("Positioned 10px below the label");
+        
         ui.run();
     } catch (const ui::UIException& e) {
         std::cerr << "Error: " << e.what() << std::endl;
@@ -50,6 +58,7 @@ int main() {
 meson setup build
 meson compile -C build
 ./build/comprehensive_demo    # Run comprehensive demo
+./build/constraint_demo       # Run constraint system demo
 ./build/ui_tests             # Run tests
 ```
 

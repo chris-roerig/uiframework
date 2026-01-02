@@ -74,45 +74,6 @@ TEST_CASE("Performance Benchmarks", "[benchmark][performance]") {
         };
     }
     
-    SECTION("Layout Performance") {
-        UI ui("Layout Benchmark", 1000, 800);
-        
-        BENCHMARK("VBoxLayout with 100 elements") {
-            auto layout = ui.createVBoxLayout(10, 10, 980, 780, 5);
-            
-            for (int i = 0; i < 100; ++i) {
-                auto button = ui.createButton("Button " + std::to_string(i), 0, 0, [](){});
-                layout->addElement(button);
-            }
-            
-            return 100;
-        };
-        
-        BENCHMARK("HBoxLayout with 50 elements") {
-            auto layout = ui.createHBoxLayout(10, 10, 980, 780, 5);
-            
-            for (int i = 0; i < 50; ++i) {
-                auto button = ui.createButton("Btn " + std::to_string(i), 0, 0, [](){});
-                layout->addElement(button);
-            }
-            
-            return 50;
-        };
-        
-        BENCHMARK("GridLayout 10x10 with 100 elements") {
-            auto layout = ui.createGridLayout(10, 10, 980, 780, 10, 10, 5);
-            
-            for (int row = 0; row < 10; ++row) {
-                for (int col = 0; col < 10; ++col) {
-                    auto button = ui.createButton(std::to_string(row) + "," + std::to_string(col), 0, 0, [](){});
-                    layout->addElement(button, row, col);
-                }
-            }
-            
-            return 100;
-        };
-    }
-    
     SECTION("Text Operations Performance") {
         UI ui("Text Benchmark", 800, 600);
         
@@ -323,26 +284,6 @@ TEST_CASE("Performance Regression Tests", "[performance][regression]") {
         
         // Should update text 1000 times in less than 50ms (performance target)
         REQUIRE(duration.count() < 50);
-    }
-    
-    SECTION("Layout Performance Requirements") {
-        UI ui("Layout Performance Test", 1000, 800);
-        
-        auto start = std::chrono::high_resolution_clock::now();
-        
-        auto layout = ui.createVBoxLayout(10, 10, 980, 780, 5);
-        
-        // Add 100 elements to layout
-        for (int i = 0; i < 100; ++i) {
-            auto button = ui.createButton("Button " + std::to_string(i), 0, 0, [](){});
-            layout->addElement(button);
-        }
-        
-        auto end = std::chrono::high_resolution_clock::now();
-        auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-        
-        // Should create layout with 100 elements in less than 100ms (performance target)
-        REQUIRE(duration.count() < 100);
     }
     
     SECTION("Memory Usage Requirements") {

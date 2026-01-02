@@ -19,9 +19,6 @@
 #include "ErrorHandling.h"
 #include "UICore.h"
 #include "UIElements.h"
-#include "uiframework/Layout/GridLayout.h"
-#include "uiframework/Layout/HBoxLayout.h"
-#include "uiframework/Layout/VBoxLayout.h"
 #include "uiframework/Resources/ElementPool.h"
 #include "uiframework/RealTime/UIUpdateQueue.h"
 
@@ -38,7 +35,6 @@
  * - RAII-based resource management with smart pointers
  * - Comprehensive error handling with specific exception types
  * - 17+ widget types with consistent API
- * - Layout management system (VBox, HBox, Grid)
  * - Performance optimizations (texture caching, font caching)
  *
  * @section thread_safety Thread Safety Guarantees
@@ -49,7 +45,6 @@
  * - Focus management (setFocus, focusNext, focusPrevious, etc.)
  * - Hotkey management (assignHotKey)
  * - Modal creation (createModal, createConfirmModal, createInfoModal)
- * - Layout creation (createVBoxLayout, createHBoxLayout, createGridLayout)
  * - Theme management (setTheme)
  * - Utility methods (getWidth, getHeight)
  *
@@ -83,10 +78,12 @@
 class UI {
   private:
     std::unique_ptr<ui::UICore> core;
+    std::unique_ptr<ui::ConstraintManager> constraintManager;
     std::unordered_map<std::string, int> focusOrderHints;
     std::unique_ptr<ui::ElementPool> elementPool;
     std::unique_ptr<ui::UIUpdateQueue> updateQueue;
     std::vector<ui::ElementCache> elementCache; // Non-blocking element cache
+    int gridSize = 0; // Grid size for snapping (0 = disabled)
 
     // Helper method to register element and return shared_ptr
     template <typename T>
@@ -95,6 +92,8 @@ class UI {
             throw ui::UIException("Cannot register null element");
         }
         core->addElement(element);
+        // Set constraint manager reference for constraint-based positioning
+        element->setConstraintManager(constraintManager.get());
         return element;
     }
 
@@ -418,17 +417,16 @@ class UI {
     void setTheme(const std::string& themeName);
     void addElement(std::shared_ptr<ui::UIElement> element);
 
-    // Layout creation methods
-    std::shared_ptr<ui::LayoutContainer> createVBoxLayout(int x, int y, int width, int height,
-                                                          int spacing = 5);
-    std::shared_ptr<ui::LayoutContainer> createHBoxLayout(int x, int y, int width, int height,
-                                                          int spacing = 5);
-    std::shared_ptr<ui::LayoutContainer> createGridLayout(int x, int y, int width, int height,
-                                                          int rows, int columns, int spacing = 5);
-
     // Utility methods
     int getWidth() const;
     int getHeight() const;
+    
+    // Constraint system access
+    ui::ConstraintManager* getConstraintManager() const;
+    
+    // Grid snapping system
+    void setGridSize(int gridSize);
+    int getGridSize() const;
     
     // Element pooling for high-frequency scenarios (audio instruments, real-time apps)
     void enableElementPooling(size_t labelCount = 50, size_t buttonCount = 20);

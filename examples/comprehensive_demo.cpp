@@ -342,18 +342,6 @@ private:
         
         y += 60;
         
-        // Layout System
-        createSectionLabel("Layout System", x, y);
-        y += 40;
-        
-        auto vboxLayout = ui.createVBoxLayout(x, y, 150, 120, 10);
-        vboxLayout->setTooltip("Vertical box layout with 10px spacing");
-        
-        auto hboxLayout = ui.createHBoxLayout(x + 200, y, 200, 50, 15);
-        hboxLayout->setTooltip("Horizontal box layout with 15px spacing");
-        
-        auto gridLayout = ui.createGridLayout(x + 450, y, 150, 120, 3, 2, 8);
-        gridLayout->setTooltip("Grid layout: 3 rows, 2 columns, 8px spacing");
     }
     
     // Page 4: Real-Time Capabilities

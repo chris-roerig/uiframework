@@ -15,7 +15,6 @@
 #include "uiframework/UIElements/Sprite.h"
 #include "uiframework/UIElements/AnimatedSprite.h"
 #include "uiframework/UIElements/ProgressBar.h"
-#include "uiframework/UIElements/LayoutContainer.h"
 #include "uiframework/UIElements/Slider.h"
 #include "uiframework/UIElements/VirtualKeyboard.h"
 #include "uiframework/UIElements/CycleList.h"

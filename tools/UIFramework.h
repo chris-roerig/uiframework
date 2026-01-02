@@ -24,11 +24,6 @@
 #include "include/uiframework/UIElements/Slider.h"
 #include "include/uiframework/UIElements/VirtualKeyboard.h"
 
-// Layouts
-#include "include/uiframework/Layout/VBoxLayout.h"
-#include "include/uiframework/Layout/HBoxLayout.h"
-#include "include/uiframework/Layout/GridLayout.h"
-
 // Themes
 #include "include/uiframework/Theme/ThemeFrameworkDefault.h"
 #include "include/uiframework/Theme/ThemeSolarizedDark.h"

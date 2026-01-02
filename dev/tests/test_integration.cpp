@@ -116,46 +116,6 @@ TEST_CASE("Theme Integration", "[integration]") {
     }
 }
 
-TEST_CASE("Layout Integration", "[integration]") {
-    
-    SECTION("VBoxLayout with multiple widgets") {
-        UI ui("Layout Test", 800, 600);
-        
-        auto layout = ui.createVBoxLayout(10, 10, 200, 300, 5);
-        REQUIRE(layout != nullptr);
-        
-        // Add multiple widgets to layout
-        auto button1 = ui.createButton("Button 1", 0, 0, [](){});
-        auto button2 = ui.createButton("Button 2", 0, 0, [](){});
-        auto label = ui.createLabel("Label", 0, 0);
-        
-        layout->addElement(button1);
-        layout->addElement(button2);
-        layout->addElement(label);
-        
-        // Layout should arrange elements vertically
-        REQUIRE(true); // Would need position getters to verify arrangement
-    }
-    
-    SECTION("HBoxLayout with multiple widgets") {
-        UI ui("Layout Test", 800, 600);
-        
-        auto layout = ui.createHBoxLayout(10, 10, 400, 100, 10);
-        REQUIRE(layout != nullptr);
-        
-        // Add widgets horizontally
-        auto button1 = ui.createButton("Btn1", 0, 0, [](){});
-        auto button2 = ui.createButton("Btn2", 0, 0, [](){});
-        auto button3 = ui.createButton("Btn3", 0, 0, [](){});
-        
-        layout->addElement(button1);
-        layout->addElement(button2);
-        layout->addElement(button3);
-        
-        REQUIRE(true); // Layout functionality verified
-    }
-}
-
 TEST_CASE("Widget Interaction Integration", "[integration]") {
     
     SECTION("Multiple widgets interaction") {
