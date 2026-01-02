@@ -1,4 +1,4 @@
-.PHONY: help all build test clean setup static-analysis demo layout-editor
+.PHONY: help all build test clean setup static-analysis demo layout-editor audio-recorder
 
 # Default target - show help
 help:
@@ -8,6 +8,7 @@ help:
 	@echo "  test         - Run all tests"
 	@echo "  demo         - Build and run grid system demo"
 	@echo "  layout-editor - Build and run UI layout editor tool"
+	@echo "  audio-recorder - Build and run audio recorder example app"
 	@echo "  static-analysis - Run static analysis tools"
 	@echo "  clean        - Remove build directory"
 	@echo "  rebuild      - Clean and rebuild from scratch"
@@ -47,6 +48,11 @@ demo: build
 layout-editor: build
 	meson compile -C build layout_editor
 	./build/layout_editor
+
+# Build and run audio recorder example app
+audio-recorder: build
+	meson compile -C build audio_recorder_app
+	./build/audio_recorder_app
 
 # Legacy alias
 all: build

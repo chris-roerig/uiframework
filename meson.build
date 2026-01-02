@@ -89,6 +89,14 @@ executable('layout_editor',
   install : false
 )
 
+# Audio Recorder Example App
+executable('audio_recorder_app',
+  sources : ['examples/audio_recorder_app.cpp'] + common_sources,
+  dependencies : [sdl2_dep, ttf_dep, sdl2_image_dep],
+  include_directories : ['lib/include'],
+  install : false
+)
+
 # Static analysis targets
 run_target('static-analysis',
   command : [find_program('tools/scripts/run_static_analysis.sh')]
