@@ -20,6 +20,7 @@ private:
     int nextElementId = 1;
     std::vector<std::shared_ptr<ui::UIElement>> canvasElements;
     std::shared_ptr<ui::UIElement> selectedIndicator;
+    std::vector<std::shared_ptr<ui::UIElement>> resizeHandles;
 
 public:
     LayoutEditor(UI* uiInstance) : ui(uiInstance) {
@@ -96,6 +97,25 @@ public:
         
         auto deleteBtn = ui->createButton("Delete", 10, 510, [this](){
             deleteSelectedElement();
+        });
+        
+        // Resize controls
+        auto resizeLabel = ui->createLabel("Resize:", 10, 550);
+        
+        auto widerBtn = ui->createButton("Wider", 10, 580, [this](){
+            resizeSelectedElement(10, 0);
+        });
+        
+        auto narrowerBtn = ui->createButton("Narrower", 10, 620, [this](){
+            resizeSelectedElement(-10, 0);
+        });
+        
+        auto tallerBtn = ui->createButton("Taller", 100, 580, [this](){
+            resizeSelectedElement(0, 10);
+        });
+        
+        auto shorterBtn = ui->createButton("Shorter", 100, 620, [this](){
+            resizeSelectedElement(0, -10);
         });
         
         std::cout << "Layout Editor Started!" << std::endl;
@@ -190,18 +210,21 @@ public:
     void selectElement(std::shared_ptr<ui::UIElement> element) {
         selectedElement = element;
         std::cout << "Selected element: " << element->getId() << " at (" 
-                  << element->getX() << "," << element->getY() << ")" << std::endl;
+                  << element->getX() << "," << element->getY() << ") size (" 
+                  << element->getWidth() << "x" << element->getHeight() << ")" << std::endl;
         
-        // Visual feedback - create selection indicator
+        // Visual feedback - create selection indicator with resize handles
         if (selectedIndicator) {
             ui->removeElement(selectedIndicator->getId());
         }
         
-        // Create a border around selected element (simple label for now)
         std::string indicatorText = "[SELECTED: " + element->getId() + "]";
         selectedIndicator = ui->createLabel(indicatorText, 
                                           element->getX() - 5, 
                                           element->getY() - 20);
+        
+        // Add resize handles (visual indicators)
+        addResizeHandles(element);
     }
     
     void moveSelectedElement(int deltaX, int deltaY) {
@@ -228,6 +251,9 @@ public:
         if (selectedIndicator) {
             selectedIndicator->setPosition(newX - 5, newY - 20);
         }
+        
+        // Update resize handles
+        addResizeHandles(selectedElement);
         
         std::cout << "Moved element to (" << newX << "," << newY << ")" << std::endl;
     }
@@ -256,6 +282,9 @@ public:
             selectedIndicator = nullptr;
         }
         
+        // Remove resize handles
+        clearResizeHandles();
+        
         // Remove from UI
         ui->removeElement(elementId);
         
@@ -276,6 +305,67 @@ public:
         
         std::cout << "Deleted element: " << elementId << std::endl;
         selectedElement = nullptr;
+    }
+    
+    void addResizeHandles(std::shared_ptr<ui::UIElement> element) {
+        // Remove existing handles
+        clearResizeHandles();
+        
+        int x = element->getX();
+        int y = element->getY();
+        int w = element->getWidth();
+        int h = element->getHeight();
+        
+        // Create small visual handles at corners and edges
+        resizeHandles.push_back(ui->createLabel("□", x + w - 5, y + h - 5)); // Bottom-right
+        resizeHandles.push_back(ui->createLabel("□", x + w - 5, y - 5));     // Top-right
+        resizeHandles.push_back(ui->createLabel("□", x - 5, y + h - 5));     // Bottom-left
+        resizeHandles.push_back(ui->createLabel("□", x - 5, y - 5));         // Top-left
+    }
+    
+    void clearResizeHandles() {
+        for (auto& handle : resizeHandles) {
+            if (handle) {
+                ui->removeElement(handle->getId());
+            }
+        }
+        resizeHandles.clear();
+    }
+    
+    void resizeSelectedElement(int deltaW, int deltaH) {
+        if (!selectedElement) {
+            std::cout << "No element selected. Click an element first." << std::endl;
+            return;
+        }
+        
+        int newW = selectedElement->getWidth() + deltaW;
+        int newH = selectedElement->getHeight() + deltaH;
+        
+        // Minimum size constraints
+        newW = std::max(20, newW);
+        newH = std::max(20, newH);
+        
+        // Snap to grid (10px)
+        newW = ((newW + 5) / 10) * 10;
+        newH = ((newH + 5) / 10) * 10;
+        
+        selectedElement->setSize(newW, newH);
+        updateWireframeElementSize(selectedElement->getId(), newW, newH);
+        
+        // Update visual handles
+        addResizeHandles(selectedElement);
+        
+        std::cout << "Resized element to " << newW << "x" << newH << std::endl;
+    }
+    
+    void updateWireframeElementSize(const std::string& elementId, int newW, int newH) {
+        for (auto& wfElement : wireframeElements) {
+            if (wfElement.id == elementId) {
+                wfElement.width = newW;
+                wfElement.height = newH;
+                break;
+            }
+        }
     }
 };
 
