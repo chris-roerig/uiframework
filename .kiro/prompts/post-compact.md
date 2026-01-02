@@ -11,7 +11,7 @@ Load knowledge in this exact order:
    → Use this to reconstruct what you were doing, why, and what was next.
 
 3️⃣ THIRD — If it exists, read the current feature plan:
-   File: docs/CURRENT_PROJECT.md
+   File: docs/FEATURE_PLAN.md
    → This contains active phases, milestones, and the development plan for the feature in progress.
 
 After loading:

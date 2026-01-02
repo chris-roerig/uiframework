@@ -4,6 +4,7 @@
 #include <vector>
 #include <memory>
 #include <algorithm>
+#include <map>
 
 struct WireframeElement {
     std::string type;
@@ -17,11 +18,20 @@ private:
     UI* ui;
     std::vector<WireframeElement> wireframeElements;
     std::shared_ptr<ui::UIElement> selectedElement;
-    int nextElementId = 1;
+    std::map<std::string, int> elementCounters; // For auto-naming
     std::vector<std::shared_ptr<ui::UIElement>> canvasElements;
     std::shared_ptr<ui::UIElement> selectedIndicator;
     std::vector<std::shared_ptr<ui::UIElement>> resizeHandles;
     std::vector<std::shared_ptr<ui::UIElement>> selectionButtons;
+    
+    // Properties panel elements
+    std::shared_ptr<ui::TextBox> propNameInput;
+    std::shared_ptr<ui::TextBox> propXInput;
+    std::shared_ptr<ui::TextBox> propYInput;
+    std::shared_ptr<ui::TextBox> propWidthInput;
+    std::shared_ptr<ui::TextBox> propHeightInput;
+    std::shared_ptr<ui::TextBox> propTextInput;
+    std::shared_ptr<ui::Label> propTypeLabel;
 
 public:
     LayoutEditor(UI* uiInstance) : ui(uiInstance) {
@@ -32,52 +42,55 @@ public:
         // Enable 10px grid for precise positioning
         ui->setGridSize(10);
         
+        // Create separator lines for visual separation
+        setupSeparatorLines();
+        
         // Create palette area (left side)
         auto paletteTitle = ui->createLabel("Element Palette", 10, 10);
         
-        // Palette buttons
+        // Palette buttons - vertical list
         auto buttonPalette = ui->createButton("Button", 10, 40, [this](){
-            addElementToCanvas("button", "Button " + std::to_string(nextElementId++));
+            addElementToCanvas("button", generateElementName("Button"));
         });
         
         auto labelPalette = ui->createButton("Label", 10, 80, [this](){
-            addElementToCanvas("label", "Label " + std::to_string(nextElementId++));
+            addElementToCanvas("label", generateElementName("Label"));
         });
         
         auto textboxPalette = ui->createButton("TextBox", 10, 120, [this](){
-            addElementToCanvas("textbox", "Text " + std::to_string(nextElementId++));
+            addElementToCanvas("textbox", generateElementName("TextBox"));
         });
         
         auto canvasPalette = ui->createButton("Canvas", 10, 160, [this](){
-            addElementToCanvas("canvas", "Canvas " + std::to_string(nextElementId++));
+            addElementToCanvas("canvas", generateElementName("Canvas"));
         });
         
         auto checkboxPalette = ui->createButton("CheckBox", 10, 200, [this](){
-            addElementToCanvas("checkbox", "Check " + std::to_string(nextElementId++));
+            addElementToCanvas("checkbox", generateElementName("CheckBox"));
         });
         
-        auto hsliderPalette = ui->createButton("HSlider", 100, 40, [this](){
-            addElementToCanvas("hslider", "Slider " + std::to_string(nextElementId++));
+        auto hsliderPalette = ui->createButton("HSlider", 10, 240, [this](){
+            addElementToCanvas("hslider", generateElementName("HSlider"));
         });
         
-        auto vsliderPalette = ui->createButton("VSlider", 100, 80, [this](){
-            addElementToCanvas("vslider", "VSlider " + std::to_string(nextElementId++));
+        auto vsliderPalette = ui->createButton("VSlider", 10, 280, [this](){
+            addElementToCanvas("vslider", generateElementName("VSlider"));
         });
         
-        auto progressPalette = ui->createButton("Progress", 100, 120, [this](){
-            addElementToCanvas("progress", "Progress " + std::to_string(nextElementId++));
+        auto progressPalette = ui->createButton("Progress", 10, 320, [this](){
+            addElementToCanvas("progress", generateElementName("ProgressBar"));
         });
         
-        auto imagePalette = ui->createButton("Image", 100, 160, [this](){
-            addElementToCanvas("image", "Image " + std::to_string(nextElementId++));
+        auto imagePalette = ui->createButton("Image", 10, 360, [this](){
+            addElementToCanvas("image", generateElementName("Image"));
         });
         
-        auto cyclelistPalette = ui->createButton("CycleList", 100, 200, [this](){
-            addElementToCanvas("cyclelist", "Cycle " + std::to_string(nextElementId++));
+        auto cyclelistPalette = ui->createButton("CycleList", 10, 400, [this](){
+            addElementToCanvas("cyclelist", generateElementName("CycleList"));
         });
         
-        auto optionselectPalette = ui->createButton("OptionSelect", 10, 240, [this](){
-            addElementToCanvas("optionselect", "Options " + std::to_string(nextElementId++));
+        auto optionselectPalette = ui->createButton("OptionSelect", 10, 440, [this](){
+            addElementToCanvas("optionselect", generateElementName("OptionSelect"));
         });
         
         // Canvas area separator
@@ -96,54 +109,57 @@ public:
             }
         }
         
-        // Export/Save buttons - moved to bottom
+        // Properties panel (right side)
+        setupPropertiesPanel();
+        
+        // Export/Save buttons - bottom left
         auto exportBtn = ui->createButton("Export JSON", 10, 740, [this](){
             exportToJSON();
         });
         
-        auto saveBtn = ui->createButton("Save Project", 120, 740, [this](){
+        auto saveBtn = ui->createButton("Save Project", 130, 740, [this](){
             saveProject();
         });
         
-        auto loadBtn = ui->createButton("Load Project", 230, 740, [this](){
+        auto loadBtn = ui->createButton("Load Project", 250, 740, [this](){
             loadProject();
         });
         
-        // Element manipulation controls - bottom row
-        auto moveUpBtn = ui->createButton("Move Up", 350, 740, [this](){
+        // Element manipulation controls - bottom center (fixed spacing)
+        auto moveUpBtn = ui->createButton("Move Up", 400, 740, [this](){
             moveSelectedElement(0, -10);
         });
         
-        auto moveDownBtn = ui->createButton("Move Down", 440, 740, [this](){
+        auto moveDownBtn = ui->createButton("Move Down", 510, 740, [this](){
             moveSelectedElement(0, 10);
         });
         
-        auto moveLeftBtn = ui->createButton("Move Left", 530, 740, [this](){
+        auto moveLeftBtn = ui->createButton("Move Left", 620, 740, [this](){
             moveSelectedElement(-10, 0);
         });
         
-        auto moveRightBtn = ui->createButton("Move Right", 620, 740, [this](){
+        auto moveRightBtn = ui->createButton("Move Right", 730, 740, [this](){
             moveSelectedElement(10, 0);
         });
         
-        auto deleteBtn = ui->createButton("Delete", 720, 740, [this](){
+        auto deleteBtn = ui->createButton("Delete", 840, 740, [this](){
             deleteSelectedElement();
         });
         
-        // Resize controls - second bottom row
-        auto widerBtn = ui->createButton("Wider", 820, 740, [this](){
+        // Resize controls - bottom right (fixed spacing)
+        auto widerBtn = ui->createButton("Wider", 960, 740, [this](){
             resizeSelectedElement(10, 0);
         });
         
-        auto narrowerBtn = ui->createButton("Narrower", 900, 740, [this](){
+        auto narrowerBtn = ui->createButton("Narrower", 1070, 740, [this](){
             resizeSelectedElement(-10, 0);
         });
         
-        auto tallerBtn = ui->createButton("Taller", 990, 740, [this](){
+        auto tallerBtn = ui->createButton("Taller", 1180, 740, [this](){
             resizeSelectedElement(0, 10);
         });
         
-        auto shorterBtn = ui->createButton("Shorter", 1070, 740, [this](){
+        auto shorterBtn = ui->createButton("Shorter", 1290, 740, [this](){
             resizeSelectedElement(0, -10);
         });
         
@@ -151,8 +167,214 @@ public:
         std::cout << "- Canvas: 1024x600 with 10px grid" << std::endl;
         std::cout << "- Click palette buttons to add elements" << std::endl;
         std::cout << "- Click buttons/checkboxes directly to select them" << std::endl;
-        std::cout << "- Use Move buttons to position selected element" << std::endl;
+        std::cout << "- Use properties panel to edit selected element" << std::endl;
+        std::cout << "- Numpad keys: Move selected element (5=up, 2=down, 1=left, 3=right)" << std::endl;
+        std::cout << "- Shift+Numpad keys: Resize selected element" << std::endl;
         std::cout << "- Use Export JSON to get wireframe data" << std::endl;
+        
+        // Setup keyboard shortcuts
+        setupKeyboardShortcuts();
+    }
+    
+    void setupKeyboardShortcuts() {
+        // Numpad keys for movement (easier with shift)
+        ui->assignHotKey("", "5", [this](){
+            if (SDL_GetModState() & KMOD_SHIFT) {
+                resizeSelectedElement(0, -10); // Shift+5: Make shorter
+            } else {
+                moveSelectedElement(0, -10); // 5: Move up
+            }
+        });
+        
+        ui->assignHotKey("", "2", [this](){
+            if (SDL_GetModState() & KMOD_SHIFT) {
+                resizeSelectedElement(0, 10); // Shift+2: Make taller
+            } else {
+                moveSelectedElement(0, 10); // 2: Move down
+            }
+        });
+        
+        ui->assignHotKey("", "1", [this](){
+            if (SDL_GetModState() & KMOD_SHIFT) {
+                resizeSelectedElement(-10, 0); // Shift+1: Make narrower
+            } else {
+                moveSelectedElement(-10, 0); // 1: Move left
+            }
+        });
+        
+        ui->assignHotKey("", "3", [this](){
+            if (SDL_GetModState() & KMOD_SHIFT) {
+                resizeSelectedElement(10, 0); // Shift+3: Make wider
+            } else {
+                moveSelectedElement(10, 0); // 3: Move right
+            }
+        });
+    }
+    
+    void setupSeparatorLines() {
+        // Vertical line between palette and canvas
+        auto paletteCanvasSeparator = ui->createCanvas(215, 0, 2, 800);
+        paletteCanvasSeparator->filledRect({0, 0, 2, 800}, ui::Color(180, 180, 180, 255)); // Gray line
+        
+        // Vertical line between canvas and properties panel
+        auto canvasPropertiesSeparator = ui->createCanvas(1250, 0, 2, 800);
+        canvasPropertiesSeparator->filledRect({0, 0, 2, 800}, ui::Color(180, 180, 180, 255)); // Gray line
+        
+        // Horizontal line above bottom toolbar (aligned with vertical separators)
+        auto toolbarSeparator = ui->createCanvas(215, 730, 1037, 2);
+        toolbarSeparator->filledRect({0, 0, 1037, 2}, ui::Color(180, 180, 180, 255)); // Gray line
+    }
+    
+    std::string generateElementName(const std::string& type) {
+        elementCounters[type]++;
+        return type + std::to_string(elementCounters[type]);
+    }
+    
+    void setupPropertiesPanel() {
+        int panelX = 1270; // Right side of window
+        
+        // Properties panel title
+        auto propTitle = ui->createLabel("Element Properties", panelX, 10);
+        
+        // Element Info section
+        auto infoLabel = ui->createLabel("Element Info:", panelX, 50);
+        auto typeLabel = ui->createLabel("Type:", panelX, 80);
+        propTypeLabel = std::static_pointer_cast<ui::Label>(ui->createLabel("(none)", panelX + 50, 80));
+        
+        auto nameLabel = ui->createLabel("Name:", panelX, 110);
+        propNameInput = std::static_pointer_cast<ui::TextBox>(ui->createTextBox("", 10, 110));
+        propNameInput->setPosition(panelX + 50, 110);
+        propNameInput->setSize(180, 25);
+        
+        // Position & Size section
+        auto posLabel = ui->createLabel("Position & Size:", panelX, 160);
+        
+        auto xLabel = ui->createLabel("X:", panelX, 190);
+        propXInput = std::static_pointer_cast<ui::TextBox>(ui->createTextBox("", 10, 190));
+        propXInput->setPosition(panelX + 30, 190);
+        propXInput->setSize(70, 25);
+        
+        auto yLabel = ui->createLabel("Y:", panelX + 110, 190);
+        propYInput = std::static_pointer_cast<ui::TextBox>(ui->createTextBox("", 10, 190));
+        propYInput->setPosition(panelX + 130, 190);
+        propYInput->setSize(70, 25);
+        
+        auto wLabel = ui->createLabel("W:", panelX, 220);
+        propWidthInput = std::static_pointer_cast<ui::TextBox>(ui->createTextBox("", 10, 220));
+        propWidthInput->setPosition(panelX + 30, 220);
+        propWidthInput->setSize(70, 25);
+        
+        auto hLabel = ui->createLabel("H:", panelX + 110, 220);
+        propHeightInput = std::static_pointer_cast<ui::TextBox>(ui->createTextBox("", 10, 220));
+        propHeightInput->setPosition(panelX + 130, 220);
+        propHeightInput->setSize(70, 25);
+        
+        // Content section
+        auto contentLabel = ui->createLabel("Content:", panelX, 270);
+        auto textLabel = ui->createLabel("Text:", panelX, 300);
+        propTextInput = std::static_pointer_cast<ui::TextBox>(ui->createTextBox("", 10, 300));
+        propTextInput->setPosition(panelX + 50, 300);
+        propTextInput->setSize(180, 25);
+        
+        // Apply button
+        auto applyBtn = ui->createButton("Apply Changes", panelX, 340, [this](){
+            applyPropertyChanges();
+        });
+        applyBtn->setSize(120, 30);
+        
+        // Clear properties initially
+        clearPropertiesPanel();
+    }
+    
+    void clearPropertiesPanel() {
+        if (propTypeLabel) propTypeLabel->setText("(none)");
+        if (propNameInput) propNameInput->setText("");
+        if (propXInput) propXInput->setText("");
+        if (propYInput) propYInput->setText("");
+        if (propWidthInput) propWidthInput->setText("");
+        if (propHeightInput) propHeightInput->setText("");
+        if (propTextInput) propTextInput->setText("");
+    }
+    
+    void updatePropertiesPanel() {
+        if (!selectedElement) {
+            clearPropertiesPanel();
+            return;
+        }
+        
+        // Find wireframe element for this UI element
+        WireframeElement* wfElement = nullptr;
+        for (auto& elem : wireframeElements) {
+            if (elem.id == selectedElement->getId()) {
+                wfElement = &elem;
+                break;
+            }
+        }
+        
+        if (!wfElement) return;
+        
+        // Update properties panel
+        propTypeLabel->setText(wfElement->type);
+        propNameInput->setText(wfElement->text);
+        propXInput->setText(std::to_string(selectedElement->getX()));
+        propYInput->setText(std::to_string(selectedElement->getY()));
+        propWidthInput->setText(std::to_string(selectedElement->getWidth()));
+        propHeightInput->setText(std::to_string(selectedElement->getHeight()));
+        propTextInput->setText(wfElement->text);
+    }
+    
+    void applyPropertyChanges() {
+        if (!selectedElement) {
+            std::cout << "No element selected." << std::endl;
+            return;
+        }
+        
+        try {
+            // Get values from text inputs
+            std::string newName = propNameInput->getText();
+            int newX = std::stoi(propXInput->getText());
+            int newY = std::stoi(propYInput->getText());
+            int newWidth = std::stoi(propWidthInput->getText());
+            int newHeight = std::stoi(propHeightInput->getText());
+            std::string newText = propTextInput->getText();
+            
+            // Validate and snap to grid
+            newX = ((newX + 5) / 10) * 10;
+            newY = ((newY + 5) / 10) * 10;
+            newWidth = ((newWidth + 5) / 10) * 10;
+            newHeight = ((newHeight + 5) / 10) * 10;
+            
+            // Validate bounds
+            newX = std::max(220, std::min(1220 - newWidth, newX));
+            newY = std::max(30, std::min(630 - newHeight, newY));
+            newWidth = std::max(20, newWidth);
+            newHeight = std::max(20, newHeight);
+            
+            // Apply changes to UI element
+            selectedElement->setPosition(newX, newY);
+            selectedElement->setSize(newWidth, newHeight);
+            
+            // Update wireframe data
+            for (auto& elem : wireframeElements) {
+                if (elem.id == selectedElement->getId()) {
+                    elem.x = newX;
+                    elem.y = newY;
+                    elem.width = newWidth;
+                    elem.height = newHeight;
+                    elem.text = newText;
+                    break;
+                }
+            }
+            
+            // Update visual elements
+            updateSelectionButtonPosition(selectedElement);
+            addResizeHandles(selectedElement);
+            
+            std::cout << "Applied property changes to " << selectedElement->getId() << std::endl;
+            
+        } catch (const std::exception& e) {
+            std::cout << "Invalid property values. Please enter valid numbers." << std::endl;
+        }
     }
     
     void addElementToCanvas(const std::string& type, const std::string& text) {
@@ -233,6 +455,9 @@ public:
             
             wireframeElements.push_back(wfElement);
             
+            // Auto-select the newly added element
+            selectElement(element);
+            
             std::cout << "Added " << type << " at (" << startX << "," << startY << ")" << std::endl;
         }
     }
@@ -280,18 +505,17 @@ public:
                   << element->getX() << "," << element->getY() << ") size (" 
                   << element->getWidth() << "x" << element->getHeight() << ")" << std::endl;
         
-        // Visual feedback - create selection indicator with resize handles
+        // Remove old selection indicator (no more canvas overlay)
         if (selectedIndicator) {
             ui->removeElement(selectedIndicator->getId());
+            selectedIndicator = nullptr;
         }
         
-        std::string indicatorText = "[SELECTED: " + element->getId() + "]";
-        selectedIndicator = ui->createLabel(indicatorText, 
-                                          element->getX() - 5, 
-                                          element->getY() - 20);
-        
-        // Add resize handles (visual indicators)
+        // Add resize handles for visual feedback
         addResizeHandles(element);
+        
+        // Update properties panel with selected element data
+        updatePropertiesPanel();
     }
     
     void moveSelectedElement(int deltaX, int deltaY) {
@@ -314,16 +538,14 @@ public:
         selectedElement->setPosition(newX, newY);
         updateWireframeElement(selectedElement->getId(), newX, newY);
         
-        // Update selection indicator
-        if (selectedIndicator) {
-            selectedIndicator->setPosition(newX - 5, newY - 20);
-        }
-        
         // Update resize handles
         addResizeHandles(selectedElement);
         
         // Update selection button position if it exists
         updateSelectionButtonPosition(selectedElement);
+        
+        // Update properties panel
+        updatePropertiesPanel();
         
         std::cout << "Moved element to (" << newX << "," << newY << ")" << std::endl;
     }
@@ -454,6 +676,9 @@ public:
         // Update selection button position
         updateSelectionButtonPosition(selectedElement);
         
+        // Update properties panel
+        updatePropertiesPanel();
+        
         std::cout << "Resized element to " << newW << "x" << newH << std::endl;
     }
     
@@ -483,7 +708,7 @@ public:
 
 int main() {
     try {
-        UI ui("UI Layout Editor", 1300, 800);  // Increased height for more elements
+        UI ui("UI Layout Editor", 1550, 800);  // Expanded width for properties panel
         LayoutEditor editor(&ui);
         
         ui.run();
