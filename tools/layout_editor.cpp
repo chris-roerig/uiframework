@@ -383,11 +383,30 @@ public:
         int w = element->getWidth();
         int h = element->getHeight();
         
-        // Create small visual handles at corners and edges
-        resizeHandles.push_back(ui->createLabel("□", x + w - 5, y + h - 5)); // Bottom-right
-        resizeHandles.push_back(ui->createLabel("□", x + w - 5, y - 5));     // Top-right
-        resizeHandles.push_back(ui->createLabel("□", x - 5, y + h - 5));     // Bottom-left
-        resizeHandles.push_back(ui->createLabel("□", x - 5, y - 5));         // Top-left
+        // Create clickable resize handles at corners
+        auto bottomRight = ui->createButton("+", x + w - 10, y + h - 10, [this](){
+            resizeSelectedElement(10, 10);
+        });
+        bottomRight->setSize(15, 15);
+        resizeHandles.push_back(bottomRight);
+        
+        auto topRight = ui->createButton("+", x + w - 10, y - 5, [this](){
+            resizeSelectedElement(10, -10);
+        });
+        topRight->setSize(15, 15);
+        resizeHandles.push_back(topRight);
+        
+        auto bottomLeft = ui->createButton("+", x - 5, y + h - 10, [this](){
+            resizeSelectedElement(-10, 10);
+        });
+        bottomLeft->setSize(15, 15);
+        resizeHandles.push_back(bottomLeft);
+        
+        auto topLeft = ui->createButton("+", x - 5, y - 5, [this](){
+            resizeSelectedElement(-10, -10);
+        });
+        topLeft->setSize(15, 15);
+        resizeHandles.push_back(topLeft);
     }
     
     void clearResizeHandles() {
