@@ -21,6 +21,7 @@ private:
     std::vector<std::shared_ptr<ui::UIElement>> canvasElements;
     std::shared_ptr<ui::UIElement> selectedIndicator;
     std::vector<std::shared_ptr<ui::UIElement>> resizeHandles;
+    std::vector<std::shared_ptr<ui::UIElement>> selectionButtons;
 
 public:
     LayoutEditor(UI* uiInstance) : ui(uiInstance) {
@@ -182,20 +183,33 @@ public:
             // Store element reference for interaction
             canvasElements.push_back(element);
             
-            // Make all elements directly clickable for selection
+            // Create selection button in center of element for non-interactive elements
+            std::shared_ptr<ui::UIElement> selectBtn = nullptr;
+            
             if (type == "button") {
+                // Buttons are directly clickable
                 auto buttonElement = std::static_pointer_cast<ui::Button>(element);
                 buttonElement->setCallback([this, element](){
                     selectElement(element);
                 });
             } else if (type == "checkbox") {
+                // Checkboxes are directly clickable
                 auto checkboxElement = std::static_pointer_cast<ui::CheckBox>(element);
                 checkboxElement->setCallback([this, element](bool){
                     selectElement(element);
                 });
+            } else {
+                // Other elements need selection buttons in their center
+                int centerX = startX + element->getWidth() / 2 - 10;
+                int centerY = startY + element->getHeight() / 2 - 10;
+                selectBtn = ui->createButton("S", centerX, centerY, [this, element](){
+                    selectElement(element);
+                });
+                selectBtn->setSize(20, 20);
             }
-            // Note: Other elements (label, textbox, canvas, sliders, progress, image) 
-            // will need to be selected via clicking their area - this is a UI framework limitation
+            
+            // Track selection button (nullptr for directly clickable elements)
+            selectionButtons.push_back(selectBtn);
             
             // Store wireframe data
             WireframeElement wfElement;
@@ -298,6 +312,9 @@ public:
         // Update resize handles
         addResizeHandles(selectedElement);
         
+        // Update selection button position if it exists
+        updateSelectionButtonPosition(selectedElement);
+        
         std::cout << "Moved element to (" << newX << "," << newY << ")" << std::endl;
     }
     
@@ -331,11 +348,18 @@ public:
         // Remove from UI
         ui->removeElement(elementId);
         
-        // Remove from canvas elements
-        canvasElements.erase(
-            std::remove(canvasElements.begin(), canvasElements.end(), selectedElement),
-            canvasElements.end()
-        );
+        // Remove from canvas elements and corresponding selection button
+        auto canvasIt = std::find(canvasElements.begin(), canvasElements.end(), selectedElement);
+        if (canvasIt != canvasElements.end()) {
+            size_t elementIndex = std::distance(canvasElements.begin(), canvasIt);
+            canvasElements.erase(canvasIt);
+            
+            // Remove corresponding selection button if it exists
+            if (elementIndex < selectionButtons.size() && selectionButtons[elementIndex]) {
+                ui->removeElement(selectionButtons[elementIndex]->getId());
+            }
+            selectionButtons.erase(selectionButtons.begin() + elementIndex);
+        }
         
         // Remove from wireframe data
         wireframeElements.erase(
@@ -398,6 +422,9 @@ public:
         // Update visual handles
         addResizeHandles(selectedElement);
         
+        // Update selection button position
+        updateSelectionButtonPosition(selectedElement);
+        
         std::cout << "Resized element to " << newW << "x" << newH << std::endl;
     }
     
@@ -407,6 +434,19 @@ public:
                 wfElement.width = newW;
                 wfElement.height = newH;
                 break;
+            }
+        }
+    }
+    
+    void updateSelectionButtonPosition(std::shared_ptr<ui::UIElement> element) {
+        // Find the element's index and update its selection button position
+        auto it = std::find(canvasElements.begin(), canvasElements.end(), element);
+        if (it != canvasElements.end()) {
+            size_t index = std::distance(canvasElements.begin(), it);
+            if (index < selectionButtons.size() && selectionButtons[index]) {
+                int centerX = element->getX() + element->getWidth() / 2 - 10;
+                int centerY = element->getY() + element->getHeight() / 2 - 10;
+                selectionButtons[index]->setPosition(centerX, centerY);
             }
         }
     }
