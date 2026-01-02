@@ -55,12 +55,11 @@ public:
         // Light gray background
         canvas->filledRect({0, 0, 1024, 600}, ui::Color(245, 245, 245, 255));
         
-        // Draw grid indicators every 50px
-        for (int x = 0; x <= 1024; x += 50) {
-            canvas->line(x, 0, x, 600, ui::Color(200, 200, 200, 128));
-        }
-        for (int y = 0; y <= 600; y += 50) {
-            canvas->line(0, y, 1024, y, ui::Color(200, 200, 200, 128));
+        // Draw grid dots every 10px to match snap grid
+        for (int x = 0; x <= 1024; x += 10) {
+            for (int y = 0; y <= 600; y += 10) {
+                canvas->point(x, y, ui::Color(200, 200, 200, 128));
+            }
         }
         
         // Export/Save buttons
