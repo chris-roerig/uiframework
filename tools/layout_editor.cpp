@@ -57,13 +57,13 @@ public:
         // Create canvas background
         auto canvas = ui->createCanvas(220, 30, 1024, 600);
         
-        // Light gray background
-        canvas->filledRect({0, 0, 1024, 600}, ui::Color(250, 250, 250, 255));
+        // Dark background
+        canvas->filledRect({0, 0, 1024, 600}, ui::Color(30, 30, 30, 255));
         
         // Draw grid dots every 10px to match snap grid
         for (int x = 0; x <= 1024; x += 10) {
             for (int y = 0; y <= 600; y += 10) {
-                canvas->point(x, y, ui::Color(180, 180, 180, 255));
+                canvas->point(x, y, ui::Color(200, 200, 200, 255));
             }
         }
         
