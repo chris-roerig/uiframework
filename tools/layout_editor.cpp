@@ -21,6 +21,7 @@ private:
     std::vector<std::shared_ptr<ui::UIElement>> canvasElements;
     std::shared_ptr<ui::UIElement> selectedIndicator;
     std::vector<std::shared_ptr<ui::UIElement>> resizeHandles;
+    std::vector<std::shared_ptr<ui::UIElement>> selectionButtons;
 
 public:
     LayoutEditor(UI* uiInstance) : ui(uiInstance) {
@@ -196,6 +197,9 @@ public:
                 });
             selectBtn->setSize(30, 20); // Small selection button
             
+            // Track the selection button for cleanup
+            selectionButtons.push_back(selectBtn);
+            
             // For buttons, also make them directly selectable
             if (type == "button") {
                 auto buttonElement = std::static_pointer_cast<ui::Button>(element);
@@ -339,10 +343,17 @@ public:
         ui->removeElement(elementId);
         
         // Remove from canvas elements
-        canvasElements.erase(
-            std::remove(canvasElements.begin(), canvasElements.end(), selectedElement),
-            canvasElements.end()
-        );
+        auto canvasIt = std::find(canvasElements.begin(), canvasElements.end(), selectedElement);
+        if (canvasIt != canvasElements.end()) {
+            size_t elementIndex = std::distance(canvasElements.begin(), canvasIt);
+            canvasElements.erase(canvasIt);
+            
+            // Remove corresponding selection button
+            if (elementIndex < selectionButtons.size()) {
+                ui->removeElement(selectionButtons[elementIndex]->getId());
+                selectionButtons.erase(selectionButtons.begin() + elementIndex);
+            }
+        }
         
         // Remove from wireframe data
         wireframeElements.erase(
