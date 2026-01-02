@@ -47,6 +47,10 @@ public:
             addElementToCanvas("textbox", "Text " + std::to_string(nextElementId++));
         });
         
+        auto canvasPalette = ui->createButton("Canvas", 10, 160, [this](){
+            addElementToCanvas("canvas", "Canvas " + std::to_string(nextElementId++));
+        });
+        
         // Canvas area separator
         auto separator = ui->createLabel("Canvas (1024x600)", 200, 10);
         
@@ -64,57 +68,57 @@ public:
         }
         
         // Export/Save buttons
-        auto exportBtn = ui->createButton("Export JSON", 10, 200, [this](){
+        auto exportBtn = ui->createButton("Export JSON", 10, 240, [this](){
             exportToJSON();
         });
         
-        auto saveBtn = ui->createButton("Save Project", 10, 240, [this](){
+        auto saveBtn = ui->createButton("Save Project", 10, 280, [this](){
             saveProject();
         });
         
-        auto loadBtn = ui->createButton("Load Project", 10, 280, [this](){
+        auto loadBtn = ui->createButton("Load Project", 10, 320, [this](){
             loadProject();
         });
         
         // Element manipulation controls
-        auto selectLabel = ui->createLabel("Element Controls:", 10, 320);
+        auto selectLabel = ui->createLabel("Element Controls:", 10, 360);
         
-        auto moveUpBtn = ui->createButton("Move Up", 10, 350, [this](){
+        auto moveUpBtn = ui->createButton("Move Up", 10, 390, [this](){
             moveSelectedElement(0, -10);
         });
         
-        auto moveDownBtn = ui->createButton("Move Down", 10, 390, [this](){
+        auto moveDownBtn = ui->createButton("Move Down", 10, 430, [this](){
             moveSelectedElement(0, 10);
         });
         
-        auto moveLeftBtn = ui->createButton("Move Left", 10, 430, [this](){
+        auto moveLeftBtn = ui->createButton("Move Left", 10, 470, [this](){
             moveSelectedElement(-10, 0);
         });
         
-        auto moveRightBtn = ui->createButton("Move Right", 10, 470, [this](){
+        auto moveRightBtn = ui->createButton("Move Right", 10, 510, [this](){
             moveSelectedElement(10, 0);
         });
         
-        auto deleteBtn = ui->createButton("Delete", 10, 510, [this](){
+        auto deleteBtn = ui->createButton("Delete", 10, 550, [this](){
             deleteSelectedElement();
         });
         
         // Resize controls
-        auto resizeLabel = ui->createLabel("Resize:", 10, 550);
+        auto resizeLabel = ui->createLabel("Resize:", 10, 590);
         
-        auto widerBtn = ui->createButton("Wider", 10, 580, [this](){
+        auto widerBtn = ui->createButton("Wider", 10, 620, [this](){
             resizeSelectedElement(10, 0);
         });
         
-        auto narrowerBtn = ui->createButton("Narrower", 10, 620, [this](){
+        auto narrowerBtn = ui->createButton("Narrower", 10, 660, [this](){
             resizeSelectedElement(-10, 0);
         });
         
-        auto tallerBtn = ui->createButton("Taller", 100, 580, [this](){
+        auto tallerBtn = ui->createButton("Taller", 100, 620, [this](){
             resizeSelectedElement(0, 10);
         });
         
-        auto shorterBtn = ui->createButton("Shorter", 100, 620, [this](){
+        auto shorterBtn = ui->createButton("Shorter", 100, 660, [this](){
             resizeSelectedElement(0, -10);
         });
         
@@ -139,6 +143,8 @@ public:
             element = ui->createLabel(text, startX, startY);
         } else if (type == "textbox") {
             element = ui->createTextBox(text, startX, startY);
+        } else if (type == "canvas") {
+            element = ui->createCanvas(startX, startY, 100, 80);
         }
         
         if (element) {
