@@ -51,6 +51,26 @@ public:
             addElementToCanvas("canvas", "Canvas " + std::to_string(nextElementId++));
         });
         
+        auto checkboxPalette = ui->createButton("CheckBox", 10, 200, [this](){
+            addElementToCanvas("checkbox", "Check " + std::to_string(nextElementId++));
+        });
+        
+        auto hsliderPalette = ui->createButton("HSlider", 100, 40, [this](){
+            addElementToCanvas("hslider", "Slider " + std::to_string(nextElementId++));
+        });
+        
+        auto vsliderPalette = ui->createButton("VSlider", 100, 80, [this](){
+            addElementToCanvas("vslider", "VSlider " + std::to_string(nextElementId++));
+        });
+        
+        auto progressPalette = ui->createButton("Progress", 100, 120, [this](){
+            addElementToCanvas("progress", "Progress " + std::to_string(nextElementId++));
+        });
+        
+        auto imagePalette = ui->createButton("Image", 100, 160, [this](){
+            addElementToCanvas("image", "Image " + std::to_string(nextElementId++));
+        });
+        
         // Canvas area separator
         auto separator = ui->createLabel("Canvas (1024x600)", 200, 10);
         
@@ -145,6 +165,17 @@ public:
             element = ui->createTextBox(text, startX, startY);
         } else if (type == "canvas") {
             element = ui->createCanvas(startX, startY, 100, 80);
+        } else if (type == "checkbox") {
+            element = ui->createCheckBox(false, startX, startY, [](bool){});
+        } else if (type == "hslider") {
+            element = ui->createHSlider(startX, startY, 120, 20, 0.0f, 100.0f, 50.0f);
+        } else if (type == "vslider") {
+            element = ui->createVSlider(startX, startY, 20, 120, 0.0f, 100.0f, 50.0f);
+        } else if (type == "progress") {
+            element = ui->createProgressBar(startX, startY, 120, 20, 0.5f, true);
+        } else if (type == "image") {
+            // Create a placeholder image (empty for now)
+            element = ui->createCanvas(startX, startY, 80, 60);
         }
         
         if (element) {
@@ -153,6 +184,12 @@ public:
             
             // Create a selection button for this element (positioned near the element)
             std::string selectBtnText = "Select " + type.substr(0, 1);
+            if (type == "checkbox") selectBtnText = "Select C";
+            else if (type == "hslider") selectBtnText = "Select H";
+            else if (type == "vslider") selectBtnText = "Select V";
+            else if (type == "progress") selectBtnText = "Select P";
+            else if (type == "image") selectBtnText = "Select I";
+            
             auto selectBtn = ui->createButton(selectBtnText, startX + element->getWidth() + 5, startY, 
                 [this, element](){
                     selectElement(element);
