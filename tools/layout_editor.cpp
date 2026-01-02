@@ -96,58 +96,54 @@ public:
             }
         }
         
-        // Export/Save buttons
-        auto exportBtn = ui->createButton("Export JSON", 10, 280, [this](){
+        // Export/Save buttons - moved to bottom
+        auto exportBtn = ui->createButton("Export JSON", 10, 740, [this](){
             exportToJSON();
         });
         
-        auto saveBtn = ui->createButton("Save Project", 10, 320, [this](){
+        auto saveBtn = ui->createButton("Save Project", 120, 740, [this](){
             saveProject();
         });
         
-        auto loadBtn = ui->createButton("Load Project", 10, 360, [this](){
+        auto loadBtn = ui->createButton("Load Project", 230, 740, [this](){
             loadProject();
         });
         
-        // Element manipulation controls
-        auto selectLabel = ui->createLabel("Element Controls:", 10, 400);
-        
-        auto moveUpBtn = ui->createButton("Move Up", 10, 430, [this](){
+        // Element manipulation controls - bottom row
+        auto moveUpBtn = ui->createButton("Move Up", 350, 740, [this](){
             moveSelectedElement(0, -10);
         });
         
-        auto moveDownBtn = ui->createButton("Move Down", 10, 470, [this](){
+        auto moveDownBtn = ui->createButton("Move Down", 440, 740, [this](){
             moveSelectedElement(0, 10);
         });
         
-        auto moveLeftBtn = ui->createButton("Move Left", 10, 510, [this](){
+        auto moveLeftBtn = ui->createButton("Move Left", 530, 740, [this](){
             moveSelectedElement(-10, 0);
         });
         
-        auto moveRightBtn = ui->createButton("Move Right", 10, 550, [this](){
+        auto moveRightBtn = ui->createButton("Move Right", 620, 740, [this](){
             moveSelectedElement(10, 0);
         });
         
-        auto deleteBtn = ui->createButton("Delete", 10, 590, [this](){
+        auto deleteBtn = ui->createButton("Delete", 720, 740, [this](){
             deleteSelectedElement();
         });
         
-        // Resize controls
-        auto resizeLabel = ui->createLabel("Resize:", 10, 630);
-        
-        auto widerBtn = ui->createButton("Wider", 10, 660, [this](){
+        // Resize controls - second bottom row
+        auto widerBtn = ui->createButton("Wider", 820, 740, [this](){
             resizeSelectedElement(10, 0);
         });
         
-        auto narrowerBtn = ui->createButton("Narrower", 100, 660, [this](){
+        auto narrowerBtn = ui->createButton("Narrower", 900, 740, [this](){
             resizeSelectedElement(-10, 0);
         });
         
-        auto tallerBtn = ui->createButton("Taller", 10, 700, [this](){
+        auto tallerBtn = ui->createButton("Taller", 990, 740, [this](){
             resizeSelectedElement(0, 10);
         });
         
-        auto shorterBtn = ui->createButton("Shorter", 100, 700, [this](){
+        auto shorterBtn = ui->createButton("Shorter", 1070, 740, [this](){
             resizeSelectedElement(0, -10);
         });
         
