@@ -72,6 +72,14 @@ public:
             addElementToCanvas("image", "Image " + std::to_string(nextElementId++));
         });
         
+        auto cyclelistPalette = ui->createButton("CycleList", 100, 200, [this](){
+            addElementToCanvas("cyclelist", "Cycle " + std::to_string(nextElementId++));
+        });
+        
+        auto optionselectPalette = ui->createButton("OptionSelect", 10, 240, [this](){
+            addElementToCanvas("optionselect", "Options " + std::to_string(nextElementId++));
+        });
+        
         // Canvas area separator
         auto separator = ui->createLabel("Canvas (1024x600)", 200, 10);
         
@@ -89,57 +97,57 @@ public:
         }
         
         // Export/Save buttons
-        auto exportBtn = ui->createButton("Export JSON", 10, 240, [this](){
+        auto exportBtn = ui->createButton("Export JSON", 10, 280, [this](){
             exportToJSON();
         });
         
-        auto saveBtn = ui->createButton("Save Project", 10, 280, [this](){
+        auto saveBtn = ui->createButton("Save Project", 10, 320, [this](){
             saveProject();
         });
         
-        auto loadBtn = ui->createButton("Load Project", 10, 320, [this](){
+        auto loadBtn = ui->createButton("Load Project", 10, 360, [this](){
             loadProject();
         });
         
         // Element manipulation controls
-        auto selectLabel = ui->createLabel("Element Controls:", 10, 360);
+        auto selectLabel = ui->createLabel("Element Controls:", 10, 400);
         
-        auto moveUpBtn = ui->createButton("Move Up", 10, 390, [this](){
+        auto moveUpBtn = ui->createButton("Move Up", 10, 430, [this](){
             moveSelectedElement(0, -10);
         });
         
-        auto moveDownBtn = ui->createButton("Move Down", 10, 430, [this](){
+        auto moveDownBtn = ui->createButton("Move Down", 10, 470, [this](){
             moveSelectedElement(0, 10);
         });
         
-        auto moveLeftBtn = ui->createButton("Move Left", 10, 470, [this](){
+        auto moveLeftBtn = ui->createButton("Move Left", 10, 510, [this](){
             moveSelectedElement(-10, 0);
         });
         
-        auto moveRightBtn = ui->createButton("Move Right", 10, 510, [this](){
+        auto moveRightBtn = ui->createButton("Move Right", 10, 550, [this](){
             moveSelectedElement(10, 0);
         });
         
-        auto deleteBtn = ui->createButton("Delete", 10, 550, [this](){
+        auto deleteBtn = ui->createButton("Delete", 10, 590, [this](){
             deleteSelectedElement();
         });
         
         // Resize controls
-        auto resizeLabel = ui->createLabel("Resize:", 10, 590);
+        auto resizeLabel = ui->createLabel("Resize:", 10, 630);
         
-        auto widerBtn = ui->createButton("Wider", 10, 620, [this](){
+        auto widerBtn = ui->createButton("Wider", 10, 660, [this](){
             resizeSelectedElement(10, 0);
         });
         
-        auto narrowerBtn = ui->createButton("Narrower", 10, 660, [this](){
+        auto narrowerBtn = ui->createButton("Narrower", 100, 660, [this](){
             resizeSelectedElement(-10, 0);
         });
         
-        auto tallerBtn = ui->createButton("Taller", 100, 620, [this](){
+        auto tallerBtn = ui->createButton("Taller", 10, 700, [this](){
             resizeSelectedElement(0, 10);
         });
         
-        auto shorterBtn = ui->createButton("Shorter", 100, 660, [this](){
+        auto shorterBtn = ui->createButton("Shorter", 100, 700, [this](){
             resizeSelectedElement(0, -10);
         });
         
@@ -177,6 +185,12 @@ public:
         } else if (type == "image") {
             // Create a placeholder image (empty for now)
             element = ui->createCanvas(startX, startY, 80, 60);
+        } else if (type == "cyclelist") {
+            std::vector<std::string> items = {"Item 1", "Item 2", "Item 3"};
+            element = ui->createCycleList(startX, startY, 100, 30, items);
+        } else if (type == "optionselect") {
+            std::vector<std::string> options = {"Option 1", "Option 2", "Option 3"};
+            element = ui->createOptionSelect(options, 0, startX, startY, [](int){});
         }
         
         if (element) {
@@ -473,7 +487,7 @@ public:
 
 int main() {
     try {
-        UI ui("UI Layout Editor", 1300, 700);  // Increased width to accommodate 1024px canvas
+        UI ui("UI Layout Editor", 1300, 800);  // Increased height for more elements
         LayoutEditor editor(&ui);
         
         ui.run();
