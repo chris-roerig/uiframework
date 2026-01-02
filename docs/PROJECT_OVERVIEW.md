@@ -914,6 +914,107 @@ if (element->hasFixedSize()) {
 
 ---
 
+## **🎨 UI Layout Editor Tool**
+
+The framework includes a **comprehensive visual wireframing tool** for LLM-driven UI development workflows, enabling designers to create wireframes visually and export structured JSON data for precise UI code generation.
+
+### **Layout Editor Features**
+
+#### **Visual Design Canvas**
+- **1024x600 design area** with dark theme (RGB 30,30,30 background)
+- **10px grid dots** for precise alignment matching snap grid
+- **Professional dark mode** appearance for optimal text contrast
+- **Grid snapping** for all element positioning and sizing operations
+
+#### **Comprehensive Element Palette (11 Types)**
+- **Interactive Elements**: Button, CheckBox (directly clickable for selection)
+- **Display Elements**: Label, TextBox, Canvas, Image, ProgressBar
+- **Input Controls**: HSlider, VSlider, CycleList, OptionSelect
+- **Two-column palette layout** for efficient space usage
+- **Default sizing and properties** for each element type
+
+#### **Advanced Element Manipulation**
+- **Direct Selection**: Click buttons/checkboxes directly, or use centered "S" buttons for other elements
+- **Precise Positioning**: Move Up/Down/Left/Right controls with 10px grid snapping
+- **Interactive Resizing**: Clickable corner handles (+) for directional resizing
+- **Visual Feedback**: Selection indicators and resize handles that move with elements
+- **Element Deletion**: Clean removal with proper handle and button cleanup
+
+#### **Professional Workflow Integration**
+- **JSON Export**: Clean structured output with canvas dimensions and element positioning
+- **Project Management**: Save/load wireframe projects for iteration
+- **LLM-Ready Output**: Structured positioning data for precise UI code generation
+- **Build Integration**: `make layout-editor` command for easy access
+
+### **Layout Editor Architecture**
+
+#### **Core Components**
+```cpp
+struct WireframeElement {
+    std::string type, id, text;
+    int x, y, width, height;
+};
+
+class LayoutEditor {
+    std::vector<WireframeElement> wireframeElements;
+    std::vector<std::shared_ptr<ui::UIElement>> canvasElements;
+    std::vector<std::shared_ptr<ui::UIElement>> selectionButtons;
+    std::vector<std::shared_ptr<ui::UIElement>> resizeHandles;
+};
+```
+
+#### **JSON Output Format**
+```json
+{
+  "canvas": {"width": 1024, "height": 600},
+  "elements": [
+    {
+      "type": "button", "id": "element_1", 
+      "x": 220, "y": 50, "width": 100, "height": 30,
+      "text": "Button 1"
+    },
+    {
+      "type": "hslider", "id": "element_2",
+      "x": 350, "y": 100, "width": 120, "height": 20,
+      "text": "Slider 1"
+    }
+  ]
+}
+```
+
+### **Development Workflow**
+
+#### **Design → Code Pipeline**
+1. **Visual Design**: Create wireframes using layout editor with drag-and-drop interface
+2. **JSON Export**: Export structured positioning data with precise coordinates
+3. **LLM Integration**: Use JSON data for accurate UI code generation
+4. **Implementation**: Generate actual UI framework code from wireframe data
+
+#### **Usage Example**
+```bash
+# Build and run layout editor
+make layout-editor
+
+# Create wireframe design visually
+# Export to wireframe.json
+# Use JSON data for LLM-driven code generation
+```
+
+### **Layout Editor Status**
+- **Phase 1 Complete** ✅ - Basic wireframing tool functional
+- **Phase 2 Complete** ✅ - Interactive element manipulation system
+- **Visual Enhancements Complete** ✅ - Dark theme, grid dots, professional appearance
+- **Element Coverage Complete** ✅ - All 11 UI element types supported
+- **Interface Optimization Complete** ✅ - Bottom toolbar, no overlapping controls
+
+### **Integration with Framework**
+- **Standalone Tool**: Located in `tools/layout_editor.cpp`
+- **Framework Integration**: Uses all UI framework capabilities
+- **Build System**: Integrated with meson and make build systems
+- **Development Only**: Layout editor specific features don't affect core framework
+
+---
+
 ## **🚀 Future Development**
 
 ### **Maintenance Priorities**
