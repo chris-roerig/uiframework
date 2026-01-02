@@ -191,13 +191,13 @@ private:
         auto tabbedPanel = ui.createTabbedPanel(x + 220, y, 300, 120);
         tabbedPanel->setTooltip("Tabbed panel container");
         
-        y += 140;
+        y += 100;
         
         // Graphics Elements
         createSectionLabel("Graphics Elements", x, y);
         y += 40;
         
-        auto canvas = ui.createCanvas(x, y, 150, 100);
+        auto canvas = ui.createCanvas(x, y, 150, 80);
         canvas->setTooltip("Drawing canvas for custom graphics");
         
         // Note: Image and Sprite creation would require actual image files
