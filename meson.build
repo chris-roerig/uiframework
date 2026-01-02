@@ -73,22 +73,13 @@ uiframework_static = static_library('uiframework',
 install_headers('lib/include/uiframework/UI.h', subdir : 'uiframework')
 install_subdir('lib/include/uiframework', install_dir : get_option('includedir'))
 
-# Comprehensive Demo - Complete UI Framework Showcase
-executable('comprehensive_demo',
-  sources : ['examples/comprehensive_demo.cpp'] + common_sources,
+# Grid System Demo
+executable('demo',
+  sources : ['examples/demo.cpp'] + common_sources,
   dependencies : [sdl2_dep, ttf_dep, sdl2_image_dep],
   include_directories : ['lib/include'],
   install : false
 )
-
-# Constraint System Demo - Phase 1 Implementation
-executable('constraint_demo',
-  sources : ['examples/constraint_demo.cpp'] + common_sources,
-  dependencies : [sdl2_dep, ttf_dep, sdl2_image_dep],
-  include_directories : ['lib/include'],
-  install : false
-)
-
 
 # Static analysis targets
 run_target('static-analysis',

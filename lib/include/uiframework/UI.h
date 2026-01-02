@@ -188,6 +188,15 @@ class UI {
     std::shared_ptr<ui::Button> createButton(const std::string& text, int x, int y,
                                              std::function<void()> callback, int focusOrder);
 
+    // Integrated widget creation with constraints
+    std::shared_ptr<ui::Button> createButtonAnchored(const std::string& text, 
+                                                     std::shared_ptr<ui::UIElement> target,
+                                                     ui::AnchorType anchorType, int offset,
+                                                     std::function<void()> callback);
+    std::shared_ptr<ui::Label> createLabelAnchored(const std::string& text,
+                                                   std::shared_ptr<ui::UIElement> target,
+                                                   ui::AnchorType anchorType, int offset);
+
     /**
      * @brief Creates a text input widget
      *
@@ -427,6 +436,13 @@ class UI {
     // Grid snapping system
     void setGridSize(int gridSize);
     int getGridSize() const;
+    
+    // Bulk constraint operations
+    void bulkSetAnchors(const std::vector<std::string>& elementIds, 
+                       const std::vector<std::string>& targetIds,
+                       const std::vector<ui::AnchorType>& anchorTypes,
+                       const std::vector<int>& offsets);
+    void bulkClearConstraints(const std::vector<std::string>& elementIds);
     
     // Element pooling for high-frequency scenarios (audio instruments, real-time apps)
     void enableElementPooling(size_t labelCount = 50, size_t buttonCount = 20);

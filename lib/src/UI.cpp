@@ -390,6 +390,34 @@ int UI::getGridSize() const {
     return gridSize;
 }
 
+void UI::bulkSetAnchors(const std::vector<std::string>& elementIds, 
+                       const std::vector<std::string>& targetIds,
+                       const std::vector<ui::AnchorType>& anchorTypes,
+                       const std::vector<int>& offsets) {
+    if (elementIds.size() != targetIds.size() || 
+        elementIds.size() != anchorTypes.size() || 
+        elementIds.size() != offsets.size()) {
+        return; // Mismatched vector sizes
+    }
+    
+    for (size_t i = 0; i < elementIds.size(); ++i) {
+        auto element = getElement(elementIds[i]);
+        auto target = getElement(targetIds[i]);
+        if (element && target) {
+            element->setAnchor(target, anchorTypes[i], offsets[i]);
+        }
+    }
+}
+
+void UI::bulkClearConstraints(const std::vector<std::string>& elementIds) {
+    for (const auto& id : elementIds) {
+        auto element = getElement(id);
+        if (element) {
+            element->clearConstraints();
+        }
+    }
+}
+
 // Element pooling for high-frequency scenarios
 void UI::enableElementPooling(size_t labelCount, size_t buttonCount) {
     if (!elementPool) {
@@ -712,4 +740,21 @@ size_t UI::realtimeBulkSetVisibility(const std::vector<std::string>& elementIds,
         return 0;
     }
     return updateQueue->tryBulkSetVisibility(elementIds, visibility);
+}
+
+std::shared_ptr<ui::Button> UI::createButtonAnchored(const std::string& text, 
+                                                     std::shared_ptr<ui::UIElement> target,
+                                                     ui::AnchorType anchorType, int offset,
+                                                     std::function<void()> callback) {
+    auto button = createButton(text, 0, 0, callback);
+    button->setAnchor(target, anchorType, offset);
+    return button;
+}
+
+std::shared_ptr<ui::Label> UI::createLabelAnchored(const std::string& text,
+                                                   std::shared_ptr<ui::UIElement> target,
+                                                   ui::AnchorType anchorType, int offset) {
+    auto label = createLabel(text, 0, 0);
+    label->setAnchor(target, anchorType, offset);
+    return label;
 }

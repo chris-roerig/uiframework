@@ -224,3 +224,80 @@ TEST_CASE("Percentage Sizing System", "[constraints][percentage]") {
         REQUIRE(button->getY() == 100); // Same Y as panel
     }
 }
+
+TEST_CASE("Integration & Optimization", "[constraints][integration]") {
+    SECTION("Bulk constraint operations") {
+        UI ui("Integration Test", 800, 600);
+        
+        // Create multiple elements
+        auto target1 = ui.createLabel("Target1", 100, 100);
+        auto target2 = ui.createLabel("Target2", 200, 200);
+        auto elem1 = ui.createButton("Elem1", 0, 0, [](){});
+        auto elem2 = ui.createButton("Elem2", 0, 0, [](){});
+        
+        // Bulk set anchors
+        std::vector<std::string> elementIds = {elem1->getId(), elem2->getId()};
+        std::vector<std::string> targetIds = {target1->getId(), target2->getId()};
+        std::vector<ui::AnchorType> anchorTypes = {ui::AnchorType::Below, ui::AnchorType::Right};
+        std::vector<int> offsets = {10, 15};
+        
+        ui.bulkSetAnchors(elementIds, targetIds, anchorTypes, offsets);
+        
+        // Verify anchoring worked
+        REQUIRE(elem1->hasConstraints());
+        REQUIRE(elem2->hasConstraints());
+        REQUIRE(elem1->getX() == 100); // Same X as target1
+        REQUIRE(elem1->getY() == 100 + target1->getHeight() + 10); // Below target1 + offset
+        REQUIRE(elem2->getX() == 200 + target2->getWidth() + 15); // Right of target2 + offset
+        REQUIRE(elem2->getY() == 200); // Same Y as target2
+        
+        // Bulk clear constraints
+        ui.bulkClearConstraints(elementIds);
+        REQUIRE_FALSE(elem1->hasConstraints());
+        REQUIRE_FALSE(elem2->hasConstraints());
+    }
+    
+    SECTION("Integrated widget creation") {
+        UI ui("Integration Test", 800, 600);
+        
+        auto target = ui.createLabel("Target", 150, 150);
+        
+        // Create button with integrated anchoring
+        auto anchoredButton = ui.createButtonAnchored("Anchored Button", target, 
+                                                      ui::AnchorType::Below, 20, [](){});
+        
+        // Verify button is created and anchored correctly
+        REQUIRE(anchoredButton != nullptr);
+        REQUIRE(anchoredButton->hasConstraints());
+        REQUIRE(anchoredButton->getX() == 150); // Same X as target
+        REQUIRE(anchoredButton->getY() == 150 + target->getHeight() + 20); // Below target + offset
+        
+        // Create label with integrated anchoring
+        auto anchoredLabel = ui.createLabelAnchored("Anchored Label", target, 
+                                                    ui::AnchorType::Right, 10);
+        
+        // Verify label is created and anchored correctly
+        REQUIRE(anchoredLabel != nullptr);
+        REQUIRE(anchoredLabel->hasConstraints());
+        REQUIRE(anchoredLabel->getX() == 150 + target->getWidth() + 10); // Right of target + offset
+        REQUIRE(anchoredLabel->getY() == 150); // Same Y as target
+    }
+    
+    SECTION("Bulk operations with mismatched vectors") {
+        UI ui("Integration Test", 800, 600);
+        
+        auto elem = ui.createButton("Test", 0, 0, [](){});
+        auto target = ui.createLabel("Target", 100, 100);
+        
+        // Test with mismatched vector sizes (should be ignored)
+        std::vector<std::string> elementIds = {elem->getId()};
+        std::vector<std::string> targetIds = {target->getId(), "nonexistent"};
+        std::vector<ui::AnchorType> anchorTypes = {ui::AnchorType::Below};
+        std::vector<int> offsets = {10};
+        
+        ui.bulkSetAnchors(elementIds, targetIds, anchorTypes, offsets);
+        
+        // Element should not have constraints due to mismatched vectors
+        REQUIRE_FALSE(elem->hasConstraints());
+    }
+}
