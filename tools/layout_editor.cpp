@@ -524,7 +524,9 @@ public:
         std::shared_ptr<ui::UIElement> element;
         
         if (clonedElement.type == "button") {
-            element = ui->createButton(clonedElement.text, absoluteX, absoluteY, [this, element](){
+            element = ui->createButton(clonedElement.text, absoluteX, absoluteY, [](){});
+            auto buttonElement = std::static_pointer_cast<ui::Button>(element);
+            buttonElement->setCallback([this, element](){
                 selectElement(element);
             });
         } else if (clonedElement.type == "label") {
@@ -534,7 +536,9 @@ public:
         } else if (clonedElement.type == "canvas") {
             element = ui->createCanvas(absoluteX, absoluteY, clonedElement.width, clonedElement.height);
         } else if (clonedElement.type == "checkbox") {
-            element = ui->createCheckBox(false, absoluteX, absoluteY, [this, element](bool checked){
+            element = ui->createCheckBox(false, absoluteX, absoluteY, [](bool){});
+            auto checkboxElement = std::static_pointer_cast<ui::CheckBox>(element);
+            checkboxElement->setCallback([this, element](bool checked){
                 selectElement(element);
             });
         } else if (clonedElement.type == "hslider") {
