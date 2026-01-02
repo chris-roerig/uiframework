@@ -87,6 +87,23 @@ int main() {
         gridConstrained->setAnchor(gridAnchor, ui::AnchorType::Right, 7);
         gridConstrained->setTooltip("Anchored to right + grid snapped automatically");
         
+        // === PERCENTAGE SIZING DEMONSTRATION ===
+        
+        auto percentTitle = ui.createLabel("Percentage Sizing Demo:", 400, 400);
+        percentTitle->setTooltip("Elements below demonstrate percentage-based sizing");
+        
+        // Create a panel that takes 30% of window width, 20% of height
+        auto percentPanel = ui.createLabel("30% x 20% Panel", 400, 430);
+        percentPanel->setRelativeSize(0.3f, 0.2f); // 30% width, 20% height
+        percentPanel->setTooltip("Panel sized to 30% width x 20% height of window");
+        
+        // Create a button that takes 25% width, 10% height
+        auto percentButton = ui.createButton("25% x 10%", 400, 550, [](){
+            std::cout << "Percentage sized button clicked!" << std::endl;
+        });
+        percentButton->setRelativeSize(0.25f, 0.1f);
+        percentButton->setTooltip("Button sized to 25% width x 10% height of window");
+        
         std::cout << "Constraint System Demo Started!" << std::endl;
         std::cout << "- Reference button at (100, 150)" << std::endl;
         std::cout << "- Below button anchored 10px below reference" << std::endl;
@@ -96,6 +113,8 @@ int main() {
         std::cout << "- Grid snapping enabled with 20px grid size" << std::endl;
         std::cout << "- Grid button snapped from (157,437) to (" << gridButton1->getX() << "," << gridButton1->getY() << ")" << std::endl;
         std::cout << "- Constrained element with grid snapping at (" << gridConstrained->getX() << "," << gridConstrained->getY() << ")" << std::endl;
+        std::cout << "- Percentage panel sized to " << percentPanel->getWidth() << "x" << percentPanel->getHeight() << " (30% x 20%)" << std::endl;
+        std::cout << "- Percentage button sized to " << percentButton->getWidth() << "x" << percentButton->getHeight() << " (25% x 10%)" << std::endl;
         
         ui.run();
         

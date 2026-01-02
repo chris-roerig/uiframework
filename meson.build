@@ -44,6 +44,7 @@ common_sources = [
   'lib/src/UIElements/TabbedPanel.cpp',
   'lib/src/ConstraintManager.cpp',
   'lib/src/GridSnap.cpp',
+  'lib/src/PercentageSize.cpp',
   'lib/src/ElementPool.cpp',
   'lib/src/RealTime/UIUpdateQueue.cpp',
   'lib/src/EmbeddedFontRegistry.cpp',

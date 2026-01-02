@@ -12,6 +12,7 @@
 #include "../Resources/FontManager.h"
 #include "../Constraints/ConstraintManager.h"
 #include "../Constraints/GridSnap.h"
+#include "../Constraints/PercentageSize.h"
 
 namespace ui {
 
@@ -242,6 +243,12 @@ public:
     void setGridSnapping(bool enabled);
     bool isGridSnappingEnabled() const;
     
+    // Percentage sizing
+    void setRelativeSize(float widthPercent, float heightPercent);
+    void clearRelativeSize();
+    bool hasRelativeSize() const;
+    void updateRelativeSize();
+    
     // Position getters for constraint calculations
     int getX() const { return x; }
     int getY() const { return y; }
@@ -251,6 +258,11 @@ public:
 private:
     ConstraintManager* constraintManager = nullptr;
     bool gridSnappingEnabled = false;
+    
+    // Percentage sizing
+    bool hasRelativeSizing = false;
+    float relativeWidth = 0.0f;
+    float relativeHeight = 0.0f;
 };
 
 } // namespace ui

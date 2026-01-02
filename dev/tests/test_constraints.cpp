@@ -1,6 +1,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include "uiframework/UI.h"
 #include "uiframework/Constraints/GridSnap.h"
+#include "uiframework/Constraints/PercentageSize.h"
 
 TEST_CASE("Constraint System - Basic Anchoring", "[constraints]") {
     UI ui("Constraint Test", 800, 600);
@@ -136,5 +137,90 @@ TEST_CASE("Grid Snapping System", "[constraints][grid]") {
         
         REQUIRE(button->getX() == 20); // 15 snapped to 20
         REQUIRE(button->getY() == snappedY);
+    }
+}
+
+TEST_CASE("Percentage Sizing System", "[constraints][percentage]") {
+    SECTION("PercentageSize utility functions work correctly") {
+        // Test basic percentage calculations
+        REQUIRE(ui::PercentageSize::calculateWidth(0.5f, 800) == 400);
+        REQUIRE(ui::PercentageSize::calculateHeight(0.25f, 600) == 150);
+        
+        // Test edge cases
+        REQUIRE(ui::PercentageSize::calculateWidth(0.0f, 800) == 0);
+        REQUIRE(ui::PercentageSize::calculateWidth(1.0f, 800) == 800);
+        
+        // Test invalid percentages
+        REQUIRE(ui::PercentageSize::calculateWidth(-0.1f, 800) == 0);
+        REQUIRE(ui::PercentageSize::calculateWidth(1.1f, 800) == 0);
+        
+        // Test invalid parent dimensions
+        REQUIRE(ui::PercentageSize::calculateWidth(0.5f, 0) == 0);
+        REQUIRE(ui::PercentageSize::calculateWidth(0.5f, -100) == 0);
+        
+        // Test combined size calculation
+        int width, height;
+        ui::PercentageSize::calculateSize(0.3f, 0.4f, 1000, 800, width, height);
+        REQUIRE(width == 300);
+        REQUIRE(height == 320);
+        
+        // Test percentage validation
+        REQUIRE(ui::PercentageSize::isValidPercentage(0.0f));
+        REQUIRE(ui::PercentageSize::isValidPercentage(0.5f));
+        REQUIRE(ui::PercentageSize::isValidPercentage(1.0f));
+        REQUIRE_FALSE(ui::PercentageSize::isValidPercentage(-0.1f));
+        REQUIRE_FALSE(ui::PercentageSize::isValidPercentage(1.1f));
+    }
+    
+    SECTION("Element percentage sizing") {
+        UI ui("Percentage Test", 800, 600);
+        
+        auto button = ui.createButton("Test", 100, 100, [](){});
+        
+        // Initially no relative sizing
+        REQUIRE_FALSE(button->hasRelativeSize());
+        
+        // Set relative size to 50% width, 25% height
+        button->setRelativeSize(0.5f, 0.25f);
+        REQUIRE(button->hasRelativeSize());
+        
+        // Check calculated size (800 * 0.5 = 400, 600 * 0.25 = 150)
+        REQUIRE(button->getWidth() == 400);
+        REQUIRE(button->getHeight() == 150);
+        
+        // Clear relative sizing
+        button->clearRelativeSize();
+        REQUIRE_FALSE(button->hasRelativeSize());
+    }
+    
+    SECTION("Invalid percentage values are rejected") {
+        UI ui("Percentage Test", 800, 600);
+        auto button = ui.createButton("Test", 100, 100, [](){});
+        
+        // Try invalid percentages
+        button->setRelativeSize(-0.1f, 0.5f); // Negative width
+        REQUIRE_FALSE(button->hasRelativeSize());
+        
+        button->setRelativeSize(0.5f, 1.1f); // Height > 100%
+        REQUIRE_FALSE(button->hasRelativeSize());
+        
+        button->setRelativeSize(1.1f, -0.1f); // Both invalid
+        REQUIRE_FALSE(button->hasRelativeSize());
+    }
+    
+    SECTION("Percentage sizing with constraints") {
+        UI ui("Percentage Test", 800, 600);
+        
+        // Create a percentage-sized panel
+        auto panel = ui.createLabel("Panel", 100, 100);
+        panel->setRelativeSize(0.5f, 0.3f); // 400x180
+        
+        // Anchor a button to the right of the panel
+        auto button = ui.createButton("Anchored", 0, 0, [](){});
+        button->setAnchor(panel, ui::AnchorType::Right, 10);
+        
+        // Button should be positioned relative to panel's calculated size
+        REQUIRE(button->getX() == 100 + 400 + 10); // panel.x + panel.width + offset
+        REQUIRE(button->getY() == 100); // Same Y as panel
     }
 }

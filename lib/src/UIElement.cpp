@@ -1,4 +1,5 @@
 #include "uiframework/UIElements/UIElement.h"
+#include "uiframework/UICore.h"
 #include "uiframework/Resources/SDLTextureRAII.h"
 #include "uiframework/ErrorHandling.h"
 #include <SDL2/SDL_ttf.h>
@@ -296,6 +297,40 @@ void UIElement::setGridSnapping(bool enabled) {
 
 bool UIElement::isGridSnappingEnabled() const {
     return gridSnappingEnabled;
+}
+
+void UIElement::setRelativeSize(float widthPercent, float heightPercent) {
+    if (PercentageSize::isValidPercentage(widthPercent) && 
+        PercentageSize::isValidPercentage(heightPercent)) {
+        hasRelativeSizing = true;
+        relativeWidth = widthPercent;
+        relativeHeight = heightPercent;
+        updateRelativeSize();
+    }
+}
+
+void UIElement::clearRelativeSize() {
+    hasRelativeSizing = false;
+    relativeWidth = 0.0f;
+    relativeHeight = 0.0f;
+}
+
+bool UIElement::hasRelativeSize() const {
+    return hasRelativeSizing;
+}
+
+void UIElement::updateRelativeSize() {
+    if (!hasRelativeSizing || !coreRef) return;
+    
+    // Get parent dimensions from UI core
+    int parentWidth = coreRef->getWidth();
+    int parentHeight = coreRef->getHeight();
+    
+    int newWidth, newHeight;
+    PercentageSize::calculateSize(relativeWidth, relativeHeight, 
+                                 parentWidth, parentHeight, 
+                                 newWidth, newHeight);
+    setSize(newWidth, newHeight);
 }
 
 } // namespace ui
