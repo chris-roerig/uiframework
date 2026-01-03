@@ -20,9 +20,21 @@ private:
     std::function<void()> onClick;
     ButtonState currentState = ButtonState::Normal;
     
+    // Icon support
+    std::string iconPath;
+    SDL_Texture* iconTexture = nullptr;
+    int iconWidth = 0;
+    int iconHeight = 0;
+    
 public:
     Button(int x_, int y_, int w_, int h_, const std::string &text_, std::function<void()> callback)
       : InteractiveElement(x_, y_, w_, h_), text(text_), onClick(callback) {}
+    
+    ~Button() override {
+        if (iconTexture) {
+            SDL_DestroyTexture(iconTexture);
+        }
+    }
 
 protected:
     void renderImpl(const RenderContext& ctx) override;
@@ -52,6 +64,12 @@ public:
     // State management
     ButtonState getState() const { return currentState; }
     void setState(ButtonState state) { currentState = state; }
+    
+    // Icon support
+    void setIcon(const std::string& path);
+    void clearIcon();
+    bool hasIcon() const { return iconTexture != nullptr; }
+    const std::string& getIconPath() const { return iconPath; }
 };
 
 } // namespace ui

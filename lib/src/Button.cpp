@@ -7,6 +7,7 @@
 #include "uiframework/Utils/TextUtils.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
+#include <SDL2/SDL_image.h>
 
 namespace ui {
 
@@ -72,18 +73,51 @@ void Button::renderImpl(const RenderContext& ctx) {
         SDL_RenderDrawRect(ctx.renderer, &innerFocus);
     }
     
-    // Draw the button text
-    if (ctx.font && !text.empty()) {
-        SDL_Color sdlColor = { textColor.r, textColor.g, textColor.b, textColor.a };
-        TextCacheEntry* cached = getCachedText("main", text, sdlColor, ctx.renderer, ctx.font);
-        if (cached && cached->texture) {
-            SDL_Rect dst;
-            dst.w = cached->width;
-            dst.h = cached->height;
-            dst.x = contentRect.x + (contentRect.w - dst.w) / 2;
-            dst.y = contentRect.y + (contentRect.h - dst.h) / 2;
-            
-            SDL_RenderCopy(ctx.renderer, cached->texture, nullptr, &dst);
+    // Draw the button content (icon and/or text)
+    if (iconTexture || (!text.empty() && ctx.font)) {
+        SDL_Rect contentRect = getContentRect();
+        
+        // Calculate layout for icon and text
+        int iconSpace = iconTexture ? (iconWidth + 4) : 0; // 4px spacing between icon and text
+        int totalContentWidth = iconSpace;
+        
+        // Calculate text width if needed
+        int textWidth = 0;
+        TextCacheEntry* textCache = nullptr;
+        if (!text.empty() && ctx.font) {
+            SDL_Color sdlColor = { textColor.r, textColor.g, textColor.b, textColor.a };
+            textCache = getCachedText("main", text, sdlColor, ctx.renderer, ctx.font);
+            if (textCache && textCache->texture) {
+                textWidth = textCache->width;
+                totalContentWidth += textWidth;
+            }
+        }
+        
+        // Center the combined content
+        int startX = contentRect.x + (contentRect.w - totalContentWidth) / 2;
+        int centerY = contentRect.y + contentRect.h / 2;
+        
+        // Draw icon if present
+        if (iconTexture) {
+            SDL_Rect iconDst = {
+                startX,
+                centerY - iconHeight / 2,
+                iconWidth,
+                iconHeight
+            };
+            SDL_RenderCopy(ctx.renderer, iconTexture, nullptr, &iconDst);
+            startX += iconWidth + 4; // Move past icon + spacing
+        }
+        
+        // Draw text if present
+        if (textCache && textCache->texture) {
+            SDL_Rect textDst = {
+                startX,
+                centerY - textCache->height / 2,
+                textCache->width,
+                textCache->height
+            };
+            SDL_RenderCopy(ctx.renderer, textCache->texture, nullptr, &textDst);
         }
     }
 }
@@ -111,6 +145,43 @@ void Button::onMouseUp(int x, int y) {
         // Return to hover if mouse is still over button, normal otherwise
         currentState = getIsHovered() ? ButtonState::Hover : ButtonState::Normal;
     }
+}
+
+void Button::setIcon(const std::string& path) {
+    // Clean up existing icon
+    if (iconTexture) {
+        SDL_DestroyTexture(iconTexture);
+        iconTexture = nullptr;
+    }
+    
+    iconPath = path;
+    
+    if (path.empty()) {
+        return;
+    }
+    
+    // Load icon texture (requires renderer from core)
+    if (coreRef) {
+        SDL_Surface* surface = IMG_Load(path.c_str());
+        if (surface) {
+            iconTexture = SDL_CreateTextureFromSurface(coreRef->getRenderer(), surface);
+            if (iconTexture) {
+                iconWidth = surface->w;
+                iconHeight = surface->h;
+            }
+            SDL_FreeSurface(surface);
+        }
+    }
+}
+
+void Button::clearIcon() {
+    if (iconTexture) {
+        SDL_DestroyTexture(iconTexture);
+        iconTexture = nullptr;
+    }
+    iconPath.clear();
+    iconWidth = 0;
+    iconHeight = 0;
 }
 
 void Button::activate() {
