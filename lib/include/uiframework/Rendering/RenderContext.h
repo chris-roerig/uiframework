@@ -94,6 +94,11 @@ struct RenderContext {
      * @brief Get theme colors for cycle lists
      */
     ThemeableElementColors cycleListColors() const;
+    
+    /**
+     * @brief Get theme colors for focus indicators
+     */
+    ThemeableElementColors focusColors() const;
 };
 
 } // namespace ui

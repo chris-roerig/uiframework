@@ -11,36 +11,65 @@
 namespace ui {
 
 void Button::renderImpl(const RenderContext& ctx) {
+    // Update state based on enabled status
+    if (!enabled && currentState != ButtonState::Disabled) {
+        currentState = ButtonState::Disabled;
+    } else if (enabled && currentState == ButtonState::Disabled) {
+        currentState = ButtonState::Normal;
+    }
+    
     // Retrieve button colors from the theme
     auto colors = ctx.buttonColors();
     SDL_Rect rect = { x, y, width, height };
     SDL_Rect contentRect = getContentRect();
 
-    // Determine background and text colors based on enabled state
+    // Determine background and text colors based on state
     Color bg, textColor;
-    if (!enabled) {
+    if (currentState == ButtonState::Disabled) {
         bg = colors.buttonDisabled;
         textColor = colors.buttonTextDisabled;
     } else {
         bg = colors.buttonBackground;
         textColor = colors.buttonText;
-        // Darken if pressed
-        if (getIsPressed()) {
-            bg = Color(static_cast<uint8_t>(bg.r * Constants::BUTTON_PRESSED_DARKEN_FACTOR),
-                       static_cast<uint8_t>(bg.g * Constants::BUTTON_PRESSED_DARKEN_FACTOR),
-                       static_cast<uint8_t>(bg.b * Constants::BUTTON_PRESSED_DARKEN_FACTOR),
-                       bg.a);
+        
+        // Apply state-specific styling
+        switch (currentState) {
+            case ButtonState::Hover:
+                // Lighten background for hover
+                bg = Color(static_cast<uint8_t>(std::min(255, bg.r + 20)),
+                          static_cast<uint8_t>(std::min(255, bg.g + 20)),
+                          static_cast<uint8_t>(std::min(255, bg.b + 20)),
+                          bg.a);
+                break;
+            case ButtonState::Pressed:
+                // Darken if pressed
+                bg = Color(static_cast<uint8_t>(bg.r * Constants::BUTTON_PRESSED_DARKEN_FACTOR),
+                          static_cast<uint8_t>(bg.g * Constants::BUTTON_PRESSED_DARKEN_FACTOR),
+                          static_cast<uint8_t>(bg.b * Constants::BUTTON_PRESSED_DARKEN_FACTOR),
+                          bg.a);
+                break;
+            default:
+                break;
         }
     }
     
     // Draw button background
     drawFilledRect(ctx.renderer, rect, bg);
     
-    // Draw button border if focused (only when enabled)
+    // Draw enhanced focus border when focused and enabled
     if (hasFocus && enabled) {
         SDL_Rect focusRect = getFocusRect();
-        SDL_SetRenderDrawColor(ctx.renderer, textColor.r, textColor.g, textColor.b, textColor.a);
+        // Use theme focus color for better visibility
+        auto focusColors = ctx.focusColors();
+        SDL_SetRenderDrawColor(ctx.renderer, focusColors.focusBorder.r, 
+                              focusColors.focusBorder.g, focusColors.focusBorder.b, 
+                              focusColors.focusBorder.a);
         SDL_RenderDrawRect(ctx.renderer, &focusRect);
+        
+        // Add inner focus border for better visibility
+        SDL_Rect innerFocus = { focusRect.x + 1, focusRect.y + 1, 
+                               focusRect.w - 2, focusRect.h - 2 };
+        SDL_RenderDrawRect(ctx.renderer, &innerFocus);
     }
     
     // Draw the button text
@@ -56,6 +85,31 @@ void Button::renderImpl(const RenderContext& ctx) {
             
             SDL_RenderCopy(ctx.renderer, cached->texture, nullptr, &dst);
         }
+    }
+}
+
+void Button::onMouseEnter() {
+    if (enabled && currentState == ButtonState::Normal) {
+        currentState = ButtonState::Hover;
+    }
+}
+
+void Button::onMouseLeave() {
+    if (enabled && currentState == ButtonState::Hover) {
+        currentState = ButtonState::Normal;
+    }
+}
+
+void Button::onMouseDown(int x, int y) {
+    if (enabled) {
+        currentState = ButtonState::Pressed;
+    }
+}
+
+void Button::onMouseUp(int x, int y) {
+    if (enabled && currentState == ButtonState::Pressed) {
+        // Return to hover if mouse is still over button, normal otherwise
+        currentState = getIsHovered() ? ButtonState::Hover : ButtonState::Normal;
     }
 }
 

@@ -59,4 +59,8 @@ ThemeableElementColors RenderContext::cycleListColors() const {
     return theme->cycleListColors();
 }
 
+ThemeableElementColors RenderContext::focusColors() const {
+    return theme->focusColors();
+}
+
 } // namespace ui
