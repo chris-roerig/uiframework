@@ -18,6 +18,8 @@ class Button : public InteractiveElement {
 private:
     std::string text;
     std::function<void()> onClick;
+    
+protected:
     ButtonState currentState = ButtonState::Normal;
     
     // Icon support
@@ -42,6 +44,9 @@ protected:
     void onMouseLeave() override;
     void onMouseDown(int x, int y) override;
     void onMouseUp(int x, int y) override;
+    
+    // Protected getters for derived classes
+    const std::string& getTextInternal() const { return text; }
     
 public:
     void activate() override;

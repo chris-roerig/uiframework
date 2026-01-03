@@ -3,6 +3,7 @@
 // All UI Elements in a single include.
 #include "uiframework/UIElements/UIElement.h"
 #include "uiframework/UIElements/Button.h"
+#include "uiframework/UIElements/ToggleButton.h"
 #include "uiframework/UIElements/CheckBox.h"
 #include "uiframework/UIElements/Canvas.h"
 #include "uiframework/UIElements/ContextMenu.h"

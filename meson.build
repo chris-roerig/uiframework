@@ -30,6 +30,7 @@ common_sources = [
   'lib/src/ListView.cpp',
   'lib/src/Label.cpp',
   'lib/src/Button.cpp',
+  'lib/src/ToggleButton.cpp',
   'lib/src/TextBox.cpp',
   'lib/src/CheckBox.cpp',
   'lib/src/OptionSelect.cpp',

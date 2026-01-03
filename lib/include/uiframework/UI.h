@@ -213,6 +213,29 @@ class UI {
     std::shared_ptr<ui::Button> createButton(const std::string& text, int x, int y,
                                              std::function<void()> callback, int focusOrder);
 
+    /**
+     * @brief Creates a toggle button widget
+     * @param text Button text
+     * @param x X coordinate
+     * @param y Y coordinate
+     * @param callback Toggle callback (receives bool state)
+     * @return Shared pointer to the created toggle button
+     */
+    std::shared_ptr<ui::ToggleButton> createToggleButton(const std::string& text, int x, int y,
+                                                         std::function<void(bool)> callback);
+
+    /**
+     * @brief Creates a toggle button with focus order hint
+     * @param text Button text
+     * @param x X coordinate
+     * @param y Y coordinate  
+     * @param callback Toggle callback (receives bool state)
+     * @param focusOrder Focus order hint (lower = earlier in tab sequence)
+     * @return Shared pointer to the created toggle button
+     */
+    std::shared_ptr<ui::ToggleButton> createToggleButton(const std::string& text, int x, int y,
+                                                         std::function<void(bool)> callback, int focusOrder);
+
     // Integrated widget creation with constraints
     std::shared_ptr<ui::Button> createButtonAnchored(const std::string& text, 
                                                      std::shared_ptr<ui::UIElement> target,

@@ -53,6 +53,22 @@ std::shared_ptr<ui::Button> UI::createButton(const std::string& text, int x, int
     return button;
 }
 
+std::shared_ptr<ui::ToggleButton> UI::createToggleButton(const std::string& text, int x, int y,
+                                                         std::function<void(bool)> callback) {
+    auto toggleButton =
+        std::make_shared<ui::ToggleButton>(x, y, ui::Constants::DEFAULT_BUTTON_WIDTH,
+                                           ui::Constants::DEFAULT_BUTTON_HEIGHT, text, callback);
+    return registerElement(toggleButton);
+}
+
+std::shared_ptr<ui::ToggleButton> UI::createToggleButton(const std::string& text, int x, int y,
+                                                         std::function<void(bool)> callback, int focusOrder) {
+    auto toggleButton = createToggleButton(text, x, y, callback);
+    // Store focus order hint for later use in setFocusOrder
+    focusOrderHints[toggleButton->getId()] = focusOrder;
+    return toggleButton;
+}
+
 std::shared_ptr<ui::TextBox> UI::createTextBox(const std::string& defaultText, int x, int y,
                                                bool autoHighlight) {
     auto textBox = std::make_shared<ui::TextBox>(x, y, ui::Constants::DEFAULT_TEXTBOX_WIDTH,
