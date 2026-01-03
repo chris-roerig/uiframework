@@ -361,6 +361,10 @@ class UI {
     void assignHotKey(std::shared_ptr<ui::UIElement> element, const std::string& hotKey,
                       std::function<void()> customCallback);
 
+    // Encoder management for hardware devices (left/right arrow keys)
+    void assignEncoder(const std::string& elementId);
+    void assignEncoder(std::shared_ptr<ui::UIElement> element);
+
     // Focus management - now uses element IDs
     void setFocus(const std::string& elementId);
     void setFocus(std::shared_ptr<ui::UIElement> element);

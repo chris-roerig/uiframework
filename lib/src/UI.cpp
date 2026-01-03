@@ -269,6 +269,20 @@ void UI::assignHotKey(std::shared_ptr<ui::UIElement> element, const std::string&
     }
 }
 
+// --- Encoder Management ---
+
+void UI::assignEncoder(const std::string& elementId) {
+    // Encoders use left/right arrow keys - no additional setup needed
+    // The element will automatically handle left/right arrows via onEncoder()
+    // This method exists for API consistency and future encoder-specific features
+}
+
+void UI::assignEncoder(std::shared_ptr<ui::UIElement> element) {
+    if (element) {
+        assignEncoder(element->getId());
+    }
+}
+
 // --- Focus Management ---
 
 void UI::setFocus(const std::string& elementId) {

@@ -23,6 +23,7 @@ protected:
     virtual void onMouseLeave() {}
     virtual void onKeyDown(const SDL_Keycode& key) {}
     virtual void onTextInput(const std::string& text) {}
+    virtual void onEncoder(int direction) {}  // direction: -1 (left/CCW) or +1 (right/CW)
 
 public:
     InteractiveElement(int x, int y, int w, int h);

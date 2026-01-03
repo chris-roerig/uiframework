@@ -19,6 +19,7 @@ protected:
     void onMouseDown(int x, int y) override;
     void onMouseUp(int x, int y) override;
     void onMouseDrag(int x, int y) override;
+    void onEncoder(int direction) override;
     
 public:
     Slider(int x, int y, int w, int h, float min = 0.0f, float max = 100.0f, float initial = 0.0f);

@@ -73,8 +73,12 @@ void InteractiveElement::handleEvent(const SDL_Event& e) {
             if (hasFocus) {
                 SDL_Keycode key = e.key.keysym.sym;
                 
-                // Common activation keys
-                if (key == SDLK_SPACE || key == SDLK_RETURN) {
+                // Handle encoder input (left/right arrows)
+                if (key == SDLK_LEFT) {
+                    onEncoder(-1);  // Counter-clockwise/decrement
+                } else if (key == SDLK_RIGHT) {
+                    onEncoder(1);   // Clockwise/increment
+                } else if (key == SDLK_SPACE || key == SDLK_RETURN) {
                     activate();
                 } else {
                     onKeyDown(key);

@@ -26,6 +26,15 @@ void Slider::onMouseDrag(int x, int y) {
     updateValueFromMouse(x, y);
 }
 
+void Slider::onEncoder(int direction) {
+    // Calculate step size as 1% of range for smooth encoder control
+    float range = maxValue - minValue;
+    float step = range * 0.01f;  // 1% of range per encoder step
+    
+    float newValue = currentValue + (direction * step);
+    setValue(newValue);
+}
+
 void Slider::updateValueFromMouse(int mouseX, int mouseY) {
     float newValue = getValueFromPosition(mouseX, mouseY);
     setValue(newValue);
