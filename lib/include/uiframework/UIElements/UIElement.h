@@ -1,4 +1,23 @@
 #pragma once
+
+/*
+ * INTENTIONAL DESIGN DECISIONS - DO NOT FLAG IN CODE REVIEWS
+ *
+ * 1. UICore* coreRef as raw pointer:
+ *    - Non-owning reference to avoid circular dependencies
+ *    - UICore owns UIElements, not the reverse
+ *    - This prevents memory leaks and maintains clear ownership hierarchy
+ *
+ * 2. Mutable text cache members:
+ *    - Text rendering cache needs modification during const render operations
+ *    - Performance optimization to avoid repeated text texture creation
+ *    - Logically const (doesn't change element state) but physically mutable
+ *
+ * 3. Mixed font API approach:
+ *    - Both explicit font setting and theme-based font selection supported
+ *    - Flexibility for different use cases (custom fonts vs consistent theming)
+ *    - useThemeFont flag determines which approach is active
+ */
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include <string>

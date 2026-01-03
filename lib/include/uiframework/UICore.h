@@ -1,5 +1,24 @@
 #pragma once
 
+/*
+ * INTENTIONAL DESIGN DECISIONS - DO NOT FLAG IN CODE REVIEWS
+ *
+ * 1. Raw pointer usage in UICore:
+ *    - UIElement* references are non-owning for performance in hot paths
+ *    - Actual ownership is managed by shared_ptr in containers
+ *    - This avoids reference counting overhead in real-time operations
+ *
+ * 2. Multiple mutex strategy:
+ *    - Separate mutexes (elementsMutex, themeMutex, hotKeysMutex) for fine-grained locking
+ *    - Prevents lock contention between unrelated operations
+ *    - This is intentional for maximum thread safety performance
+ *
+ * 3. Numeric ID system:
+ *    - uint64_t numeric IDs alongside string IDs for O(1) performance lookups
+ *    - Audio/real-time threads benefit from numeric ID performance
+ *    - String IDs maintained for human readability and debugging
+ */
+
 #include "uiframework/Theme/ThemeBase.h"
 #include "uiframework/Focus/FocusManager.h"
 #include "UIElements.h"

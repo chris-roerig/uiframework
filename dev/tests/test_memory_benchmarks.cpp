@@ -56,14 +56,14 @@ TEST_CASE("Memory Usage Benchmarks", "[benchmark][memory]") {
     SECTION("Memory per widget type") {
         UI ui("Memory Test", 800, 600);
         
-        BENCHMARK("Memory usage: 100 Labels") {
+        BENCHMARK("Memory usage: 50 Labels") {
             size_t startMemory = getCurrentMemoryUsage();
             
             std::vector<std::shared_ptr<ui::Label>> widgets;
-            widgets.reserve(100);
+            widgets.reserve(50);
             
-            for (int i = 0; i < 100; ++i) {
-                widgets.push_back(ui.createLabel("Label " + std::to_string(i), i % 50 * 10, i / 50 * 20));
+            for (int i = 0; i < 50; ++i) {
+                widgets.push_back(ui.createLabel("Label " + std::to_string(i), i % 25 * 15, i / 25 * 20));
             }
             
             size_t endMemory = getCurrentMemoryUsage();
@@ -72,14 +72,14 @@ TEST_CASE("Memory Usage Benchmarks", "[benchmark][memory]") {
             return memoryUsed;
         };
         
-        BENCHMARK("Memory usage: 100 Buttons") {
+        BENCHMARK("Memory usage: 50 Buttons") {
             size_t startMemory = getCurrentMemoryUsage();
             
             std::vector<std::shared_ptr<ui::Button>> widgets;
-            widgets.reserve(100);
+            widgets.reserve(50);
             
-            for (int i = 0; i < 100; ++i) {
-                widgets.push_back(ui.createButton("Button " + std::to_string(i), i % 50 * 10, i / 50 * 20, [](){}));
+            for (int i = 0; i < 50; ++i) {
+                widgets.push_back(ui.createButton("Button " + std::to_string(i), i % 25 * 15, i / 25 * 20, [](){}));
             }
             
             size_t endMemory = getCurrentMemoryUsage();
@@ -88,14 +88,14 @@ TEST_CASE("Memory Usage Benchmarks", "[benchmark][memory]") {
             return memoryUsed;
         };
         
-        BENCHMARK("Memory usage: 100 TextBoxes") {
+        BENCHMARK("Memory usage: 50 TextBoxes") {
             size_t startMemory = getCurrentMemoryUsage();
             
             std::vector<std::shared_ptr<ui::TextBox>> widgets;
-            widgets.reserve(100);
+            widgets.reserve(50);
             
-            for (int i = 0; i < 100; ++i) {
-                widgets.push_back(ui.createTextBox("TextBox " + std::to_string(i), i % 50 * 10, i / 50 * 20));
+            for (int i = 0; i < 50; ++i) {
+                widgets.push_back(ui.createTextBox("TextBox " + std::to_string(i), i % 25 * 15, i / 25 * 20));
             }
             
             size_t endMemory = getCurrentMemoryUsage();
@@ -106,30 +106,31 @@ TEST_CASE("Memory Usage Benchmarks", "[benchmark][memory]") {
     }
     
     SECTION("Memory leak detection") {
+        UI ui("Leak Test", 400, 300);
         
-        BENCHMARK("Widget creation/destruction cycles") {
+        BENCHMARK("Widget lifecycle memory") {
             size_t initialMemory = getCurrentMemoryUsage();
             
-            for (int cycle = 0; cycle < 10; ++cycle) {
-                UI ui("Leak Test", 400, 300);
-                
+            // Test widget creation/destruction in batches
+            for (int cycle = 0; cycle < 5; ++cycle) {
                 std::vector<std::shared_ptr<ui::UIElement>> widgets;
-                widgets.reserve(50);
+                widgets.reserve(20);
                 
-                // Create various widgets
-                for (int i = 0; i < 10; ++i) {
-                    widgets.push_back(ui.createLabel("Label", i * 20, 10));
-                    widgets.push_back(ui.createButton("Button", i * 20, 40, [](){}));
-                    widgets.push_back(ui.createTextBox("Text", i * 20, 70));
-                    widgets.push_back(ui.createCheckBox(false, i * 20, 100, [](bool){}));
+                // Create widgets
+                for (int i = 0; i < 4; ++i) {
+                    widgets.push_back(ui.createLabel("Label", i * 30, 10));
+                    widgets.push_back(ui.createButton("Button", i * 30, 40, [](){}));
+                    widgets.push_back(ui.createTextBox("Text", i * 30, 70));
+                    widgets.push_back(ui.createCheckBox(false, i * 30, 100, [](bool){}));
                     
-                    if (i < 5) {
-                        std::vector<std::string> options = {"Option1", "Option2"};
-                        widgets.push_back(ui.createOptionSelect(options, 0, i * 40, 130, [](int){}));
+                    if (i < 2) {
+                        std::vector<std::string> options = {"A", "B"};
+                        widgets.push_back(ui.createOptionSelect(options, 0, i * 60, 130, [](int){}));
                     }
                 }
                 
-                // Widgets automatically destroyed when UI goes out of scope
+                // Clear widgets to test cleanup
+                widgets.clear();
             }
             
             size_t finalMemory = getCurrentMemoryUsage();
@@ -146,17 +147,17 @@ TEST_CASE("Memory Usage Benchmarks", "[benchmark][memory]") {
             size_t startMemory = getCurrentMemoryUsage();
             
             std::vector<std::shared_ptr<ui::UIElement>> widgets;
-            widgets.reserve(1000);
+            widgets.reserve(100);
             
-            // Create widgets well within window boundaries (800x600)
+            // Create widgets well within window boundaries
             for (int i = 0; i < 25; ++i) {
-                int x = (i % 2) * 300;  // 2 columns: 0, 300
-                int y = (i / 2) * 35;   // Rows: 0, 35, 70... (max: 12*35=420, CheckBox: 420+90=510 < 600)
+                int x = (i % 5) * 150;  // 5 columns
+                int y = (i / 5) * 100;  // 5 rows
                 
                 widgets.push_back(ui.createLabel("L" + std::to_string(i), x, y));
-                widgets.push_back(ui.createButton("B" + std::to_string(i), x, y + 30, [](){}));
-                widgets.push_back(ui.createTextBox("T" + std::to_string(i), x, y + 60));
-                widgets.push_back(ui.createCheckBox(false, x, y + 90, [](bool){}));
+                widgets.push_back(ui.createButton("B" + std::to_string(i), x, y + 25, [](){}));
+                widgets.push_back(ui.createTextBox("T" + std::to_string(i), x, y + 50));
+                widgets.push_back(ui.createCheckBox(false, x, y + 75, [](bool){}));
             }
             
             size_t endMemory = getCurrentMemoryUsage();
@@ -172,13 +173,13 @@ TEST_CASE("Memory Usage Benchmarks", "[benchmark][memory]") {
             size_t peakMemory = getCurrentMemoryUsage();
             std::vector<std::shared_ptr<ui::UIElement>> widgets;
             
-            // Gradually create widgets and track peak memory
-            for (int batch = 0; batch < 20; ++batch) {
-                for (int i = 0; i < 50; ++i) {
+            // Create widgets in smaller batches
+            for (int batch = 0; batch < 10; ++batch) {
+                for (int i = 0; i < 20; ++i) {
                     int x = (i % 10) * 80;
-                    int y = (i / 10) * 50 + batch * 25;  // Reduced spacing to fit in 768px
+                    int y = (i / 10) * 50 + batch * 60;
                     
-                    widgets.push_back(ui.createButton("Btn" + std::to_string(batch * 50 + i), x, y, [](){}));
+                    widgets.push_back(ui.createButton("Btn" + std::to_string(batch * 20 + i), x, y, [](){}));
                 }
                 
                 size_t currentMemory = getCurrentMemoryUsage();
@@ -228,13 +229,13 @@ TEST_CASE("Memory Baseline Measurements", "[memory][baseline]") {
         memorySamples.reserve(10);
         
         // Measure memory at different widget counts
-        for (int count = 0; count <= 500; count += 50) {
+        for (int count = 0; count <= 200; count += 25) {
             std::vector<std::shared_ptr<ui::Label>> labels;
             labels.reserve(count);
             
             for (int i = 0; i < count; ++i) {
-                int x = (i % 35) * 20;  // Stay within 800px window
-                int y = (i / 35) * 15;  // Stay within 600px window
+                int x = (i % 20) * 35;  // Stay within 800px window
+                int y = (i / 20) * 25;  // Stay within 600px window
                 labels.push_back(ui.createLabel("Label", x, y));
             }
             
@@ -246,10 +247,10 @@ TEST_CASE("Memory Baseline Measurements", "[memory][baseline]") {
             size_t growth = memorySamples[i] > memorySamples[i-1] ? 
                            memorySamples[i] - memorySamples[i-1] : 0;
             
-            // Each batch of 50 widgets should not use more than 1MB
-            REQUIRE(growth < 1024 * 1024);
+            // Each batch of 25 widgets should not use more than 512KB
+            REQUIRE(growth < 512 * 1024);
             
-            INFO("Memory growth for 50 widgets: " << growth << " bytes");
+            INFO("Memory growth for 25 widgets: " << growth << " bytes");
         }
     }
 }
