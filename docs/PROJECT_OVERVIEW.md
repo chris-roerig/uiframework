@@ -269,6 +269,7 @@ namespace {
 - **Theme System**: Runtime theme switching with built-in themes
 - **Focus Management**: Tab navigation, focus groups, focus trapping
 - **Hotkey System**: Global keyboard shortcuts
+- **🆕 Encoder Support**: Hardware rotary encoder input via left/right arrow keys
 - **Element Pooling**: High-performance object reuse
 - **Error Handling**: Comprehensive exception safety
 
@@ -280,6 +281,55 @@ namespace {
 - **Consistent Sizing API**: Auto-sizing, preferred sizes, minimum sizes across all elements
 - **Reusable Utilities**: BorderRenderer for 3D/flat borders, TextUtils for text operations
 - **347+ Lines Eliminated**: Systematic removal of duplicated code across the framework
+
+### **🎛️ Hardware Device Support**
+
+The framework is **specifically designed for hardware audio devices** without traditional mouse/keyboard input:
+
+#### **Encoder Input System**
+```cpp
+// Hardware rotary encoders mapped to left/right arrow keys
+auto gainSlider = ui.createHSlider(50, 50, 200, 0.0f, 100.0f, 50.0f);
+ui.assignEncoder(gainSlider);  // Optional - works automatically when focused
+
+// Left arrow = counter-clockwise/decrement (-1)
+// Right arrow = clockwise/increment (+1)  
+// 1% range steps for smooth, precise control
+```
+
+#### **Focus-Based Navigation**
+```cpp
+// Tab through controls with hardware buttons
+ui.focusNext();        // Next control
+ui.focusPrevious();    // Previous control
+ui.setFocus("slider1"); // Direct focus
+
+// Skip non-hardware elements from navigation
+decorativeElement->setEnabled(false);  // Skipped in tab order
+```
+
+#### **Hardware Button Mapping**
+```cpp
+// Map physical buttons to UI actions
+ui.assignHotKey("master_volume", "SDLK_1");  // Button 1 → focus volume
+ui.assignHotKey("eq_panel", "SDLK_2");       // Button 2 → focus EQ
+ui.assignHotKey("save_preset", "SDLK_s", [](){ savePreset(); });  // Custom action
+```
+
+#### **Real-Time Hardware Integration**
+```cpp
+// Perfect for hardware encoders/faders (audio thread safe)
+ui.realtimeSetValue("frequency", encoderValue);
+ui.realtimeSetText("display", std::to_string(currentFreq));
+ui.realtimeSetVisibility("led_indicator", isActive);
+```
+
+**Hardware Device Advantages:**
+- ✅ **No Mouse Dependency** - All interactions via buttons/encoders
+- ✅ **Focus Indicators** - Clear visual feedback of current control  
+- ✅ **Real-Time Safe** - Hardware interrupts won't block UI
+- ✅ **Deterministic** - Predictable performance for audio applications
+- ✅ **Professional** - Built for audio hardware manufacturers
 
 ---
 
@@ -580,8 +630,12 @@ auto slider = ui.createHSlider(50, 50, 200, 0.0f, 1.0f, 0.5f);
 // Theme and focus management
 ui.setTheme("dark");
 ui.setFocus(button->getId());
+
+// Hardware encoder support
+ui.assignEncoder(slider);  // Enable encoder input
+ui.focusNext();           // Navigate to next control
 ```
-**Use For**: General applications, configuration interfaces, standard desktop software
+**Use For**: General applications, configuration interfaces, standard desktop software, **hardware audio devices**
 
 ### **Real-Time Operations**
 ```cpp
@@ -695,6 +749,7 @@ ui.realtimeBulkSetValue(meterIds, levels);
 - **Audio Plugins**: VST/AU instruments and effects
 - **Live Performance**: DJ software, live mixing consoles
 - **Broadcast**: Radio automation, streaming software
+- **🆕 Hardware Audio Devices**: Mixers, synthesizers, effects units, control surfaces
 
 ### **Video Production Systems**
 - **Video Editors**: Premiere Pro, Final Cut Pro equivalents
@@ -776,10 +831,11 @@ int main() {
         button->setTooltip("Button with professional typography");
         button->setPadding(8); // 8px padding on all sides
         
-        // 🆕 Disabled state with consistent fonts
-        auto disabledButton = ui.createButton("Disabled", 10, 170, [](){});
-        disabledButton->setEnabled(false);
-        disabledButton->setTooltip("This button is disabled");
+        // 🆕 Hardware encoder support for audio devices
+        auto gainSlider = ui.createHSlider(10, 210, 200, 0.0f, 100.0f, 75.0f);
+        gainSlider->setTooltip("Use left/right arrows for encoder control");
+        ui.assignEncoder(gainSlider);  // Enable hardware encoder input
+        ui.setFocus(gainSlider->getId());  // Set focus for hardware control
         
         // 🆕 Font Configuration (Optional)
         FontConfig::loadFromJSON(R"({
