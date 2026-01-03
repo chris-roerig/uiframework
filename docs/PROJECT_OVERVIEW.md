@@ -259,7 +259,7 @@ namespace {
 ## **🎮 Standard UI Features**
 
 ### **17+ UI Elements**
-- **Basic**: Button, Label, TextBox, CheckBox, Image, Canvas
+- **Basic**: Button, ToggleButton, Label, TextBox, CheckBox, Image, Canvas
 - **Input**: HSlider, VSlider, ProgressBar, OptionSelect
 - **Containers**: Modal, ListView, VirtualKeyboard
 - **Layout**: VBoxLayout, HBoxLayout, GridLayout
@@ -275,6 +275,7 @@ namespace {
 
 ### **🆕 Advanced Features (Phases 1-2)**
 - **Unified Architecture**: RenderContext and InteractiveElement base classes eliminate code duplication
+- **Professional Button System**: Enhanced buttons with hover states, icon support, and toggle variants
 - **Comprehensive Tooltip System**: Smart positioning, theme integration, 500ms hover delay
 - **Margin/Padding Support**: Consistent spacing API with automatic content positioning
 - **Enabled/Disabled States**: Visual disabled states with proper interaction blocking
@@ -824,12 +825,19 @@ int main() {
         auto boldLabel = ui.createLabel("Bold Text", 10, 90);
         boldLabel->setFont("Roboto", 14, FontStyle::Bold);
         
-        // 🆕 Advanced Features
+        // 🆕 Enhanced Button Features
         auto button = ui.createButton("Click Me", 10, 130, [](){
             std::cout << "Button clicked!" << std::endl;
         });
-        button->setTooltip("Button with professional typography");
+        button->setTooltip("Button with professional typography and hover effects");
         button->setPadding(8); // 8px padding on all sides
+        button->setIcon("icon.png"); // Optional icon support
+        
+        // 🆕 Toggle Button for Hardware Audio Devices
+        auto muteButton = ui.createToggleButton("Mute", 150, 130, [](bool toggled){
+            std::cout << "Mute " << (toggled ? "ON" : "OFF") << std::endl;
+        });
+        muteButton->setTooltip("Toggle mute state - perfect for hardware audio controls");
         
         // 🆕 Hardware encoder support for audio devices
         auto gainSlider = ui.createHSlider(10, 210, 200, 0.0f, 100.0f, 75.0f);
@@ -866,6 +874,33 @@ int main() {
 ---
 
 ## **🆕 New Features Showcase**
+
+### **🔘 Professional Button System**
+```cpp
+// Enhanced buttons with hover states and proper encapsulation
+auto button = ui.createButton("Click Me", 10, 10, [](){
+    std::cout << "Button clicked!" << std::endl;
+});
+button->setTooltip("Hover for visual feedback");
+
+// Icon support for richer interfaces
+button->setIcon("assets/icon.png");  // Icon + text layout
+button->clearIcon();                 // Remove icon
+bool hasIcon = button->hasIcon();    // Check icon state
+
+// Toggle buttons for hardware audio devices
+auto muteButton = ui.createToggleButton("Mute", 10, 50, [](bool state){
+    std::cout << "Mute: " << (state ? "ON" : "OFF") << std::endl;
+});
+muteButton->setToggled(true);        // Set state programmatically
+bool isMuted = muteButton->getToggled(); // Get current state
+
+// Professional visual states
+// • Normal/Hover/Pressed/Disabled states with proper visual feedback
+// • Enhanced focus indicators for hardware navigation
+// • Toggle state shows pressed appearance when active
+// • Zero breaking changes - all existing code works unchanged
+```
 
 ### **🔤 Complete Font System**
 ```cpp
