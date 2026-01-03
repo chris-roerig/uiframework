@@ -5,7 +5,7 @@ help:
 	@echo "UI Framework - Available targets:"
 	@echo "  help         - Show this help message (default)"
 	@echo "  build        - Compile the project (library only)"
-	@echo "  test         - Run all tests"
+	@echo "  test         - Run all tests (with monitoring)"
 	@echo "  demo         - Build and run grid system demo"
 	@echo "  layout-editor - Build and run UI layout editor tool"
 	@echo "  audio-recorder - Build and run audio recorder example app"
@@ -19,10 +19,29 @@ build:
 	@echo "Building UI Framework library..."
 	@meson compile -C build
 
-# Run tests
+# Run tests with monitoring (memory leak detection and timeout protection)
 test: build
 	meson compile -C build ui_tests
-	./build/ui_tests
+	@echo "Starting monitored test run..."
+	@./build/ui_tests & \
+	PID=$$!; \
+	echo "Test PID: $$PID"; \
+	(sleep 300; kill $$PID 2>/dev/null; echo "Test killed after 5min timeout") & \
+	TIMEOUT_PID=$$!; \
+	while kill -0 $$PID 2>/dev/null; do \
+		MEM=$$(ps -p $$PID -o rss= 2>/dev/null | tr -d ' '); \
+		if [ "$$MEM" -gt 1048576 ]; then \
+			echo "Memory limit exceeded (>1GB), killing process"; \
+			kill $$PID; \
+			break; \
+		fi; \
+		sleep 2; \
+	done; \
+	wait $$PID; \
+	EXIT_CODE=$$?; \
+	kill $$TIMEOUT_PID 2>/dev/null; \
+	echo "Test completed with exit code: $$EXIT_CODE"; \
+	exit $$EXIT_CODE
 
 # Clean build directory
 clean:
