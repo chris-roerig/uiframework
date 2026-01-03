@@ -8,14 +8,16 @@ A high-performance, thread-safe C++17 UI framework built on SDL2 with 17+ widget
 - **Thread Safe**: Complete mutex protection with proper synchronization
 - **Memory Safe**: Smart pointer-based RAII resource management
 - **Modern C++17**: Best practices with comprehensive error handling
-- **17+ UI Elements**: Buttons, text inputs, menus, layouts, graphics, and more
+- **17+ UI Elements**: Buttons, text inputs, menus, layouts, graphics, VirtualKeyboard, and more
 - **Multiple Themes**: Built-in themes with runtime switching
+- **🆕 VirtualKeyboard Widget**: Complete text input solution with character navigation, mode cycling, and cursor-based editing
+- **🆕 Layout Editor Tool**: Visual UI designer for rapid prototyping and template generation
 - **🆕 Constraint-Based Positioning**: Simple anchor system for element positioning (Phase 1)
 - **🆕 Comprehensive Tooltips**: Smart positioning, theme integration, hover delay
 - **🆕 Spacing Control**: Margin/padding support with automatic content positioning
 - **🆕 Disabled States**: Visual disabled states with interaction blocking
 - **🆕 Unified Architecture**: 347+ lines of duplication eliminated
-- **Production Ready**: 3784+ test assertions, 10.0/10 quality rating
+- **Production Ready**: 3834+ test assertions, 10.0/10 quality rating
 
 ## Quick Start
 
@@ -42,6 +44,11 @@ int main() {
         anchoredButton->setAnchor(label, ui::AnchorType::Below, 10);
         anchoredButton->setTooltip("Positioned 10px below the label");
         
+        // NEW: VirtualKeyboard for text input
+        auto keyboard = ui.createVirtualKeyboard(10, 100, 400, 200, [](char c){
+            std::cout << "Character entered: " << c << std::endl;
+        });
+        
         ui.run();
     } catch (const ui::UIException& e) {
         std::cerr << "Error: " << e.what() << std::endl;
@@ -52,14 +59,40 @@ int main() {
 }
 ```
 
+## Layout Editor Tool
+
+The framework includes a powerful visual layout editor for rapid UI prototyping:
+
+```bash
+./build/layout_editor
+```
+
+**Features:**
+- **Drag & Drop Interface**: Add buttons, labels, text boxes, sliders, and more
+- **Visual Positioning**: Click and drag elements to position them precisely
+- **Property Panel**: Edit element properties (position, size, text) in real-time
+- **JSON Export**: Export wireframe layouts for integration into your applications
+- **Project Management**: Save and load layout projects
+- **Live Preview**: See exactly how your UI will look
+
+**Workflow:**
+1. Launch the layout editor
+2. Add elements using the toolbar buttons
+3. Position and resize elements visually
+4. Set properties using the right-side panel
+5. Export to JSON for use in your application
+6. Save project files for future editing
+
+This tool dramatically speeds up UI development by letting you design layouts visually before writing code.
+
 ## Building
 
 ```bash
 meson setup build
 meson compile -C build
-./build/comprehensive_demo    # Run comprehensive demo
-./build/constraint_demo       # Run constraint system demo
-./build/ui_tests             # Run tests
+./build/demo                 # Run comprehensive demo
+./build/layout_editor        # Launch visual layout editor
+./build/ui_tests            # Run tests
 ```
 
 ## Documentation
@@ -84,6 +117,6 @@ meson compile -C build
 ## Status
 
 ✅ **Production Ready** - Quality Rating: 10.0/10  
-✅ **All Tests Passing** - 3784 assertions across 105 test cases  
+✅ **All Tests Passing** - 3834 assertions across 104 test cases  
 ✅ **Real-Time Optimized** - Complete 6-phase optimization suite for professional applications  
 ✅ **Comprehensive Documentation** - Complete developer guides and API reference
