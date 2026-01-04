@@ -8,6 +8,7 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include <algorithm>
+#include <cctype>
 
 namespace ui {
 
@@ -26,11 +27,53 @@ std::string OptionSelect::getCachedTruncatedText(const std::string& text, TTF_Fo
     return cache.truncatedText;
 }
 
+void OptionSelect::updateFilteredOptions() {
+    filteredIndices.clear();
+    
+    if (!searchEnabled || filterText.empty()) {
+        // No filter active - show all options
+        for (int i = 0; i < static_cast<int>(options.size()); i++) {
+            filteredIndices.push_back(i);
+        }
+    } else {
+        // Filter options based on text (case-insensitive)
+        std::string lowerFilter = filterText;
+        std::transform(lowerFilter.begin(), lowerFilter.end(), lowerFilter.begin(), ::tolower);
+        
+        for (int i = 0; i < static_cast<int>(options.size()); i++) {
+            std::string lowerOption = options[i];
+            std::transform(lowerOption.begin(), lowerOption.end(), lowerOption.begin(), ::tolower);
+            
+            if (lowerOption.find(lowerFilter) != std::string::npos) {
+                filteredIndices.push_back(i);
+            }
+        }
+    }
+    
+    filterDirty = false;
+}
+
+int OptionSelect::getFilteredIndex(int displayIndex) const {
+    if (displayIndex >= 0 && displayIndex < static_cast<int>(filteredIndices.size())) {
+        return filteredIndices[displayIndex];
+    }
+    return -1;
+}
+
+int OptionSelect::getDisplayIndex(int actualIndex) const {
+    auto it = std::find(filteredIndices.begin(), filteredIndices.end(), actualIndex);
+    if (it != filteredIndices.end()) {
+        return static_cast<int>(it - filteredIndices.begin());
+    }
+    return -1;
+}
+
 void OptionSelect::invalidateStringCache() {
     displayCache.valid = false;
     for (auto& cache : dropdownCache) {
         cache.valid = false;
     }
+    filterDirty = true;
 }
 
 void OptionSelect::setOptions(const std::vector<std::string>& newOptions) {
@@ -134,7 +177,14 @@ void OptionSelect::renderCollapsed(SDL_Renderer* renderer, TTF_Font* font, std::
 void OptionSelect::renderExpanded(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<Theme> theme) {
     const int padding = ui::Constants::DEFAULT_PADDING;
     int itemHeight = height;
-    int totalHeight = itemHeight * static_cast<int>(options.size());
+    
+    // Update filtered options if needed
+    if (filterDirty) {
+        updateFilteredOptions();
+    }
+    
+    int displayCount = static_cast<int>(filteredIndices.size());
+    int totalHeight = itemHeight * displayCount;
     
     ThemeableElementColors tc = theme->optionSelectColors();
     
@@ -145,14 +195,15 @@ void OptionSelect::renderExpanded(SDL_Renderer* renderer, TTF_Font* font, std::s
                            tc.selectOptionSelected.b, tc.selectOptionSelected.a);
     SDL_RenderDrawRect(renderer, &dropdownRect);
     
-    // Draw each option
-    for (int i = 0; i < static_cast<int>(options.size()); i++) {
-        SDL_Rect itemRect = { x, y + i * itemHeight, width, itemHeight };
+    // Draw each filtered option
+    for (int displayIndex = 0; displayIndex < displayCount; displayIndex++) {
+        int actualIndex = filteredIndices[displayIndex];
+        SDL_Rect itemRect = { x, y + displayIndex * itemHeight, width, itemHeight };
         
         // Highlight current, selected, or hovered item
-        if (i == currentIndex) {
+        if (actualIndex == currentIndex) {
             drawFilledRect(renderer, itemRect, tc.selectOptionSelected);
-        } else if (i == hoveredIndex) {
+        } else if (displayIndex == hoveredIndex) {
             Color hoverColor = tc.selectOptionSelected;
             hoverColor.a = 128; // Semi-transparent
             drawFilledRect(renderer, itemRect, hoverColor);
@@ -164,18 +215,18 @@ void OptionSelect::renderExpanded(SDL_Renderer* renderer, TTF_Font* font, std::s
         SDL_RenderDrawRect(renderer, &itemRect);
         
         // Render option text
-        if (font && !options[i].empty()) {
+        if (font && !options[actualIndex].empty()) {
             // Ensure dropdown cache is properly sized
             if (dropdownCache.size() != options.size()) {
                 dropdownCache.resize(options.size());
             }
             
             int availableWidth = width - 2 * padding;
-            std::string displayText = getCachedTruncatedText(options[i], font, availableWidth, dropdownCache[i]);
+            std::string displayText = getCachedTruncatedText(options[actualIndex], font, availableWidth, dropdownCache[actualIndex]);
             
             if (!displayText.empty()) {
                 // Use selected text color for current/hovered items, unselected for others
-                bool isHighlighted = (i == currentIndex || i == hoveredIndex);
+                bool isHighlighted = (actualIndex == currentIndex || displayIndex == hoveredIndex);
                 SDL_Color textColor = isHighlighted ? 
                     SDL_Color{ tc.selectOptionTextSelected.r, tc.selectOptionTextSelected.g, 
                               tc.selectOptionTextSelected.b, tc.selectOptionTextSelected.a } :
@@ -187,7 +238,7 @@ void OptionSelect::renderExpanded(SDL_Renderer* renderer, TTF_Font* font, std::s
                     if (texture) {
                         SDL_Rect dst = { 
                             x + padding, 
-                            y + i * itemHeight + (itemHeight - surface->h) / 2, 
+                            y + displayIndex * itemHeight + (itemHeight - surface->h) / 2, 
                             surface->w, 
                             surface->h 
                         };
@@ -240,15 +291,21 @@ void OptionSelect::onMouseDown(int x, int y) {
         expand();
     } else {
         // Click on expanded dropdown
+        if (filterDirty) {
+            updateFilteredOptions();
+        }
+        
         int itemHeight = height;
-        int totalHeight = itemHeight * static_cast<int>(options.size());
+        int displayCount = static_cast<int>(filteredIndices.size());
+        int totalHeight = itemHeight * displayCount;
         
         if (x >= this->x && x < this->x + width &&
             y >= this->y && y < this->y + totalHeight) {
             // Click inside dropdown
-            int clickedIndex = (y - this->y) / itemHeight;
-            if (isValidIndex(clickedIndex)) {
-                setSelectedIndex(clickedIndex);
+            int displayIndex = (y - this->y) / itemHeight;
+            if (displayIndex >= 0 && displayIndex < displayCount) {
+                int actualIndex = filteredIndices[displayIndex];
+                setSelectedIndex(actualIndex);
                 collapse();
             }
         } else {
@@ -277,27 +334,34 @@ void OptionSelect::onKeyDown(const SDL_Keycode& key) {
                 break;
         }
     } else {
+        if (filterDirty) {
+            updateFilteredOptions();
+        }
+        
+        int displayCount = static_cast<int>(filteredIndices.size());
+        
         switch (key) {
             case SDLK_ESCAPE:
                 collapse();
                 break;
             case SDLK_RETURN:
-                if (isValidIndex(hoveredIndex)) {
-                    setSelectedIndex(hoveredIndex);
+                if (hoveredIndex >= 0 && hoveredIndex < displayCount) {
+                    int actualIndex = filteredIndices[hoveredIndex];
+                    setSelectedIndex(actualIndex);
                 }
                 collapse();
                 break;
             case SDLK_UP:
                 if (hoveredIndex > 0) {
                     hoveredIndex--;
-                } else if (hoveredIndex == -1 && !options.empty()) {
-                    hoveredIndex = static_cast<int>(options.size()) - 1;
+                } else if (hoveredIndex == -1 && displayCount > 0) {
+                    hoveredIndex = displayCount - 1;
                 }
                 break;
             case SDLK_DOWN:
-                if (hoveredIndex < static_cast<int>(options.size()) - 1) {
+                if (hoveredIndex < displayCount - 1) {
                     hoveredIndex++;
-                } else if (hoveredIndex == -1 && !options.empty()) {
+                } else if (hoveredIndex == -1 && displayCount > 0) {
                     hoveredIndex = 0;
                 }
                 break;
@@ -315,7 +379,11 @@ void OptionSelect::activate() {
 
 SDL_Rect OptionSelect::getFocusRect() const {
     if (expanded) {
-        int totalHeight = height * static_cast<int>(options.size());
+        if (filterDirty) {
+            const_cast<OptionSelect*>(this)->updateFilteredOptions();
+        }
+        int displayCount = static_cast<int>(filteredIndices.size());
+        int totalHeight = height * displayCount;
         return SDL_Rect{ x - 2, y - 2, width + 4, totalHeight + 4 };
     }
     return SDL_Rect{ x - 2, y - 2, width + 4, height + 4 };
@@ -362,6 +430,40 @@ void OptionSelect::realtimeSetSelectedIndex(int index) {
     int nextBuffer = 1 - currentSelectedIndexBuffer.load();
     selectedIndexBuffers[nextBuffer] = index;
     currentSelectedIndexBuffer.store(nextBuffer);
+}
+
+// Search/filter functionality
+void OptionSelect::setSearchEnabled(bool enabled) {
+    if (searchEnabled != enabled) {
+        searchEnabled = enabled;
+        filterDirty = true;
+        if (!enabled) {
+            filterText.clear();
+        }
+    }
+}
+
+void OptionSelect::setFilterText(const std::string& text) {
+    if (filterText != text) {
+        filterText = text;
+        filterDirty = true;
+        hoveredIndex = -1; // Reset hover when filter changes
+    }
+}
+
+void OptionSelect::clearFilter() {
+    if (!filterText.empty()) {
+        filterText.clear();
+        filterDirty = true;
+        hoveredIndex = -1;
+    }
+}
+
+int OptionSelect::getFilteredOptionCount() const {
+    if (filterDirty) {
+        const_cast<OptionSelect*>(this)->updateFilteredOptions();
+    }
+    return static_cast<int>(filteredIndices.size());
 }
 
 } // namespace ui

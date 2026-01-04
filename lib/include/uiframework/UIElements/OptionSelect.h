@@ -12,6 +12,12 @@ private:
     int hoveredIndex = -1;     // index being hovered over in dropdown
     int currentIndex = 0;      // currently selected option
     
+    // Search/filter functionality
+    bool searchEnabled = false;
+    std::string filterText;
+    std::vector<int> filteredIndices;
+    bool filterDirty = true;
+    
     // Real-time double buffering
     int selectedIndexBuffers[2];
     std::atomic<int> currentSelectedIndexBuffer{0};
@@ -32,6 +38,9 @@ private:
     void renderExpanded(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<class Theme> theme);
     std::string getCachedTruncatedText(const std::string& text, TTF_Font* font, int availableWidth, StringCache& cache) const;
     bool isValidIndex(int index) const;
+    void updateFilteredOptions();
+    int getFilteredIndex(int displayIndex) const;
+    int getDisplayIndex(int actualIndex) const;
     
 public:
     std::vector<std::string> options;
@@ -75,6 +84,15 @@ public:
     
     // Real-time safe methods (lock-free, audio thread safe)
     void realtimeSetSelectedIndex(int index);
+    
+    // Search/filter functionality
+    void setSearchEnabled(bool enabled);
+    bool isSearchEnabled() const { return searchEnabled; }
+    void setFilterText(const std::string& text);
+    const std::string& getFilterText() const { return filterText; }
+    void clearFilter();
+    int getFilteredOptionCount() const;
+    bool hasActiveFilter() const { return searchEnabled && !filterText.empty(); }
 };
 
 } // namespace ui
