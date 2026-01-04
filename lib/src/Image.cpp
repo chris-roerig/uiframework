@@ -138,6 +138,50 @@ void Image::loadFromData(SDL_Renderer* renderer, const unsigned char* data, size
     }
 }
 
+SDL_Rect Image::calculateDestRect(int imageWidth, int imageHeight) const {
+    if (stretch || scalingMode == ScalingMode::Stretch) {
+        // Stretch to fit the specified dimensions (ignore aspect ratio)
+        return { x, y, width, height };
+    }
+    
+    if (scalingMode == ScalingMode::Fit) {
+        // Maintain aspect ratio, fit within bounds
+        float scaleX = static_cast<float>(width) / imageWidth;
+        float scaleY = static_cast<float>(height) / imageHeight;
+        float scale = std::min(scaleX, scaleY);
+        
+        int scaledWidth = static_cast<int>(imageWidth * scale);
+        int scaledHeight = static_cast<int>(imageHeight * scale);
+        
+        return {
+            x + (width - scaledWidth) / 2,
+            y + (height - scaledHeight) / 2,
+            scaledWidth,
+            scaledHeight
+        };
+    }
+    
+    if (scalingMode == ScalingMode::Fill) {
+        // Maintain aspect ratio, fill bounds (may crop)
+        float scaleX = static_cast<float>(width) / imageWidth;
+        float scaleY = static_cast<float>(height) / imageHeight;
+        float scale = std::max(scaleX, scaleY);
+        
+        int scaledWidth = static_cast<int>(imageWidth * scale);
+        int scaledHeight = static_cast<int>(imageHeight * scale);
+        
+        return {
+            x + (width - scaledWidth) / 2,
+            y + (height - scaledHeight) / 2,
+            scaledWidth,
+            scaledHeight
+        };
+    }
+    
+    // Default fallback (should not reach here)
+    return { x, y, width, height };
+}
+
 void Image::renderImpl(const RenderContext& ctx) {
     // Process real-time updates (queued image loading)
     if (hasQueuedPath.load()) {
@@ -191,23 +235,26 @@ void Image::renderImpl(const RenderContext& ctx) {
         return;
     }
     
-    SDL_Rect destRect;
-    if (stretch) {
-        // Stretch to fit the specified dimensions
-        destRect = { x, y, width, height };
+    // Calculate destination rectangle based on scaling mode
+    SDL_Rect destRect = calculateDestRect(naturalWidth, naturalHeight);
+    
+    // Calculate rotation center
+    SDL_Point center;
+    if (rotationCenter.x == -1 && rotationCenter.y == -1) {
+        // Use center of destination rectangle
+        center.x = destRect.w / 2;
+        center.y = destRect.h / 2;
     } else {
-        // Use natural dimensions, centered if element is larger
-        int imgWidth = std::min(width, naturalWidth);
-        int imgHeight = std::min(height, naturalHeight);
-        destRect = { 
-            x + (width - imgWidth) / 2, 
-            y + (height - imgHeight) / 2, 
-            imgWidth, 
-            imgHeight 
-        };
+        // Use specified rotation center (relative to destination rectangle)
+        center = rotationCenter;
     }
     
-    SDL_RenderCopy(ctx.renderer, texture, nullptr, &destRect);
+    // Render with rotation if needed
+    if (rotationAngle != 0.0) {
+        SDL_RenderCopyEx(ctx.renderer, texture, nullptr, &destRect, rotationAngle, &center, SDL_FLIP_NONE);
+    } else {
+        SDL_RenderCopy(ctx.renderer, texture, nullptr, &destRect);
+    }
     
     // Draw focus indicator if focused
     if (hasFocus && ctx.theme) {

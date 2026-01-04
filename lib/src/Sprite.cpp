@@ -149,6 +149,50 @@ void Sprite::loadFromData(SDL_Renderer* renderer, const unsigned char* data, siz
     }
 }
 
+SDL_Rect Sprite::calculateDestRect(int spriteWidth, int spriteHeight) const {
+    if (stretch || scalingMode == ScalingMode::Stretch) {
+        // Stretch to fit the specified dimensions (ignore aspect ratio)
+        return { x, y, width, height };
+    }
+    
+    if (scalingMode == ScalingMode::Fit) {
+        // Maintain aspect ratio, fit within bounds
+        float scaleX = static_cast<float>(width) / spriteWidth;
+        float scaleY = static_cast<float>(height) / spriteHeight;
+        float scale = std::min(scaleX, scaleY);
+        
+        int scaledWidth = static_cast<int>(spriteWidth * scale);
+        int scaledHeight = static_cast<int>(spriteHeight * scale);
+        
+        return {
+            x + (width - scaledWidth) / 2,
+            y + (height - scaledHeight) / 2,
+            scaledWidth,
+            scaledHeight
+        };
+    }
+    
+    if (scalingMode == ScalingMode::Fill) {
+        // Maintain aspect ratio, fill bounds (may crop)
+        float scaleX = static_cast<float>(width) / spriteWidth;
+        float scaleY = static_cast<float>(height) / spriteHeight;
+        float scale = std::max(scaleX, scaleY);
+        
+        int scaledWidth = static_cast<int>(spriteWidth * scale);
+        int scaledHeight = static_cast<int>(spriteHeight * scale);
+        
+        return {
+            x + (width - scaledWidth) / 2,
+            y + (height - scaledHeight) / 2,
+            scaledWidth,
+            scaledHeight
+        };
+    }
+    
+    // Default fallback (should not reach here)
+    return { x, y, width, height };
+}
+
 void Sprite::renderImpl(const RenderContext& ctx) {
     // Process real-time updates (queued sprite loading)
     if (hasQueuedPath.load()) {
@@ -202,23 +246,26 @@ void Sprite::renderImpl(const RenderContext& ctx) {
         return;
     }
     
-    SDL_Rect destRect;
-    if (stretch) {
-        // Stretch to fit the specified dimensions
-        destRect = { x, y, width, height };
+    // Calculate destination rectangle based on scaling mode
+    SDL_Rect destRect = calculateDestRect(srcRect.w, srcRect.h);
+    
+    // Calculate rotation center
+    SDL_Point center;
+    if (rotationCenter.x == -1 && rotationCenter.y == -1) {
+        // Use center of destination rectangle
+        center.x = destRect.w / 2;
+        center.y = destRect.h / 2;
     } else {
-        // Use source rectangle dimensions, centered if element is larger
-        int spriteWidth = std::min(width, srcRect.w);
-        int spriteHeight = std::min(height, srcRect.h);
-        destRect = { 
-            x + (width - spriteWidth) / 2, 
-            y + (height - spriteHeight) / 2, 
-            spriteWidth, 
-            spriteHeight 
-        };
+        // Use specified rotation center (relative to destination rectangle)
+        center = rotationCenter;
     }
     
-    SDL_RenderCopy(ctx.renderer, texture, &srcRect, &destRect);
+    // Render with rotation if needed
+    if (rotationAngle != 0.0) {
+        SDL_RenderCopyEx(ctx.renderer, texture, &srcRect, &destRect, rotationAngle, &center, SDL_FLIP_NONE);
+    } else {
+        SDL_RenderCopy(ctx.renderer, texture, &srcRect, &destRect);
+    }
     
     // Draw focus indicator if focused
     if (hasFocus && ctx.theme) {

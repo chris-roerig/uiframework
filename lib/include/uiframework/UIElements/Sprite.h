@@ -1,6 +1,7 @@
 #pragma once
 
 #include "UIElement.h"
+#include "ScalingMode.h"
 #include <SDL2/SDL.h>
 #include <string>
 #include <vector>
@@ -18,6 +19,11 @@ private:
     bool isDataImage = false;
     mutable std::mutex textureMutex; // Protects texture operations
     
+    // Rotation and scaling state
+    double rotationAngle = 0.0; // Rotation angle in degrees
+    ScalingMode scalingMode = ScalingMode::Stretch; // Default to stretch for backward compatibility
+    SDL_Point rotationCenter = {-1, -1}; // -1,-1 means use center of sprite
+    
     // Real-time queued loading
     std::string queuedSpritePath;
     std::atomic<bool> hasQueuedPath{false};
@@ -25,6 +31,9 @@ private:
     void loadFromFile(SDL_Renderer* renderer, const std::string& path);
     void loadFromData(SDL_Renderer* renderer, const unsigned char* data, size_t dataSize);
     void cleanup();
+    
+    // Helper method to calculate destination rectangle based on scaling mode
+    SDL_Rect calculateDestRect(int spriteWidth, int spriteHeight) const;
 
 public:
     int naturalWidth = 0;
@@ -56,6 +65,17 @@ public:
     void setStretch(bool shouldStretch) { stretch = shouldStretch; }
     bool isStretched() const { return stretch; }
     bool isLoaded() const { return texture != nullptr; }
+    
+    // Rotation and scaling methods
+    void setRotation(double angle) { rotationAngle = angle; }
+    double getRotation() const { return rotationAngle; }
+    void setRotationCenter(int centerX, int centerY) { rotationCenter = {centerX, centerY}; }
+    void setRotationCenter(const SDL_Point& center) { rotationCenter = center; }
+    SDL_Point getRotationCenter() const { return rotationCenter; }
+    void resetRotationCenter() { rotationCenter = {-1, -1}; } // Use sprite center
+    
+    void setScalingMode(ScalingMode mode) { scalingMode = mode; }
+    ScalingMode getScalingMode() const { return scalingMode; }
     
     // Reload the sprite (useful if file changed)
     void reload(SDL_Renderer* renderer);

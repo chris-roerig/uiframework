@@ -1,6 +1,7 @@
 #pragma once
 
 #include "UIElement.h"
+#include "ScalingMode.h"
 #include <SDL2/SDL.h>
 #include <string>
 #include <memory>
@@ -19,6 +20,11 @@ private:
     bool isDataImage = false; // true if loaded from data, false if from file
     mutable std::mutex textureMutex; // Protects texture operations
     
+    // Rotation and scaling state
+    double rotationAngle = 0.0; // Rotation angle in degrees
+    ScalingMode scalingMode = ScalingMode::Stretch; // Default to stretch for backward compatibility
+    SDL_Point rotationCenter = {-1, -1}; // -1,-1 means use center of image
+    
     // Real-time queued loading
     std::string queuedImagePath;
     std::atomic<bool> hasQueuedPath{false};
@@ -26,6 +32,9 @@ private:
     void loadFromFile(SDL_Renderer* renderer, const std::string& path);
     void loadFromData(SDL_Renderer* renderer, const unsigned char* data, size_t dataSize);
     void cleanup();
+    
+    // Helper method to calculate destination rectangle based on scaling mode
+    SDL_Rect calculateDestRect(int imageWidth, int imageHeight) const;
 
 public:
     // Constructor for loading from file path
@@ -52,6 +61,17 @@ public:
     int getNaturalWidth() const { return naturalWidth; }
     int getNaturalHeight() const { return naturalHeight; }
     bool isLoaded() const { return texture != nullptr; }
+    
+    // Rotation and scaling methods
+    void setRotation(double angle) { rotationAngle = angle; }
+    double getRotation() const { return rotationAngle; }
+    void setRotationCenter(int centerX, int centerY) { rotationCenter = {centerX, centerY}; }
+    void setRotationCenter(const SDL_Point& center) { rotationCenter = center; }
+    SDL_Point getRotationCenter() const { return rotationCenter; }
+    void resetRotationCenter() { rotationCenter = {-1, -1}; } // Use image center
+    
+    void setScalingMode(ScalingMode mode) { scalingMode = mode; }
+    ScalingMode getScalingMode() const { return scalingMode; }
     
     // Reload the image (useful if file changed)
     void reload(SDL_Renderer* renderer);
