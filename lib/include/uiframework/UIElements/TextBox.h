@@ -27,6 +27,16 @@ private:
     mutable StringCache displayCache;
     mutable int lastWidth = -1, lastHeight = -1;
     
+    // Validation state
+    bool validationEnabled = true;
+    bool isValid = true;
+    std::string lastValidationError;
+    bool showValidationError = false;
+    
+    // Placeholder text state
+    std::string placeholderText;
+    bool showPlaceholder = true;
+    
     // Helper method for cached truncation
     std::string getCachedTruncatedText(const std::string& text, TTF_Font* font, int availableWidth) const;
     
@@ -37,6 +47,14 @@ public:
     TextBox(int x_, int y_, int w_, int h_, const std::string& defaultText = "", bool autoHighlight_ = true)
       : InteractiveElement(x_, y_, w_, h_), content(defaultText), autoHighlight(autoHighlight_) {
         cursorPosition = content.length();
+        
+        // Initialize validation state
+        validationEnabled = true;
+        isValid = true;
+        showValidationError = false;
+        
+        // Initialize placeholder state
+        showPlaceholder = content.empty();
     }
     
     SDL_Rect getFocusRect() const override;
@@ -78,6 +96,25 @@ public:
     // Real-time safe methods (lock-free, audio thread safe)
     void realtimeSetText(const std::string& newText);
     void realtimeSetEnabled(bool enabled);
+    
+    // Validation methods
+    void setValidationEnabled(bool enabled) { validationEnabled = enabled; }
+    bool isValidationEnabled() const { return validationEnabled; }
+    bool isInputValid() const { return isValid; }
+    const std::string& getLastValidationError() const { return lastValidationError; }
+    void setShowValidationError(bool show) { showValidationError = show; }
+    bool isShowingValidationError() const { return showValidationError; }
+    
+    // Validate current content
+    bool validateCurrentInput();
+    
+    // Placeholder text methods
+    void setPlaceholder(const std::string& placeholder) { 
+        placeholderText = placeholder; 
+        showPlaceholder = content.empty();
+    }
+    const std::string& getPlaceholder() const { return placeholderText; }
+    bool isShowingPlaceholder() const { return showPlaceholder && content.empty(); }
 };
 
 } // namespace ui

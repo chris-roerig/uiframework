@@ -62,15 +62,34 @@ void TextBox::renderImpl(const RenderContext& ctx) {
     SDL_Rect rect = { x, y, width, boxHeight };
     ThemeableElementColors tc = ctx.textInputColors();
     
-    // Determine colors based on enabled state
+    // Determine colors based on enabled state and validation
     Color bgColor = enabled ? tc.textInputBackground : tc.textInputDisabled;
     Color textColor = enabled ? tc.textInputText : tc.textInputTextDisabled;
+    
+    // Override colors for validation errors
+    if (showValidationError && !isValid && enabled) {
+        // Use error colors - red tint for background and border
+        bgColor = Color(255, 240, 240, 255);  // Light red background
+        textColor = Color(180, 0, 0, 255);    // Dark red text
+    }
     
     // Draw background
     drawFilledRect(ctx.renderer, rect, bgColor);
     
-    // Draw 3D border
-    ui::BorderRenderer::draw3DBorder(ctx.renderer, rect, tc.textInputBorderLight, tc.textInputBorderDark);
+    // Draw border with validation error styling
+    if (showValidationError && !isValid && enabled) {
+        // Draw red error border
+        Color errorBorder = Color(220, 0, 0, 255);
+        SDL_SetRenderDrawColor(ctx.renderer, errorBorder.r, errorBorder.g, errorBorder.b, errorBorder.a);
+        SDL_RenderDrawRect(ctx.renderer, &rect);
+        
+        // Draw inner red border for emphasis
+        SDL_Rect innerRect = { rect.x + 1, rect.y + 1, rect.w - 2, rect.h - 2 };
+        SDL_RenderDrawRect(ctx.renderer, &innerRect);
+    } else {
+        // Draw normal 3D border
+        ui::BorderRenderer::draw3DBorder(ctx.renderer, rect, tc.textInputBorderLight, tc.textInputBorderDark);
+    }
     
     // Draw focus indicator (only when enabled)
     if (hasFocus && enabled) {
@@ -79,43 +98,53 @@ void TextBox::renderImpl(const RenderContext& ctx) {
         SDL_RenderDrawRect(ctx.renderer, &focusRect);
     }
     
-    // Render text content
-    if (ctx.font && !content.empty()) {
-        int availableWidth = width - 2 * padding;
-        if (availableWidth <= 0) return;
+    // Render text content or placeholder
+    if (ctx.font) {
+        bool shouldShowPlaceholder = content.empty() && !placeholderText.empty() && !hasFocus;
+        std::string displayContent = shouldShowPlaceholder ? placeholderText : content;
         
-        std::string displayText = getCachedTruncatedText(content, ctx.font, availableWidth);
-        
-        if (!displayText.empty()) {
-            SDL_Color sdlTextColor = { textColor.r, textColor.g, textColor.b, textColor.a };
-            SDL_Surface* surface = nullptr;
+        if (!displayContent.empty()) {
+            int availableWidth = width - 2 * padding;
+            if (availableWidth <= 0) return;
             
-            if (textSelected && enabled) {
-                // Render selected text with highlighted background (only when enabled)
-                SDL_Color bgColor = { textColor.r, textColor.g, textColor.b, textColor.a };
-                SDL_Color selTextColor = { bgColor.r, bgColor.g, bgColor.b, bgColor.a };
-                surface = TTF_RenderText_Shaded(ctx.font, displayText.c_str(), selTextColor, bgColor);
-            } else {
-                surface = TTF_RenderText_Solid(ctx.font, displayText.c_str(), sdlTextColor);
-            }
+            std::string displayText = getCachedTruncatedText(displayContent, ctx.font, availableWidth);
             
-            if (surface) {
-                SDL_Texture* texture = SDL_CreateTextureFromSurface(ctx.renderer, surface);
-                if (texture) {
-                    SDL_Rect contentRect = getContentRect();
-                    SDL_Rect dst = { contentRect.x + padding, contentRect.y + padding, surface->w, surface->h };
-                    SDL_RenderCopy(ctx.renderer, texture, nullptr, &dst);
-                    SDL_DestroyTexture(texture);
+            if (!displayText.empty()) {
+                // Use placeholder styling if showing placeholder
+                Color renderTextColor = shouldShowPlaceholder ? 
+                    Color(textColor.r, textColor.g, textColor.b, 128) : // 50% opacity for placeholder
+                    textColor;
+                
+                SDL_Color sdlTextColor = { renderTextColor.r, renderTextColor.g, renderTextColor.b, renderTextColor.a };
+                SDL_Surface* surface = nullptr;
+                
+                if (textSelected && enabled && !shouldShowPlaceholder) {
+                    // Render selected text with highlighted background (only when enabled)
+                    SDL_Color bgColor = { textColor.r, textColor.g, textColor.b, textColor.a };
+                    SDL_Color selTextColor = { bgColor.r, bgColor.g, bgColor.b, bgColor.a };
+                    surface = TTF_RenderText_Shaded(ctx.font, displayText.c_str(), selTextColor, bgColor);
                 } else {
-                    SDL_FreeSurface(surface);
-                    return;
+                    surface = TTF_RenderText_Solid(ctx.font, displayText.c_str(), sdlTextColor);
                 }
-                SDL_FreeSurface(surface);
+                
+                if (surface) {
+                    SDL_Texture* texture = SDL_CreateTextureFromSurface(ctx.renderer, surface);
+                    if (texture) {
+                        SDL_Rect contentRect = getContentRect();
+                        SDL_Rect dst = { contentRect.x + padding, contentRect.y + padding, surface->w, surface->h };
+                        SDL_RenderCopy(ctx.renderer, texture, nullptr, &dst);
+                        SDL_DestroyTexture(texture);
+                    } else {
+                        SDL_FreeSurface(surface);
+                        return;
+                    }
+                    SDL_FreeSurface(surface);
+                }
             }
         }
         
-        // Draw cursor if focused and not selected
-        if (hasFocus && !textSelected) {
+        // Draw cursor if focused and not selected and not showing placeholder
+        if (hasFocus && !textSelected && !shouldShowPlaceholder) {
             int cursorX = x + padding;
             if (cursorPosition > 0 && cursorPosition <= content.length()) {
                 std::string beforeCursor = content.substr(0, cursorPosition);
@@ -138,18 +167,40 @@ void TextBox::onMouseDown(int x, int y) {
 
 void TextBox::onTextInput(const std::string& inputText) {
     if (!inputText.empty()) {
+        std::string newContent;
+        
         if (textSelected) {
             // Replace selected text
+            newContent = inputText;
+        } else {
+            // Insert at cursor position
+            newContent = content;
+            newContent.insert(cursorPosition, inputText);
+        }
+        
+        // Validate input if validation is enabled
+        if (validationEnabled && !validateInput(newContent)) {
+            // Input is invalid - show error but don't update content
+            isValid = false;
+            lastValidationError = getValidationError();
+            showValidationError = true;
+            return;
+        }
+        
+        // Input is valid - update content
+        if (textSelected) {
             content = inputText;
             cursorPosition = inputText.length();
             textSelected = false;
-            invalidateStringCache();
         } else {
-            // Insert at cursor position
             content.insert(cursorPosition, inputText);
             cursorPosition += inputText.length();
-            invalidateStringCache();
         }
+        
+        isValid = true;
+        showValidationError = false;
+        showPlaceholder = content.empty();  // Update placeholder state
+        invalidateStringCache();
     }
 }
 
@@ -160,10 +211,12 @@ void TextBox::onKeyDown(const SDL_Keycode& key) {
                 content.clear();
                 cursorPosition = 0;
                 textSelected = false;
+                showPlaceholder = true;  // Update placeholder state
                 invalidateStringCache();
             } else if (cursorPosition > 0) {
                 content.erase(cursorPosition - 1, 1);
                 cursorPosition--;
+                showPlaceholder = content.empty();  // Update placeholder state
                 invalidateStringCache();
             }
             break;
@@ -172,9 +225,11 @@ void TextBox::onKeyDown(const SDL_Keycode& key) {
                 content.clear();
                 cursorPosition = 0;
                 textSelected = false;
+                showPlaceholder = true;  // Update placeholder state
                 invalidateStringCache();
             } else if (cursorPosition < content.length()) {
                 content.erase(cursorPosition, 1);
+                showPlaceholder = content.empty();  // Update placeholder state
                 invalidateStringCache();
             }
             break;
@@ -231,13 +286,29 @@ void TextBox::onFocusLost() {
     hasFocus = false;
     textSelected = false;
     SDL_StopTextInput();
+    
+    // Validate input when focus is lost
+    if (validationEnabled) {
+        validateCurrentInput();
+    }
 }
 
 void TextBox::setText(const std::string& text) {
+    // Validate input if validation is enabled
+    if (validationEnabled && !validateInput(text)) {
+        isValid = false;
+        lastValidationError = getValidationError();
+        showValidationError = true;
+        return;
+    }
+    
     content = text;
     // Validate cursor position
     cursorPosition = std::min(cursorPosition, content.length());
     textSelected = false;
+    isValid = true;
+    showValidationError = false;
+    showPlaceholder = content.empty();  // Update placeholder state
     invalidateStringCache();
 }
 
@@ -281,6 +352,25 @@ void TextBox::realtimeSetEnabled(bool enabled) {
     int nextBuffer = 1 - currentEnabledBuffer.load();
     enabledBuffers[nextBuffer] = enabled;
     currentEnabledBuffer.store(nextBuffer);
+}
+
+// Validation methods
+bool TextBox::validateCurrentInput() {
+    if (!validationEnabled) {
+        isValid = true;
+        showValidationError = false;
+        return true;
+    }
+    
+    isValid = validateInput(content);
+    if (!isValid) {
+        lastValidationError = getValidationError();
+        showValidationError = true;
+    } else {
+        showValidationError = false;
+    }
+    
+    return isValid;
 }
 
 } // namespace ui
