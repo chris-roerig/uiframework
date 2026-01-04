@@ -20,6 +20,11 @@ private:
     int tabHeight = 25;
     std::function<void(int)> onTabChange;
     
+    // Animation support
+    bool animationsEnabled = true;
+    uint32_t tabSwitchAnimationDuration = 250;  // 250ms tab switch animation
+    int previousActiveTabIndex = -1;
+    
 public:
     TabbedPanel(int x, int y, int w, int h);
     
@@ -40,6 +45,11 @@ public:
     
     // Child element visibility management
     void updateChildVisibility();
+    
+    // Animation control methods
+    void setAnimationsEnabled(bool enabled) { animationsEnabled = enabled; }
+    bool getAnimationsEnabled() const { return animationsEnabled; }
+    void setTabSwitchAnimationDuration(uint32_t duration) { tabSwitchAnimationDuration = duration; }
     
 private:
     void renderTabs(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<Theme> theme);

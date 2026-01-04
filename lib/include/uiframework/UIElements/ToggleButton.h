@@ -7,7 +7,9 @@ namespace ui {
 class ToggleButton : public Button {
 private:
     bool isToggled = false;
+    bool previousToggleState = false;
     std::function<void(bool)> onToggle;
+    Uint32 toggleAnimationDuration = 200;  // 200ms toggle animation
     
 public:
     ToggleButton(int x_, int y_, int w_, int h_, const std::string &text_, 
@@ -17,11 +19,20 @@ public:
     // Toggle state management
     void setToggled(bool toggled) { 
         if (isToggled != toggled) {
-            isToggled = toggled; 
+            previousToggleState = isToggled;
+            isToggled = toggled;
+            
+            // Start toggle animation if enabled
+            if (animationsEnabled) {
+                startAnimation(toggleAnimationDuration);
+            }
         }
     }
     bool getToggled() const { return isToggled; }
     void setToggleCallback(std::function<void(bool)> callback) { onToggle = callback; }
+    
+    // Animation control
+    void setToggleAnimationDuration(Uint32 duration) { toggleAnimationDuration = duration; }
     
     // Override activate to toggle state
     void activate() override;

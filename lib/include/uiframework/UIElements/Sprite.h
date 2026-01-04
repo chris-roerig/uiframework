@@ -18,6 +18,10 @@ private:
     bool isDataImage = false;
     mutable std::mutex textureMutex; // Protects texture operations
     
+    // Real-time queued loading
+    std::string queuedSpritePath;
+    std::atomic<bool> hasQueuedPath{false};
+    
     void loadFromFile(SDL_Renderer* renderer, const std::string& path);
     void loadFromData(SDL_Renderer* renderer, const unsigned char* data, size_t dataSize);
     void cleanup();
@@ -63,6 +67,9 @@ public:
     // Utility methods for sprite sheets
     void setFrame(int frameIndex, int frameWidth, int frameHeight, int framesPerRow = 0);
     void setFrameGrid(int col, int row, int frameWidth, int frameHeight);
+    
+    // Real-time safe methods (lock-free, audio thread safe)
+    void realtimeSetImagePath(const std::string& path);
 };
 
 } // namespace ui

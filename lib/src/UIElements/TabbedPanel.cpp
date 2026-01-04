@@ -8,10 +8,19 @@ namespace ui {
 
 TabbedPanel::TabbedPanel(int x, int y, int w, int h)
     : InteractiveElement(x, y, w, h) {
+    // Initialize animation state
+    animationsEnabled = true;
+    tabSwitchAnimationDuration = 250;
+    previousActiveTabIndex = -1;
 }
 
 void TabbedPanel::renderImpl(const RenderContext& ctx) {
     if (!visible) return;
+    
+    // Update animation if running
+    if (isAnimating()) {
+        updateAnimation(SDL_GetTicks());
+    }
     
     // Draw panel background
     auto colors = ctx.tabbedPanelColors();
@@ -79,9 +88,50 @@ void TabbedPanel::renderTabs(SDL_Renderer* renderer, TTF_Font* font, std::shared
 }
 
 void TabbedPanel::renderTabContent(SDL_Renderer* renderer, TTF_Font* font, std::shared_ptr<Theme> theme) {
-    // Child elements are rendered by the main UI system based on visibility
-    // We just need to ensure visibility is set correctly
-    updateChildVisibility();
+    // Update animation if running
+    if (isAnimating()) {
+        updateAnimation(SDL_GetTicks());
+    }
+    
+    // Handle animated tab content transitions
+    if (isAnimating() && previousActiveTabIndex >= 0 && previousActiveTabIndex < static_cast<int>(tabs.size())) {
+        float animationProgress = getAnimationProgress();
+        
+        // During animation, show both previous and current tab content with alpha blending
+        // Previous tab fades out (1.0 -> 0.0), current tab fades in (0.0 -> 1.0)
+        
+        // Set alpha for previous tab content (fading out)
+        uint8_t previousAlpha = static_cast<uint8_t>(255 * (1.0f - animationProgress));
+        
+        // Temporarily show previous tab content with fade-out alpha
+        for (auto& child : tabs[previousActiveTabIndex].children) {
+            child->setVisible(true);
+            // Note: Alpha blending would require more complex rendering changes
+            // For now, we'll use visibility-based animation
+        }
+        
+        // Set alpha for current tab content (fading in)
+        uint8_t currentAlpha = static_cast<uint8_t>(255 * animationProgress);
+        
+        // Show current tab content with fade-in alpha
+        if (activeTabIndex >= 0 && activeTabIndex < static_cast<int>(tabs.size())) {
+            for (auto& child : tabs[activeTabIndex].children) {
+                child->setVisible(true);
+            }
+        }
+        
+        // Hide all other tabs
+        for (size_t i = 0; i < tabs.size(); ++i) {
+            if (i != static_cast<size_t>(activeTabIndex) && i != static_cast<size_t>(previousActiveTabIndex)) {
+                for (auto& child : tabs[i].children) {
+                    child->setVisible(false);
+                }
+            }
+        }
+    } else {
+        // No animation - standard visibility management
+        updateChildVisibility();
+    }
 }
 
 void TabbedPanel::onMouseDown(int x, int y) {
@@ -139,6 +189,14 @@ void TabbedPanel::addChildToTab(int tabIndex, std::shared_ptr<UIElement> child) 
 
 void TabbedPanel::setActiveTab(int tabIndex) {
     if (tabIndex >= 0 && tabIndex < static_cast<int>(tabs.size())) {
+        // Store previous tab index for animation
+        previousActiveTabIndex = activeTabIndex;
+        
+        // Trigger tab switch animation if animations are enabled and tab is changing
+        if (animationsEnabled && activeTabIndex != tabIndex) {
+            startAnimation(tabSwitchAnimationDuration);
+        }
+        
         activeTabIndex = tabIndex;
         
         // Update tab active states

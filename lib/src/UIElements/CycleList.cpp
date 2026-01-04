@@ -14,6 +14,15 @@ CycleList::CycleList(int x, int y, int w, int h, const std::vector<std::string>&
 }
 
 void CycleList::renderImpl(const RenderContext& ctx) {
+    // Process real-time updates
+    int selectedIndexBufferIndex = currentSelectedIndexBuffer.load();
+    if (selectedIndexBuffers[selectedIndexBufferIndex] != selectedIndex) {
+        int newIndex = selectedIndexBuffers[selectedIndexBufferIndex];
+        if (newIndex >= 0 && newIndex < static_cast<int>(items.size())) {
+            selectedIndex = newIndex;
+        }
+    }
+    
     if (!visible) return;
     
     auto colors = ctx.cycleListColors();
@@ -199,6 +208,13 @@ void CycleList::selectPrevious() {
             }
         });
     }
+}
+
+// Real-time safe methods (lock-free, audio thread safe)
+void CycleList::realtimeSetSelectedIndex(int index) {
+    int nextBuffer = 1 - currentSelectedIndexBuffer.load();
+    selectedIndexBuffers[nextBuffer] = index;
+    currentSelectedIndexBuffer.store(nextBuffer);
 }
 
 } // namespace ui

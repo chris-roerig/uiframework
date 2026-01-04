@@ -11,6 +11,12 @@ private:
     bool textSelected = false;   // true if text is selected
     size_t cursorPosition = 0;   // cursor position in text
     
+    // Real-time double buffering
+    std::string textBuffers[2];
+    bool enabledBuffers[2];
+    std::atomic<int> currentTextBuffer{0};
+    std::atomic<int> currentEnabledBuffer{0};
+    
     // String caching for performance
     struct StringCache {
         std::string originalText;
@@ -68,6 +74,10 @@ public:
     void selectAll();
     void clearSelection();
     bool hasSelection() const { return textSelected; }
+    
+    // Real-time safe methods (lock-free, audio thread safe)
+    void realtimeSetText(const std::string& newText);
+    void realtimeSetEnabled(bool enabled);
 };
 
 } // namespace ui

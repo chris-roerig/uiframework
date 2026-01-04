@@ -150,6 +150,24 @@ void Sprite::loadFromData(SDL_Renderer* renderer, const unsigned char* data, siz
 }
 
 void Sprite::renderImpl(const RenderContext& ctx) {
+    // Process real-time updates (queued sprite loading)
+    if (hasQueuedPath.load()) {
+        std::lock_guard<std::mutex> lock(textureMutex);
+        if (hasQueuedPath.load()) { // Double-check with lock
+            filePath = queuedSpritePath;
+            isDataImage = false;
+            imageData.clear();
+            
+            // Clean up old texture
+            if (texture) {
+                SDL_DestroyTexture(texture);
+                texture = nullptr;
+            }
+            
+            hasQueuedPath.store(false);
+        }
+    }
+    
     if (!visible) {
         return;
     }
@@ -278,6 +296,12 @@ void Sprite::setFrameGrid(int col, int row, int frameWidth, int frameHeight) {
     }
     
     setSourceRect(col * frameWidth, row * frameHeight, frameWidth, frameHeight);
+}
+
+// Real-time safe methods (lock-free, audio thread safe)
+void Sprite::realtimeSetImagePath(const std::string& path) {
+    queuedSpritePath = path;
+    hasQueuedPath.store(true);
 }
 
 } // namespace ui

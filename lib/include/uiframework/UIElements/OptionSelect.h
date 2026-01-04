@@ -12,6 +12,10 @@ private:
     int hoveredIndex = -1;     // index being hovered over in dropdown
     int currentIndex = 0;      // currently selected option
     
+    // Real-time double buffering
+    int selectedIndexBuffers[2];
+    std::atomic<int> currentSelectedIndexBuffer{0};
+    
     // String caching for performance
     struct StringCache {
         std::string originalText;
@@ -68,6 +72,9 @@ public:
     bool isExpanded() const { return expanded; }
     void collapse() { expanded = false; hoveredIndex = -1; }
     void expand() { expanded = true; }
+    
+    // Real-time safe methods (lock-free, audio thread safe)
+    void realtimeSetSelectedIndex(int index);
 };
 
 } // namespace ui

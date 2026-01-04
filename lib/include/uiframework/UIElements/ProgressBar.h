@@ -12,6 +12,10 @@ private:
     float progress = 0.0f; // Progress value (0.0 to 1.0)
     bool showText = true;  // Whether to display percentage text
     
+    // Real-time double buffering
+    float progressBuffers[2];
+    std::atomic<int> currentProgressBuffer{0};
+    
     std::pair<int, int> getTextSize(const std::string &text, TTF_Font* font) const;
 
 public:
@@ -40,6 +44,9 @@ public:
     // Utility methods
     int getPercentage() const { return static_cast<int>(progress * 100); }
     bool isComplete() const { return progress >= 1.0f; }
+    
+    // Real-time safe methods (lock-free, audio thread safe)
+    void realtimeSetProgress(float value);
 };
 
 } // namespace ui

@@ -24,6 +24,12 @@ std::pair<int, int> ProgressBar::getTextSize(const std::string &text, TTF_Font* 
 }
 
 void ProgressBar::renderImpl(const RenderContext& ctx) {
+    // Process real-time updates
+    int progressBufferIndex = currentProgressBuffer.load();
+    if (progressBuffers[progressBufferIndex] != progress) {
+        progress = std::clamp(progressBuffers[progressBufferIndex], 0.0f, 1.0f);
+    }
+    
     ThemeableElementColors tc = ctx.progressBarColors();
 
     // Draw border
@@ -102,6 +108,13 @@ std::pair<int, int> ProgressBar::getPreferredSize(TTF_Font* font) const {
 
 std::pair<int, int> ProgressBar::getMinimumSize() const {
     return {50, 10}; // Minimum visible progress bar
+}
+
+// Real-time safe methods (lock-free, audio thread safe)
+void ProgressBar::realtimeSetProgress(float value) {
+    int nextBuffer = 1 - currentProgressBuffer.load();
+    progressBuffers[nextBuffer] = value;
+    currentProgressBuffer.store(nextBuffer);
 }
 
 } // namespace ui

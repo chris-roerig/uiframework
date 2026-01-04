@@ -14,6 +14,10 @@ Modal::Modal(int x_, int y_, int w_, int h_, const std::string &msg, const std::
              bool hasCancel, std::function<void()> onCloseCallback)
     : InteractiveElement(x_, y_, w_, h_), message(msg), onDismiss(onCloseCallback) {
     
+    // Initialize animation state - modal starts dismissed, will animate in when shown
+    dismissed = true;
+    previousDismissedState = true;
+    
     // Add primary button
     addButton(buttonText, [this, onCloseCallback]() {
         // Dismiss immediately, but defer the user callback
@@ -32,31 +36,66 @@ Modal::Modal(int x_, int y_, int w_, int h_, const std::string &msg, const std::
 }
 
 void Modal::renderImpl(const RenderContext& ctx) {
-    if (dismissed) {
+    // Update animation state
+    updateAnimation(SDL_GetTicks());
+    
+    // Check for state transitions to trigger animations
+    if (animationsEnabled && previousDismissedState != dismissed) {
+        if (!dismissed) {
+            // Modal is being shown - trigger show animation
+            startAnimation(showAnimationDuration);
+        } else {
+            // Modal is being dismissed - trigger hide animation
+            startAnimation(hideAnimationDuration);
+        }
+        previousDismissedState = dismissed;
+    }
+    
+    // Calculate animation alpha
+    float alpha = 1.0f;
+    if (animationsEnabled && isAnimating()) {
+        float progress = getAnimationProgress();
+        if (dismissed) {
+            // Fade out animation (1.0 -> 0.0)
+            alpha = 1.0f - progress;
+        } else {
+            // Fade in animation (0.0 -> 1.0)
+            alpha = progress;
+        }
+    } else if (dismissed) {
+        // Not animating and dismissed - don't render
         return;
     }
     
     ThemeableElementColors tc = ctx.modalColors();
     
+    // Apply alpha to all colors
+    Color overlayColor = { 0, 0, 0, static_cast<uint8_t>(128 * alpha) };
+    Color modalBg = { tc.modalBackground.r, tc.modalBackground.g, tc.modalBackground.b, 
+                     static_cast<uint8_t>(tc.modalBackground.a * alpha) };
+    Color modalBorder = { tc.modalBorder.r, tc.modalBorder.g, tc.modalBorder.b, 
+                         static_cast<uint8_t>(tc.modalBorder.a * alpha) };
+    Color modalText = { tc.modalText.r, tc.modalText.g, tc.modalText.b, 
+                       static_cast<uint8_t>(tc.modalText.a * alpha) };
+    
     // Draw semi-transparent overlay over entire screen
     if (coreRef) {
         SDL_Rect screenRect = { 0, 0, 800, 600 }; // Use default screen size for now
-        Color overlayColor = { 0, 0, 0, 128 }; // Semi-transparent black
         drawFilledRect(ctx.renderer, screenRect, overlayColor);
     }
     
     // Draw modal background
     SDL_Rect modalRect = { x, y, width, height };
-    drawFilledRect(ctx.renderer, modalRect, tc.modalBackground);
+    drawFilledRect(ctx.renderer, modalRect, modalBg);
     
     // Draw modal border
-    SDL_SetRenderDrawColor(ctx.renderer, tc.modalBorder.r, tc.modalBorder.g, 
-                          tc.modalBorder.b, tc.modalBorder.a);
+    SDL_SetRenderDrawColor(ctx.renderer, modalBorder.r, modalBorder.g, 
+                          modalBorder.b, modalBorder.a);
     SDL_RenderDrawRect(ctx.renderer, &modalRect);
     
     // Draw title bar (optional)
     SDL_Rect titleRect = { x, y, width, ui::Constants::MODAL_TITLE_HEIGHT };
-    Color titleColor = tc.modalBackground;
+    Color titleColor = modalBg;
     titleColor.r = std::max(0, static_cast<int>(titleColor.r) - ui::Constants::COLOR_DARKEN_AMOUNT);
     titleColor.g = std::max(0, static_cast<int>(titleColor.g) - ui::Constants::COLOR_DARKEN_AMOUNT);
     titleColor.b = std::max(0, static_cast<int>(titleColor.b) - ui::Constants::COLOR_DARKEN_AMOUNT);
@@ -64,7 +103,7 @@ void Modal::renderImpl(const RenderContext& ctx) {
     
     // Draw message text
     if (ctx.font && !message.empty()) {
-        SDL_Color textColor = { tc.modalText.r, tc.modalText.g, tc.modalText.b, tc.modalText.a };
+        SDL_Color textColor = { modalText.r, modalText.g, modalText.b, modalText.a };
         
         // Simple word wrapping for message
         const int padding = ui::Constants::MODAL_PADDING;
@@ -186,6 +225,7 @@ void Modal::renderImpl(const RenderContext& ctx) {
             
             // Draw button background
             Color buttonBg = tc.modalButtonBackground;
+            buttonBg.a = static_cast<uint8_t>(buttonBg.a * alpha);
             if (static_cast<int>(i) == buttonFocusIndex) {
                 // Highlight focused button
                 buttonBg.r = std::min(ui::Constants::FULL_ALPHA, static_cast<int>(buttonBg.r) + ui::Constants::COLOR_LIGHTEN_AMOUNT);
@@ -195,15 +235,19 @@ void Modal::renderImpl(const RenderContext& ctx) {
             drawFilledRect(ctx.renderer, buttonRect, buttonBg);
             
             // Draw button border
-            SDL_SetRenderDrawColor(ctx.renderer, tc.modalButtonBorder.r, tc.modalButtonBorder.g, 
-                                  tc.modalButtonBorder.b, tc.modalButtonBorder.a);
+            Color buttonBorder = tc.modalButtonBorder;
+            buttonBorder.a = static_cast<uint8_t>(buttonBorder.a * alpha);
+            SDL_SetRenderDrawColor(ctx.renderer, buttonBorder.r, buttonBorder.g, 
+                                  buttonBorder.b, buttonBorder.a);
             SDL_RenderDrawRect(ctx.renderer, &buttonRect);
             
             // Draw button text
             if (ctx.font) {
-                SDL_Color buttonTextColor = { tc.modalButtonText.r, tc.modalButtonText.g, 
-                                            tc.modalButtonText.b, tc.modalButtonText.a };
-                SDL_Surface* surface = TTF_RenderText_Solid(ctx.font, buttonLabels[i].c_str(), buttonTextColor);
+                Color buttonTextColor = tc.modalButtonText;
+                buttonTextColor.a = static_cast<uint8_t>(buttonTextColor.a * alpha);
+                SDL_Color buttonTextSDLColor = { buttonTextColor.r, buttonTextColor.g, 
+                                               buttonTextColor.b, buttonTextColor.a };
+                SDL_Surface* surface = TTF_RenderText_Solid(ctx.font, buttonLabels[i].c_str(), buttonTextSDLColor);
                 if (surface) {
                     SDL_Texture* texture = SDL_CreateTextureFromSurface(ctx.renderer, surface);
                     if (texture) {
@@ -275,7 +319,19 @@ void Modal::activate() {
     }
 }
 
+void Modal::show() {
+    if (dismissed && animationsEnabled) {
+        // Trigger show animation
+        startAnimation(showAnimationDuration);
+    }
+    dismissed = false;
+}
+
 void Modal::dismiss() {
+    if (!dismissed && animationsEnabled) {
+        // Trigger hide animation
+        startAnimation(hideAnimationDuration);
+    }
     dismissed = true;
     // Don't queue onDismiss here - it's handled by button callbacks
 }

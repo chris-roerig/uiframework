@@ -12,6 +12,13 @@ protected:
     float currentValue = 0.0f;
     std::function<void(float)> onChange;
     
+    // Real-time double buffering
+    float valueBuffers[2];
+    float minValueBuffers[2];
+    float maxValueBuffers[2];
+    std::atomic<int> currentValueBuffer{0};
+    std::atomic<int> currentRangeBuffer{0};
+    
     virtual float getValueFromPosition(int mouseX, int mouseY) = 0;
     virtual void updateValueFromMouse(int mouseX, int mouseY);
     
@@ -28,6 +35,10 @@ public:
     float getValue() const { return currentValue; }
     void setRange(float min, float max);
     void setOnChange(std::function<void(float)> callback) { onChange = callback; }
+    
+    // Real-time safe methods (lock-free, audio thread safe)
+    void realtimeSetValue(float value);
+    void realtimeSetRange(float min, float max);
     
     virtual ~Slider() override = default;
 };

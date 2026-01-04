@@ -20,7 +20,19 @@ private:
     std::function<void()> onClick;
     
 protected:
+    // Real-time double buffering (protected for ToggleButton access)
+    std::string textBuffers[2];
+    bool enabledBuffers[2];
+    std::atomic<int> currentTextBuffer{0};
+    std::atomic<int> currentEnabledBuffer{0};
+    
     ButtonState currentState = ButtonState::Normal;
+    ButtonState previousState = ButtonState::Normal;
+    
+    // Animation support
+    bool animationsEnabled = true;
+    Uint32 hoverAnimationDuration = 150;  // 150ms hover animation
+    Uint32 pressAnimationDuration = 100;  // 100ms press animation
     
     // Icon support
     std::string iconPath;
@@ -70,11 +82,21 @@ public:
     ButtonState getState() const { return currentState; }
     void setState(ButtonState state) { currentState = state; }
     
+    // Animation control
+    void setAnimationsEnabled(bool enabled) { animationsEnabled = enabled; }
+    bool getAnimationsEnabled() const { return animationsEnabled; }
+    void setHoverAnimationDuration(Uint32 duration) { hoverAnimationDuration = duration; }
+    void setPressAnimationDuration(Uint32 duration) { pressAnimationDuration = duration; }
+    
     // Icon support
     void setIcon(const std::string& path);
     void clearIcon();
     bool hasIcon() const { return iconTexture != nullptr; }
     const std::string& getIconPath() const { return iconPath; }
+    
+    // Real-time safe methods (lock-free, audio thread safe)
+    void realtimeSetText(const std::string& newText);
+    void realtimeSetEnabled(bool enabled);
 };
 
 } // namespace ui

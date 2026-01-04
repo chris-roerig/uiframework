@@ -12,6 +12,10 @@ private:
     int selectedIndex = 0;
     std::function<void(int, const std::string&)> onChange;
     
+    // Real-time double buffering
+    int selectedIndexBuffers[2];
+    std::atomic<int> currentSelectedIndexBuffer{0};
+    
 public:
     CycleList(int x, int y, int w, int h, const std::vector<std::string>& items_);
     
@@ -31,6 +35,9 @@ public:
     int getSelectedIndex() const { return selectedIndex; }
     const std::string& getSelectedValue() const;
     void setOnChange(std::function<void(int, const std::string&)> callback) { onChange = callback; }
+    
+    // Real-time safe methods (lock-free, audio thread safe)
+    void realtimeSetSelectedIndex(int index);
     
 private:
     void selectNext();

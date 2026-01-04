@@ -33,6 +33,19 @@ void TextBox::invalidateStringCache() {
 }
 
 void TextBox::renderImpl(const RenderContext& ctx) {
+    // Process real-time updates
+    int textBufferIndex = currentTextBuffer.load();
+    if (!textBuffers[textBufferIndex].empty()) {
+        content = textBuffers[textBufferIndex];
+        cursorPosition = content.length();
+        invalidateStringCache();
+    }
+    
+    int enabledBufferIndex = currentEnabledBuffer.load();
+    if (enabledBuffers[enabledBufferIndex] != enabled) {
+        enabled = enabledBuffers[enabledBufferIndex];
+    }
+    
     // Check if dimensions changed and invalidate cache if needed
     if (width != lastWidth || height != lastHeight) {
         invalidateStringCache();
@@ -255,6 +268,19 @@ void TextBox::autoSize(TTF_Font* font) {
     auto [prefW, prefH] = getPreferredSize(font);
     width = prefW;
     height = prefH;
+}
+
+// Real-time safe methods (lock-free, audio thread safe)
+void TextBox::realtimeSetText(const std::string& newText) {
+    int nextBuffer = 1 - currentTextBuffer.load();
+    textBuffers[nextBuffer] = newText;
+    currentTextBuffer.store(nextBuffer);
+}
+
+void TextBox::realtimeSetEnabled(bool enabled) {
+    int nextBuffer = 1 - currentEnabledBuffer.load();
+    enabledBuffers[nextBuffer] = enabled;
+    currentEnabledBuffer.store(nextBuffer);
 }
 
 } // namespace ui

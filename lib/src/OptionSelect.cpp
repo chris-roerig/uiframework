@@ -205,6 +205,16 @@ void OptionSelect::renderExpanded(SDL_Renderer* renderer, TTF_Font* font, std::s
 }
 
 void OptionSelect::renderImpl(const RenderContext& ctx) {
+    // Process real-time updates
+    int selectedIndexBufferIndex = currentSelectedIndexBuffer.load();
+    if (selectedIndexBuffers[selectedIndexBufferIndex] != currentIndex) {
+        int newIndex = selectedIndexBuffers[selectedIndexBufferIndex];
+        if (isValidIndex(newIndex)) {
+            currentIndex = newIndex;
+            invalidateStringCache();
+        }
+    }
+    
     if (options.empty()) {
         return;
     }
@@ -345,6 +355,13 @@ void OptionSelect::clearOptions() {
     currentIndex = -1;
     invalidateStringCache();
     collapse();
+}
+
+// Real-time safe methods (lock-free, audio thread safe)
+void OptionSelect::realtimeSetSelectedIndex(int index) {
+    int nextBuffer = 1 - currentSelectedIndexBuffer.load();
+    selectedIndexBuffers[nextBuffer] = index;
+    currentSelectedIndexBuffer.store(nextBuffer);
 }
 
 } // namespace ui

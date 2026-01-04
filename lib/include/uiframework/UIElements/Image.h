@@ -19,6 +19,10 @@ private:
     bool isDataImage = false; // true if loaded from data, false if from file
     mutable std::mutex textureMutex; // Protects texture operations
     
+    // Real-time queued loading
+    std::string queuedImagePath;
+    std::atomic<bool> hasQueuedPath{false};
+    
     void loadFromFile(SDL_Renderer* renderer, const std::string& path);
     void loadFromData(SDL_Renderer* renderer, const unsigned char* data, size_t dataSize);
     void cleanup();
@@ -55,6 +59,9 @@ public:
     // Set new image source
     void setImagePath(SDL_Renderer* renderer, const std::string& path);
     void setImageData(SDL_Renderer* renderer, const unsigned char* data, size_t dataSize);
+    
+    // Real-time safe methods (lock-free, audio thread safe)
+    void realtimeSetImagePath(const std::string& path);
 };
 
 } // namespace ui

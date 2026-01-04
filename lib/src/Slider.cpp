@@ -78,6 +78,19 @@ float HSlider::getValueFromPosition(int mouseX, int mouseY) {
 }
 
 void HSlider::renderImpl(const RenderContext& ctx) {
+    // Process real-time updates
+    int valueBufferIndex = currentValueBuffer.load();
+    if (valueBuffers[valueBufferIndex] != currentValue) {
+        currentValue = std::clamp(valueBuffers[valueBufferIndex], minValue, maxValue);
+    }
+    
+    int rangeBufferIndex = currentRangeBuffer.load();
+    if (minValueBuffers[rangeBufferIndex] != minValue || maxValueBuffers[rangeBufferIndex] != maxValue) {
+        minValue = minValueBuffers[rangeBufferIndex];
+        maxValue = maxValueBuffers[rangeBufferIndex];
+        currentValue = std::clamp(currentValue, minValue, maxValue);
+    }
+    
     if (!ctx.renderer || !ctx.theme) return;
     
     auto colors = ctx.sliderColors();
@@ -117,6 +130,19 @@ float VSlider::getValueFromPosition(int mouseX, int mouseY) {
 }
 
 void VSlider::renderImpl(const RenderContext& ctx) {
+    // Process real-time updates
+    int valueBufferIndex = currentValueBuffer.load();
+    if (valueBuffers[valueBufferIndex] != currentValue) {
+        currentValue = std::clamp(valueBuffers[valueBufferIndex], minValue, maxValue);
+    }
+    
+    int rangeBufferIndex = currentRangeBuffer.load();
+    if (minValueBuffers[rangeBufferIndex] != minValue || maxValueBuffers[rangeBufferIndex] != maxValue) {
+        minValue = minValueBuffers[rangeBufferIndex];
+        maxValue = maxValueBuffers[rangeBufferIndex];
+        currentValue = std::clamp(currentValue, minValue, maxValue);
+    }
+    
     if (!ctx.renderer || !ctx.theme) return;
     
     auto colors = ctx.sliderColors();
@@ -249,6 +275,20 @@ void KnobSlider::renderImpl(const RenderContext& ctx) {
         SDL_SetRenderDrawColor(ctx.renderer, colors.buttonText.r, colors.buttonText.g, colors.buttonText.b, colors.buttonText.a);
         SDL_RenderDrawRect(ctx.renderer, &focusRect);
     }
+}
+
+// Real-time safe methods (lock-free, audio thread safe)
+void Slider::realtimeSetValue(float value) {
+    int nextBuffer = 1 - currentValueBuffer.load();
+    valueBuffers[nextBuffer] = value;
+    currentValueBuffer.store(nextBuffer);
+}
+
+void Slider::realtimeSetRange(float min, float max) {
+    int nextBuffer = 1 - currentRangeBuffer.load();
+    minValueBuffers[nextBuffer] = min;
+    maxValueBuffers[nextBuffer] = max;
+    currentRangeBuffer.store(nextBuffer);
 }
 
 } // namespace ui

@@ -12,6 +12,21 @@
 namespace ui {
 
 void Button::renderImpl(const RenderContext& ctx) {
+    // Update animation state
+    updateAnimation(SDL_GetTicks());
+    
+    // Process real-time updates
+    int textBufferIndex = currentTextBuffer.load();
+    if (!textBuffers[textBufferIndex].empty()) {
+        text = textBuffers[textBufferIndex];
+        invalidateTextCache();
+    }
+    
+    int enabledBufferIndex = currentEnabledBuffer.load();
+    if (enabledBuffers[enabledBufferIndex] != enabled) {
+        enabled = enabledBuffers[enabledBufferIndex];
+    }
+    
     // Update state based on enabled status
     if (!enabled && currentState != ButtonState::Disabled) {
         currentState = ButtonState::Disabled;
@@ -22,35 +37,84 @@ void Button::renderImpl(const RenderContext& ctx) {
     // Retrieve button colors from the theme
     auto colors = ctx.buttonColors();
     SDL_Rect rect = { x, y, width, height };
-    SDL_Rect contentRect = getContentRect();
 
-    // Determine background and text colors based on state
+    // Determine background and text colors based on state with animation support
     Color bg, textColor;
     if (currentState == ButtonState::Disabled) {
-        bg = colors.buttonDisabled;
+        bg = colors.buttonBackground;
         textColor = colors.buttonTextDisabled;
     } else {
-        bg = colors.buttonBackground;
+        // Base colors
+        Color normalBg = colors.buttonBackground;
+        Color hoverBg = Color(static_cast<uint8_t>(std::min(255, normalBg.r + 20)),
+                             static_cast<uint8_t>(std::min(255, normalBg.g + 20)),
+                             static_cast<uint8_t>(std::min(255, normalBg.b + 20)),
+                             normalBg.a);
+        Color pressedBg = Color(static_cast<uint8_t>(normalBg.r * Constants::BUTTON_PRESSED_DARKEN_FACTOR),
+                               static_cast<uint8_t>(normalBg.g * Constants::BUTTON_PRESSED_DARKEN_FACTOR),
+                               static_cast<uint8_t>(normalBg.b * Constants::BUTTON_PRESSED_DARKEN_FACTOR),
+                               normalBg.a);
+        
         textColor = colors.buttonText;
         
-        // Apply state-specific styling
-        switch (currentState) {
-            case ButtonState::Hover:
-                // Lighten background for hover
-                bg = Color(static_cast<uint8_t>(std::min(255, bg.r + 20)),
-                          static_cast<uint8_t>(std::min(255, bg.g + 20)),
-                          static_cast<uint8_t>(std::min(255, bg.b + 20)),
-                          bg.a);
-                break;
-            case ButtonState::Pressed:
-                // Darken if pressed
-                bg = Color(static_cast<uint8_t>(bg.r * Constants::BUTTON_PRESSED_DARKEN_FACTOR),
-                          static_cast<uint8_t>(bg.g * Constants::BUTTON_PRESSED_DARKEN_FACTOR),
-                          static_cast<uint8_t>(bg.b * Constants::BUTTON_PRESSED_DARKEN_FACTOR),
-                          bg.a);
-                break;
-            default:
-                break;
+        // Apply animated color transitions
+        if (animationsEnabled && isAnimating()) {
+            float progress = getAnimationProgress();
+            
+            // Interpolate between previous and current state colors
+            Color fromBg, toBg;
+            
+            // Determine source and target colors based on state transition
+            switch (previousState) {
+                case ButtonState::Normal:
+                    fromBg = normalBg;
+                    break;
+                case ButtonState::Hover:
+                    fromBg = hoverBg;
+                    break;
+                case ButtonState::Pressed:
+                    fromBg = pressedBg;
+                    break;
+                default:
+                    fromBg = normalBg;
+                    break;
+            }
+            
+            switch (currentState) {
+                case ButtonState::Normal:
+                    toBg = normalBg;
+                    break;
+                case ButtonState::Hover:
+                    toBg = hoverBg;
+                    break;
+                case ButtonState::Pressed:
+                    toBg = pressedBg;
+                    break;
+                default:
+                    toBg = normalBg;
+                    break;
+            }
+            
+            // Linear interpolation between colors
+            bg = Color(
+                static_cast<uint8_t>(fromBg.r + (toBg.r - fromBg.r) * progress),
+                static_cast<uint8_t>(fromBg.g + (toBg.g - fromBg.g) * progress),
+                static_cast<uint8_t>(fromBg.b + (toBg.b - fromBg.b) * progress),
+                static_cast<uint8_t>(fromBg.a + (toBg.a - fromBg.a) * progress)
+            );
+        } else {
+            // No animation, use direct state colors
+            switch (currentState) {
+                case ButtonState::Hover:
+                    bg = hoverBg;
+                    break;
+                case ButtonState::Pressed:
+                    bg = pressedBg;
+                    break;
+                default:
+                    bg = normalBg;
+                    break;
+            }
         }
     }
     
@@ -124,26 +188,51 @@ void Button::renderImpl(const RenderContext& ctx) {
 
 void Button::onMouseEnter() {
     if (enabled && currentState == ButtonState::Normal) {
+        previousState = currentState;
         currentState = ButtonState::Hover;
+        
+        // Start hover animation if enabled
+        if (animationsEnabled) {
+            startAnimation(hoverAnimationDuration);
+        }
     }
 }
 
 void Button::onMouseLeave() {
     if (enabled && currentState == ButtonState::Hover) {
+        previousState = currentState;
         currentState = ButtonState::Normal;
+        
+        // Start reverse hover animation if enabled
+        if (animationsEnabled) {
+            startAnimation(hoverAnimationDuration);
+        }
     }
 }
 
 void Button::onMouseDown(int x, int y) {
     if (enabled) {
+        previousState = currentState;
         currentState = ButtonState::Pressed;
+        
+        // Start press animation if enabled
+        if (animationsEnabled) {
+            startAnimation(pressAnimationDuration);
+        }
     }
 }
 
 void Button::onMouseUp(int x, int y) {
     if (enabled && currentState == ButtonState::Pressed) {
+        previousState = currentState;
         // Return to hover if mouse is still over button, normal otherwise
         currentState = getIsHovered() ? ButtonState::Hover : ButtonState::Normal;
+        
+        // Start release animation if enabled
+        if (animationsEnabled) {
+            Uint32 duration = getIsHovered() ? hoverAnimationDuration : hoverAnimationDuration;
+            startAnimation(duration);
+        }
     }
 }
 
@@ -208,6 +297,19 @@ void Button::autoSize(TTF_Font* font) {
     auto [prefW, prefH] = getPreferredSize(font);
     width = prefW;
     height = prefH;
+}
+
+// Real-time safe methods (lock-free, audio thread safe)
+void Button::realtimeSetText(const std::string& newText) {
+    int nextBuffer = 1 - currentTextBuffer.load();
+    textBuffers[nextBuffer] = newText;
+    currentTextBuffer.store(nextBuffer);
+}
+
+void Button::realtimeSetEnabled(bool enabled) {
+    int nextBuffer = 1 - currentEnabledBuffer.load();
+    enabledBuffers[nextBuffer] = enabled;
+    currentEnabledBuffer.store(nextBuffer);
 }
 
 } // namespace ui

@@ -348,6 +348,11 @@ class UI {
                                                              int width, int height, int frameCount,
                                                              Uint32 frameDelay,
                                                              bool stretch = false);
+
+    // Layout containers
+    std::shared_ptr<ui::VBoxLayout> createVBoxLayout(int x, int y, int width, int height);
+    std::shared_ptr<ui::HBoxLayout> createHBoxLayout(int x, int y, int width, int height);
+    std::shared_ptr<ui::GridLayout> createGridLayout(int x, int y, int width, int height, int rows, int cols);
     std::shared_ptr<ui::AnimatedSprite> createAnimatedSprite(const unsigned char* data,
                                                              size_t dataSize, int x, int y, int width,
                                                              int height, int frameCount,

@@ -139,6 +139,24 @@ void Image::loadFromData(SDL_Renderer* renderer, const unsigned char* data, size
 }
 
 void Image::renderImpl(const RenderContext& ctx) {
+    // Process real-time updates (queued image loading)
+    if (hasQueuedPath.load()) {
+        std::lock_guard<std::mutex> lock(textureMutex);
+        if (hasQueuedPath.load()) { // Double-check with lock
+            filePath = queuedImagePath;
+            isDataImage = false;
+            imageData.clear();
+            
+            // Clean up old texture
+            if (texture) {
+                SDL_DestroyTexture(texture);
+                texture = nullptr;
+            }
+            
+            hasQueuedPath.store(false);
+        }
+    }
+    
     if (!visible) {
         return;
     }
@@ -229,6 +247,12 @@ void Image::setImageData(SDL_Renderer* renderer, const unsigned char* data, size
         imageData.clear();
         cleanup();
     }
+}
+
+// Real-time safe methods (lock-free, audio thread safe)
+void Image::realtimeSetImagePath(const std::string& path) {
+    queuedImagePath = path;
+    hasQueuedPath.store(true);
 }
 
 } // namespace ui

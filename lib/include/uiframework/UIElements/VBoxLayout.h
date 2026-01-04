@@ -1,21 +1,10 @@
 #pragma once
 #include "UIElement.h"
+#include "LayoutAlignment.h"
 #include <vector>
 #include <memory>
 
 namespace ui {
-
-enum class VAlignment {
-    Top,
-    Center,
-    Bottom
-};
-
-enum class HAlignment {
-    Left,
-    Center,
-    Right
-};
 
 class VBoxLayout : public UIElement {
 private:

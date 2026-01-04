@@ -18,5 +18,8 @@
 #include "uiframework/UIElements/ProgressBar.h"
 #include "uiframework/UIElements/Slider.h"
 #include "uiframework/UIElements/VirtualKeyboard.h"
+#include "uiframework/UIElements/VBoxLayout.h"
+#include "uiframework/UIElements/HBoxLayout.h"
+#include "uiframework/UIElements/GridLayout.h"
 #include "uiframework/UIElements/CycleList.h"
 #include "uiframework/UIElements/TabbedPanel.h"

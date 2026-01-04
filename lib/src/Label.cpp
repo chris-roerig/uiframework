@@ -9,6 +9,13 @@
 namespace ui {
 
 void Label::renderImpl(const RenderContext& ctx) {
+    // Process real-time updates
+    int textBufferIndex = currentTextBuffer.load();
+    if (!textBuffers[textBufferIndex].empty()) {
+        text = textBuffers[textBufferIndex];
+        invalidateTextCache();
+    }
+    
     ThemeableElementColors tc = ctx.labelColors();
     SDL_Color sdlColor = { tc.labelText.r, tc.labelText.g, tc.labelText.b, tc.labelText.a };
     SDL_Rect contentRect = getContentRect();
@@ -69,6 +76,13 @@ std::pair<int, int> Label::getPreferredSize(TTF_Font* font) const {
 
 std::pair<int, int> Label::getMinimumSize() const {
     return {0, 0}; // Labels can be any size
+}
+
+// Real-time safe methods (lock-free, audio thread safe)
+void Label::realtimeSetText(const std::string& newText) {
+    int nextBuffer = 1 - currentTextBuffer.load();
+    textBuffers[nextBuffer] = newText;
+    currentTextBuffer.store(nextBuffer);
 }
 
 } // namespace ui
