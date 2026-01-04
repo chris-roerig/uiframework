@@ -259,11 +259,64 @@ namespace {
 ## **🎮 Standard UI Features**
 
 ### **17+ UI Elements**
-- **Basic**: Button, ToggleButton, Label, TextBox, CheckBox, Image, Canvas
+- **Basic**: Button, ToggleButton, Label, TextBox, CheckBox, Image, Canvas (Enhanced)
 - **Input**: HSlider, VSlider, ProgressBar, OptionSelect
 - **Containers**: Modal, ListView, VirtualKeyboard
 - **Layout**: VBoxLayout, HBoxLayout, GridLayout
 - **Advanced**: Sprite, AnimatedSprite, ContextMenu, CycleList, TabbedPanel
+
+### **🆕 Enhanced Canvas UIElement**
+The Canvas has been comprehensively enhanced for **real-time audio applications** with professional-grade performance and thread safety:
+
+#### **Thread Safety & Memory Management**
+- **Mutex Protection**: All draw operations are thread-safe with proper synchronization
+- **Bounded Memory**: Configurable capacity limits (default 10,000 commands) prevent unbounded growth
+- **Memory Management**: `setMaxCapacity()`, `reserveCapacity()`, `clearAndReserve()` methods
+- **Optimized Performance**: Reduced lambda capture overhead and streamlined rendering
+
+#### **Real-Time Safe Infrastructure**
+- **Lock-Free Operations**: Audio thread safe methods with zero blocking
+- **Double Buffering**: Atomic buffer swapping for real-time data updates
+- **Audio Visualization**: Specialized primitives for waveforms, VU meters, spectrum analyzers
+- **Sample Accurate**: Suitable for 48kHz+ update rates from audio threads
+
+#### **Performance Optimizations**
+- **Command Batching**: Groups similar operations to reduce SDL calls
+- **Dirty Rectangle Tracking**: Selective redraw optimization for changed regions
+- **Color Grouping**: Minimizes SDL state changes during rendering
+- **Optimized Pipeline**: Batched commands → legacy commands → real-time data
+
+#### **Audio Visualization Primitives**
+```cpp
+// Real-time safe methods (lock-free, audio thread safe)
+canvas->realtimeSetWaveform(samples, count, color, amplitude);
+canvas->realtimeSetLevelMeter(level, peak, fillColor, peakColor);
+canvas->realtimeSetSpectrum(bins, count, color, logarithmic);
+
+// Thread-safe visualization methods
+canvas->waveform(samples, color, amplitude);
+canvas->levelMeter(level, peak, fillColor, peakColor);
+canvas->spectrumBars(bins, color, logarithmic);
+canvas->gradientRect(rect, startColor, endColor, vertical);
+
+// Performance optimization methods
+canvas->batchRect(rect, color);
+canvas->batchLine(x1, y1, x2, y2, color);
+canvas->flushBatch();
+```
+
+#### **Use Cases**
+- **Professional Audio Software**: DAWs, plugins, live performance tools
+- **Hardware Audio Devices**: Mixers, synthesizers, effects units, control surfaces
+- **Scientific Instruments**: Oscilloscopes, spectrum analyzers, data acquisition
+- **Real-Time Applications**: Any scenario requiring deterministic graphics performance
+
+#### **Performance Characteristics**
+- **Thread-Safe Operations**: Mutex-protected with capacity limits
+- **Real-Time Operations**: Lock-free with double buffering, zero allocation
+- **Memory Bounded**: Configurable limits with graceful degradation
+- **Audio Thread Safe**: Zero blocking operations for real-time methods
+- **Professional Grade**: Suitable for hardware audio devices and broadcast systems
 
 ### **Core Features**
 - **Theme System**: Runtime theme switching with built-in themes
@@ -756,11 +809,11 @@ ui.realtimeBulkSetValue(meterIds, levels);
 ## **🎯 Target Applications**
 
 ### **Professional Audio Software**
-- **DAWs**: Cubase, Pro Tools, Logic Pro equivalents
-- **Audio Plugins**: VST/AU instruments and effects
-- **Live Performance**: DJ software, live mixing consoles
-- **Broadcast**: Radio automation, streaming software
-- **🆕 Hardware Audio Devices**: Mixers, synthesizers, effects units, control surfaces
+- **DAWs**: Cubase, Pro Tools, Logic Pro equivalents with real-time Canvas visualization
+- **Audio Plugins**: VST/AU instruments and effects with waveform/spectrum displays
+- **Live Performance**: DJ software, live mixing consoles with VU meters and level displays
+- **Broadcast**: Radio automation, streaming software with real-time audio monitoring
+- **🆕 Hardware Audio Devices**: Mixers, synthesizers, effects units, control surfaces with Canvas-based displays
 
 ### **Video Production Systems**
 - **Video Editors**: Premiere Pro, Final Cut Pro equivalents
@@ -769,10 +822,10 @@ ui.realtimeBulkSetValue(meterIds, levels);
 - **Color Grading**: DaVinci Resolve-style applications
 
 ### **Scientific Instruments**
-- **Data Acquisition**: Real-time measurement displays
-- **Laboratory Equipment**: Oscilloscopes, spectrum analyzers
-- **Industrial Control**: SCADA systems, process monitoring
-- **Research Tools**: Real-time data visualization
+- **Data Acquisition**: Real-time measurement displays with Canvas waveform visualization
+- **Laboratory Equipment**: Oscilloscopes, spectrum analyzers with real-time Canvas rendering
+- **Industrial Control**: SCADA systems, process monitoring with live data visualization
+- **Research Tools**: Real-time data visualization with Canvas-based charts and graphs
 
 ### **Gaming Applications**
 - **VR/AR Interfaces**: Low-latency UI for immersive experiences
