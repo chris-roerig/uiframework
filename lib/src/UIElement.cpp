@@ -333,4 +333,27 @@ void UIElement::updateRelativeSize() {
     setSize(newWidth, newHeight);
 }
 
+// UIElement Enhancement: Animation System Implementation
+void UIElement::updateAnimation(Uint32 currentTime) {
+    if (!animation.active) return;
+    
+    if (animation.duration == 0) {
+        animation.progress = 1.0f;
+        animation.active = false;
+        return;
+    }
+    
+    Uint32 elapsed = currentTime - animation.startTime;
+    if (elapsed >= animation.duration) {
+        animation.progress = 1.0f;
+        animation.active = false;
+    } else {
+        animation.progress = static_cast<float>(elapsed) / static_cast<float>(animation.duration);
+    }
+    
+    if (animation.active || animation.progress >= 1.0f) {
+        markDirty();
+    }
+}
+
 } // namespace ui

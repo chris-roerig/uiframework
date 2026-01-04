@@ -26,6 +26,7 @@
 #include <memory>
 #include <unordered_map>
 #include <list>
+#include <bitset>
 #include "../Constants.h"
 #include "../Rendering/RenderContext.h"
 #include "../Resources/FontManager.h"
@@ -79,6 +80,26 @@ protected:
     FontType fontType = FontType::Primary;  // For theme-based selection
     bool useThemeFont = true;     // Whether to use theme-based font selection
     
+    // UIElement Enhancement: State Management
+    enum class ElementState { Normal, Hover, Pressed, Focused, Disabled };
+    ElementState currentState = ElementState::Normal;
+    std::bitset<8> stateFlags; // For multiple simultaneous states
+    
+    // UIElement Enhancement: Animation Infrastructure
+    struct AnimationState {
+        float progress = 0.0f;
+        Uint32 startTime = 0;
+        Uint32 duration = 0;
+        bool active = false;
+    } animation;
+    
+    // UIElement Enhancement: Dirty Rectangle Optimization
+    mutable bool needsRedraw = true;
+    mutable SDL_Rect dirtyRect = {0, 0, 0, 0};
+    
+    // UIElement Enhancement: Z-Order Support
+    int zOrder = 0;
+    
 public:
     int x, y, width, height;
     bool hasFocus = false;
@@ -127,6 +148,16 @@ public:
         return SDL_Rect{ x - Constants::FOCUS_BORDER_WIDTH, y - Constants::FOCUS_BORDER_WIDTH, 
                         width + 2 * Constants::FOCUS_BORDER_WIDTH, height + 2 * Constants::FOCUS_BORDER_WIDTH }; 
     }
+    
+    // UIElement Enhancement: Enhanced Event System
+    virtual void onMouseEnter() {}
+    virtual void onMouseLeave() {}
+    virtual void onMouseDown(const SDL_Event& e) {}
+    virtual void onMouseUp(const SDL_Event& e) {}
+    virtual void onKeyDown(const SDL_Event& e) {}
+    virtual void onKeyUp(const SDL_Event& e) {}
+    virtual void onResize(int oldWidth, int oldHeight) {}
+    virtual void updateAnimation(Uint32 currentTime);
     virtual void activate() { /* default does nothing */ }
 
 protected:
@@ -159,15 +190,21 @@ public:
     void setPosition(int newX, int newY) {
         x = newX;
         y = newY;
+        markDirty();
     }
     
     void setSize(int newWidth, int newHeight) {
+        int oldWidth = width;
+        int oldHeight = height;
         width = newWidth;
         height = newHeight;
+        markDirty();
+        onResize(oldWidth, oldHeight);
     }
     
     void setVisible(bool isVisible) {
         visible = isVisible;
+        markDirty();
     }
     
     bool isVisible() const {
@@ -176,10 +213,147 @@ public:
     
     void setEnabled(bool isEnabled) {
         enabled = isEnabled;
+        if (!enabled) {
+            setState(ElementState::Disabled);
+        } else if (currentState == ElementState::Disabled) {
+            setState(ElementState::Normal);
+        }
+        markDirty();
     }
     
     bool isEnabled() const {
         return enabled;
+    }
+    
+    // UIElement Enhancement: State Management
+    void setState(ElementState state) {
+        if (currentState != state) {
+            currentState = state;
+            markDirty();
+        }
+    }
+    
+    ElementState getState() const { return currentState; }
+    
+    void setStateFlag(int flag, bool value) {
+        if (stateFlags[flag] != value) {
+            stateFlags[flag] = value;
+            markDirty();
+        }
+    }
+    
+    bool getStateFlag(int flag) const { return stateFlags[flag]; }
+    
+    // UIElement Enhancement: Animation System
+    void startAnimation(Uint32 duration) {
+        animation.startTime = SDL_GetTicks();
+        animation.duration = duration;
+        animation.progress = 0.0f;
+        animation.active = true;
+    }
+    
+    void stopAnimation() {
+        animation.active = false;
+        animation.progress = 0.0f;
+    }
+    
+    bool isAnimating() const { return animation.active; }
+    float getAnimationProgress() const { return animation.progress; }
+    
+    // UIElement Enhancement: Dirty Rectangle System
+    void markDirty() const { needsRedraw = true; }
+    void markDirty(const SDL_Rect& rect) const { 
+        needsRedraw = true; 
+        dirtyRect = rect; 
+    }
+    bool isDirty() const { return needsRedraw; }
+    void clearDirty() const { needsRedraw = false; }
+    
+    // UIElement Enhancement: Z-Order Support
+    void setZOrder(int order) { zOrder = order; }
+    int getZOrder() const { return zOrder; }
+    
+    // UIElement Enhancement: Enhanced Hit Testing
+    virtual bool hitTest(int px, int py) const {
+        if (!visible || !enabled) return false;
+        return containsPoint(px, py);
+    }
+    
+    SDL_Rect getHitRect() const {
+        return {x - margin.left, y - margin.top, 
+                width + margin.left + margin.right,
+                height + margin.top + margin.bottom};
+    }
+    
+    // UIElement Enhancement: Template Helpers & Utilities
+    template<typename T>
+    void setProperty(T& member, const T& value) {
+        if (member != value) {
+            member = value;
+            markDirty();
+            invalidateTextCache();
+        }
+    }
+    
+    // Render state calculation helper
+    struct RenderState {
+        SDL_Color backgroundColor = {200, 200, 200, 255};
+        SDL_Color borderColor = {100, 100, 100, 255};
+        SDL_Color textColor = {0, 0, 0, 255};
+        bool hasBackground = true;
+        bool hasBorder = true;
+        float alpha = 1.0f;
+    };
+    
+    RenderState calculateRenderState(const RenderContext& ctx) const {
+        RenderState state;
+        
+        // Adjust colors based on element state
+        switch (currentState) {
+            case ElementState::Hover:
+                state.backgroundColor.r = std::min(255, state.backgroundColor.r + 20);
+                state.backgroundColor.g = std::min(255, state.backgroundColor.g + 20);
+                state.backgroundColor.b = std::min(255, state.backgroundColor.b + 20);
+                break;
+            case ElementState::Pressed:
+                state.backgroundColor.r = static_cast<Uint8>(state.backgroundColor.r * 0.8f);
+                state.backgroundColor.g = static_cast<Uint8>(state.backgroundColor.g * 0.8f);
+                state.backgroundColor.b = static_cast<Uint8>(state.backgroundColor.b * 0.8f);
+                break;
+            case ElementState::Disabled:
+                state.alpha = 0.5f;
+                state.textColor = {128, 128, 128, 255};
+                break;
+            default:
+                break;
+        }
+        
+        // Apply animation alpha if animating
+        if (isAnimating()) {
+            state.alpha *= getAnimationProgress();
+        }
+        
+        return state;
+    }
+    
+    // Input validation framework
+    class InputValidator {
+    public:
+        virtual ~InputValidator() = default;
+        virtual bool validate(const std::string& input) const = 0;
+        virtual std::string getErrorMessage() const = 0;
+    };
+    
+    void setValidator(std::unique_ptr<InputValidator> validator) {
+        inputValidator = std::move(validator);
+    }
+    
+    bool validateInput(const std::string& input) const {
+        return !inputValidator || inputValidator->validate(input);
+    }
+    
+    std::string getValidationError() const {
+        return inputValidator ? inputValidator->getErrorMessage() : "";
     }
     
     // Tooltip support
@@ -282,6 +456,9 @@ private:
     bool hasRelativeSizing = false;
     float relativeWidth = 0.0f;
     float relativeHeight = 0.0f;
+    
+    // UIElement Enhancement: Input validation
+    std::unique_ptr<InputValidator> inputValidator;
 };
 
 } // namespace ui
