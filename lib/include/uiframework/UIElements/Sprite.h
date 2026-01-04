@@ -4,6 +4,7 @@
 #include <SDL2/SDL.h>
 #include <string>
 #include <vector>
+#include <mutex>
 
 namespace ui {
 
@@ -15,6 +16,7 @@ private:
     SDL_Texture* texture = nullptr;
     SDL_Rect srcRect = {0, 0, 0, 0}; // Source rectangle on sprite sheet
     bool isDataImage = false;
+    mutable std::mutex textureMutex; // Protects texture operations
     
     void loadFromFile(SDL_Renderer* renderer, const std::string& path);
     void loadFromData(SDL_Renderer* renderer, const unsigned char* data, size_t dataSize);

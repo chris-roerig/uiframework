@@ -4,6 +4,7 @@
 #include <SDL2/SDL.h>
 #include <string>
 #include <memory>
+#include <mutex>
 
 namespace ui {
 
@@ -16,6 +17,7 @@ private:
     int naturalWidth = 0;
     int naturalHeight = 0;
     bool isDataImage = false; // true if loaded from data, false if from file
+    mutable std::mutex textureMutex; // Protects texture operations
     
     void loadFromFile(SDL_Renderer* renderer, const std::string& path);
     void loadFromData(SDL_Renderer* renderer, const unsigned char* data, size_t dataSize);

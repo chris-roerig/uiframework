@@ -149,8 +149,17 @@ void TabbedPanel::setActiveTab(int tabIndex) {
         updateChildVisibility();
         invalidateTextCache();
         
-        if (onTabChange) {
-            onTabChange(activeTabIndex);
+        if (onTabChange && coreRef) {
+            int currentTabIndex = activeTabIndex;
+            coreRef->queueCallback([this, currentTabIndex]() {
+                if (onTabChange) {
+                    try {
+                        onTabChange(currentTabIndex);
+                    } catch (const std::exception& e) {
+                        std::cerr << "Error in tabbed panel callback: " << e.what() << std::endl;
+                    }
+                }
+            });
         }
     }
 }

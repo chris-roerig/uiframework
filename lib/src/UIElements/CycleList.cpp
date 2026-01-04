@@ -139,8 +139,18 @@ void CycleList::setSelectedIndex(int index) {
     selectedIndex = std::max(0, std::min(index, static_cast<int>(items.size()) - 1));
     invalidateTextCache();
     
-    if (onChange) {
-        onChange(selectedIndex, items[selectedIndex]);
+    if (onChange && coreRef) {
+        int currentIndex = selectedIndex;
+        std::string currentValue = items[selectedIndex];
+        coreRef->queueCallback([this, currentIndex, currentValue]() {
+            if (onChange) {
+                try {
+                    onChange(currentIndex, currentValue);
+                } catch (const std::exception& e) {
+                    std::cerr << "Error in cycle list callback: " << e.what() << std::endl;
+                }
+            }
+        });
     }
 }
 
@@ -155,8 +165,18 @@ void CycleList::selectNext() {
     selectedIndex = (selectedIndex + 1) % items.size();
     invalidateTextCache();
     
-    if (onChange) {
-        onChange(selectedIndex, items[selectedIndex]);
+    if (onChange && coreRef) {
+        int currentIndex = selectedIndex;
+        std::string currentValue = items[selectedIndex];
+        coreRef->queueCallback([this, currentIndex, currentValue]() {
+            if (onChange) {
+                try {
+                    onChange(currentIndex, currentValue);
+                } catch (const std::exception& e) {
+                    std::cerr << "Error in cycle list callback: " << e.what() << std::endl;
+                }
+            }
+        });
     }
 }
 
@@ -166,8 +186,18 @@ void CycleList::selectPrevious() {
     selectedIndex = (selectedIndex - 1 + items.size()) % items.size();
     invalidateTextCache();
     
-    if (onChange) {
-        onChange(selectedIndex, items[selectedIndex]);
+    if (onChange && coreRef) {
+        int currentIndex = selectedIndex;
+        std::string currentValue = items[selectedIndex];
+        coreRef->queueCallback([this, currentIndex, currentValue]() {
+            if (onChange) {
+                try {
+                    onChange(currentIndex, currentValue);
+                } catch (const std::exception& e) {
+                    std::cerr << "Error in cycle list callback: " << e.what() << std::endl;
+                }
+            }
+        });
     }
 }
 

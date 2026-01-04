@@ -64,6 +64,7 @@ Sprite& Sprite::operator=(Sprite&& other) noexcept {
 }
 
 void Sprite::cleanup() {
+    std::lock_guard<std::mutex> lock(textureMutex);
     if (texture) {
         SDL_DestroyTexture(texture);
         texture = nullptr;
@@ -153,6 +154,8 @@ void Sprite::renderImpl(const RenderContext& ctx) {
         return;
     }
     
+    std::lock_guard<std::mutex> lock(textureMutex);
+    
     // Load texture if not already loaded
     if (!texture) {
         if (isDataImage && !imageData.empty()) {
@@ -220,6 +223,7 @@ void Sprite::setSourceRect(const SDL_Rect &rect) {
 }
 
 void Sprite::reload(SDL_Renderer* renderer) {
+    std::lock_guard<std::mutex> lock(textureMutex);
     if (isDataImage && !imageData.empty()) {
         loadFromData(renderer, imageData.data(), imageData.size());
     } else if (!isDataImage && !filePath.empty()) {
@@ -228,6 +232,7 @@ void Sprite::reload(SDL_Renderer* renderer) {
 }
 
 void Sprite::setSpritePath(SDL_Renderer* renderer, const std::string& path) {
+    std::lock_guard<std::mutex> lock(textureMutex);
     filePath = path;
     imageData.clear();
     isDataImage = false;
@@ -235,6 +240,7 @@ void Sprite::setSpritePath(SDL_Renderer* renderer, const std::string& path) {
 }
 
 void Sprite::setSpriteData(SDL_Renderer* renderer, const unsigned char* data, size_t dataSize) {
+    std::lock_guard<std::mutex> lock(textureMutex);
     filePath.clear();
     isDataImage = true;
     if (data && dataSize > 0) {

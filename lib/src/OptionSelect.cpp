@@ -320,8 +320,17 @@ void OptionSelect::setSelectedIndex(int index) {
     if (isValidIndex(index) && index != currentIndex) {
         currentIndex = index;
         invalidateStringCache();
-        if (onSelect) {
-            onSelect(currentIndex);
+        if (onSelect && coreRef) {
+            int selectedIndex = currentIndex;
+            coreRef->queueCallback([this, selectedIndex]() {
+                if (onSelect) {
+                    try {
+                        onSelect(selectedIndex);
+                    } catch (const std::exception& e) {
+                        std::cerr << "Error in option select callback: " << e.what() << std::endl;
+                    }
+                }
+            });
         }
     }
 }
